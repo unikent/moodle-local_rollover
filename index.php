@@ -40,8 +40,10 @@ $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/lib/jquery-1.7.1.m
 
 echo $scripts;
 
+//TODO - move this to function and pass in shortcode and embed into the form name.
+//TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
 $form = "<div class='rollover_item'>
-            <form>
+            <form method='post' name='rollover_form_SHORTCODE' id='rollover_form_SHORTCODE' action='schedule.php'>
                 <div class='rollover_crs_title'>
                     <div class='arrow'></div>
                     <h3>This is a test title</h3>
