@@ -138,4 +138,35 @@ function kent_get_all_courses($categoryid="all", $sort="c.sortorder ASC", $field
 }
 
 
+/**
+* Function to take caught errors and put them into JSON data
+*
+* @param object $object exception object
+*/
+function pm($obj) {
 
+    $data['status'] = FALSE;
+    $data['errors'][] = htmlentities(print_r($obj, TRUE));
+    header('Content-type: application/json');
+    echo json_encode($data);
+
+}
+
+
+/**
+* Very simple function at present to do a santize string on all POST key=>vals
+*/
+function kent_filter_post_data(){
+
+    $data = array();
+
+    //Just santize everything as string for now.
+    foreach ($_POST as $data_key => $data_value){
+        $data_key = filter_var($data_key, FILTER_SANITIZE_STRING);
+        $data_value = filter_var($data_value, FILTER_SANITIZE_STRING);
+        $data[$data_key] = $data_value;
+    }
+
+    return $data;
+    
+}
