@@ -61,8 +61,16 @@ $form = "<div class='rollover_item'>
             </form>
          </div>";
 
-echo $form;
-echo $form;
-echo $form;
-echo $form;
+
+$courses = kent_get_empty_courses();
+
+foreach($courses as $course){
+    echo $form;
+}
+
+
+//echo $form;
+//echo $form;
+//echo $form;
+//echo $form;
 echo $OUTPUT->footer();
