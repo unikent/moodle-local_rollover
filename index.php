@@ -34,8 +34,9 @@ $PAGE->set_heading(get_string('pluginname', 'local_rollover'));
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$scripts ='<link rel="stylesheet/less" type"text/css" href="styles.less">
-    <script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
+$scripts ='<link rel="stylesheet/less" type"text/css" href="styles.less">';
+$scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
+$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/lib/jquery-1.7.1.min.js" type="text/javascript"></script>';
 
 echo $scripts;
 
