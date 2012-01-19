@@ -170,3 +170,69 @@ function kent_filter_post_data(){
     return $data;
     
 }
+
+
+/**
+* Gets an array of all Moodle 2 modules (only if the folder exists in /MOD.  Returns flags for M2/M1 support and visibility. Returns FALSE if no modules.
+*
+* @param bool $only_visible -- Set to true if you only want mods which are visible in Moodle 2.X
+* @param bool $must_have_m1_support -- Set to true if you only want mods which have Moodle 1.9 backup support
+*/
+function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FALSE){
+
+    global $CFG, $DB;
+    $modules = $DB->get_records("modules");
+
+    $rollover_mods = array();
+
+    foreach ($modules as $mod){
+
+        $modname = $mod->name;
+        $modpath = "$CFG->dirroot/mod/$modname";
+
+
+        //If we only want visible mods and our mod isn't visible - set our skip flag to true.
+        $vis_skip = (($only_visible && $mod->visible != "1") ? TRUE : FALSE);
+
+        if(file_exists($modpath) && !$vis_skip){
+
+            $moodle_one_modfile = "$modpath/backup/moodle1/lib.php";
+            $moodle_two_modfile = "$modpath/backup/moodle2/backup_".$modname."_activity_task.class.php";
+
+            $moodle_one_class = "moodle1_mod_".$modname."_handler";
+            $moodle_two_class = "backup_".$modname."_activity_task";
+
+            //Moodle 1 backup/restore check
+            $rollover_mods[$modname]['moodle_1_support'] = FALSE;
+            if (file_exists($moodle_one_modfile)) {
+                $rollover_mods[$modname]['moodle_1_support'] = TRUE;
+            }
+
+            $m1_skip = (($must_have_m1_support && !$rollover_mods[$modname]['moodle_1_support']) ? TRUE : FALSE);
+
+            //Moodle 2 backup/restore check
+            $rollover_mods[$modname]['moodle_2_support'] = FALSE;
+            if (file_exists($moodle_two_modfile)) {
+                $rollover_mods[$modname]['moodle_2_support'] = TRUE;
+            }
+
+            //Store ID and visibility
+            $rollover_mods[$modname]['moodle_2_id'] = $mod->id;
+            $rollover_mods[$modname]['visible'] = ($mod->visible == "1" ? TRUE : FALSE);
+
+            //If we don't want mods without moodle 1.9 bkup support, then unset it.
+            if($m1_skip){
+                unset($rollover_mods[$modname]);
+            }
+
+        }
+
+    }
+
+    if(!empty($rollover_mods)){
+        return $rollover_mods;
+    } else {
+        return FALSE;
+    }
+
+}
