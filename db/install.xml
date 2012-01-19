@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<XMLDB PATH="local/rollover/db" VERSION="2012011805" COMMENT="XMLDB file for kent moodle rollover" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+  <TABLES>
+    <TABLE NAME="rollover_events" COMMENT="kent rollover event tracking">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="from_course"/>
+        <FIELD NAME="from_course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="to_course"/>
+        <FIELD NAME="to_course" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="from_course" NEXT="when"/>
+        <FIELD NAME="when" TYPE="datetime" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="to_course" NEXT="what"/>
+        <FIELD NAME="what" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="event type, requested|completed|errored" PREVIOUS="when" NEXT="message"/>
+        <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="what" />
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="to_course" UNIQUE="false" FIELDS="to_course" NEXT="what"/>
+        <INDEX NAME="what" UNIQUE="false" FIELDS="what" PREVIOUS="to_course"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
