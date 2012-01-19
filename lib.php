@@ -125,13 +125,12 @@ function kent_get_all_courses($categoryid="all", $sort="c.sortorder ASC", $field
 
         // pull out all course matching the cat
         if ($courses = $DB->get_records_sql($sql, $params)) {
-
             // loop throught them
             foreach ($courses as $course) {
                 if ($course->id == 1) continue;
                 $course_list[$course->id] = $course;
             }
-        }
+        } 
     }
 
     return $course_list;
@@ -236,3 +235,8 @@ function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FA
     }
 
 }
+
+function kent_get_formated_module_list() {
+    
+}
+

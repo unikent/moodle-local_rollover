@@ -36,41 +36,48 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
 $scripts ='<link rel="stylesheet/less" type"text/css" href="styles.less">';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
-$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/lib/jquery-1.7.1.min.js" type="text/javascript"></script>';
+$scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 
 echo $scripts;
 
+$module_list = kent_get_formated_module_list();
+
 //TODO - move this to function and pass in shortcode and embed into the form name.
 //TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
-$form = "<div class='rollover_item'>
-            <form method='post' name='rollover_form_SHORTCODE' id='rollover_form_SHORTCODE' action='schedule.php'>
+$form = <<< HEREDOC
+    <div class='rollover_item'>
+            <form method='post' name='rollover_form_%1\$d' action='schedule.php'>
                 <div class='rollover_crs_title'>
                     <div class='arrow'></div>
-                    <h3>This is a test title</h3>
-                    <p class='rollover_shrt_code'><span class='rollover_txt_head'>Short code: </span>EL310</p>
-                    <p class='rollover_desc'><span class='rollover_txt_head'>Description: </span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent fringilla sem id ligula sagittis ac aliquet eros vehicula. Sed rhoncus sapien ac dui cursus consectetur. Nunc lacinia elementum quam non aliquet. Donec venenatis, odio sed pharetra rutrum, purus dui tristique orci, eu fringilla mauris dui vitae ante</p>
+                    <h3>%3\$s</h3>
+                    <p class='rollover_shrt_code'><span class='rollover_txt_head'>Short code: </span>%2\$s</p>
+                    <p class='rollover_desc'><span class='rollover_txt_head'>Description: </span>%4\$s</p>
                 </div>
                 <div class='rollover_crs_from'>
                     <div class='arrow'></div>
-                    <div class='rollover_crs_search'>
-                        <input type='text' class='rollover_crs_input'/>
-                        <button type='buttons' class='rollover_crs_submit'>Go</button>
-                    </div>
+                    <input type='text' class='rollover_crs_input'/>
                     <h4 class='rollover_advanced_title'>Advanced options</h4>
+                    <ul class='rollover_advanced_options'>
+                        $module_list
+                    </ul>
+                    <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                 </div>
             </form>
-         </div>";
-
+         </div>
+HEREDOC;
 
 $courses = kent_get_empty_courses();
-
-foreach($courses as $course){
-    echo $form;
+if(!empty($courses)){
+    foreach($courses as $course){
+        $desc = 'No description at this time.';
+        if (!empty($course->summary)) {
+            $desc = $course->summary;
+            $desc = strip_tags($desc);
+        }
+        
+        printf($form, $course->id, $course->shortname, $course->fullname, $desc);
+    }
+} else {
+    echo 'There are no empty courses';
 }
-
-
-//echo $form;
-//echo $form;
-//echo $form;
-//echo $form;
 echo $OUTPUT->footer();
