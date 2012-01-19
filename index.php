@@ -37,6 +37,7 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 $scripts ='<link rel="stylesheet/less" type"text/css" href="styles.less">';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
+$scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
 
 echo $scripts;
 
@@ -60,6 +61,13 @@ $form = <<< HEREDOC
                     <ul class='rollover_advanced_options'>
                         $module_list
                     </ul>
+                    <div class='more_advanced_wrap'>
+                        <div class='more_advanced'>
+                            <div class='text'>More options</div>
+                            <div class='arrow_border'></div>
+                            <div class='arrow_light'></div>
+                        </div>
+                    </div>
                     <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                 </div>
             </form>
@@ -80,4 +88,5 @@ if(!empty($courses)){
 } else {
     echo 'There are no empty courses';
 }
+
 echo $OUTPUT->footer();
