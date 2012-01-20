@@ -11,13 +11,21 @@
  * @copyright  2011 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-require_once(dirname(dirname(dirname(__FILE__))).'/config.php');
-require_once(dirname(__FILE__).'/lib.php');
-require_once($CFG->dirroot .'/course/lib.php');
-require_once($CFG->libdir .'/filelib.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) . '/lib.php');
+require_once($CFG->dirroot . '/course/lib.php');
+require_once($CFG->libdir . '/filelib.php');
 
 global $USER;
+
+/* $url = 'http://localhost/moodle/kent/modulelist/index.php?action=allmodlist';
+  $ch = curl_init($url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+  $output = curl_exec($ch);
+  curl_close($ch);
+
+  var_dump($output);
+ */
 
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
 require_login();
@@ -25,7 +33,7 @@ require_capability('moodle/course:update', $systemcontext);
 
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 $PAGE->set_url('/local/rollover/index.php');
-$PAGE->set_pagelayout('admin'); 
+$PAGE->set_pagelayout('admin');
 $PAGE->navbar->add(get_string('pluginname', 'local_rollover'));
 
 $PAGE->set_title(get_string('pluginname', 'local_rollover'));
@@ -34,9 +42,11 @@ $PAGE->set_heading(get_string('pluginname', 'local_rollover'));
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$scripts ='<link rel="stylesheet/less" type"text/css" href="styles.less">';
+$scripts = '<link rel="stylesheet/less" type"text/css" href="styles.less">';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
+$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
+$scripts .='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
 $scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
 
@@ -57,7 +67,7 @@ $form = <<< HEREDOC
                 </div>
                 <div class='rollover_crs_from'>
                     <div class='arrow'></div>
-                    <input type='text' class='rollover_crs_input'/>
+                    <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
                     <h4 class='rollover_advanced_title'>Advanced options</h4>
                     <ul class='rollover_advanced_options'>
                         $module_list
@@ -69,8 +79,8 @@ $form = <<< HEREDOC
                             <div class='arrow_light'></div>
                         </div>
                     </div>
-                    <input type="hidden" name="id_from" value="12415"/>
-                    <input type="hidden" name="id_to" value="%1\$d"/>
+                    <input type="hidden" name="id_from" class="id_from" value=""/>
+                    <input type="hidden" name="id_to" class="id_to" value="%1\$d"/>
                     <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                 </div>
             </form>
@@ -78,18 +88,65 @@ $form = <<< HEREDOC
 HEREDOC;
 
 $courses = kent_get_empty_courses();
-if(!empty($courses)){
-    foreach($courses as $course){
+if (!empty($courses)) {
+    foreach ($courses as $course) {
         $desc = 'No description at this time.';
         if (!empty($course->summary)) {
             $desc = $course->summary;
             $desc = strip_tags($desc);
         }
-        
+
         printf($form, $course->id, $course->shortname, $course->fullname, $desc);
     }
 } else {
     echo 'There are no empty courses';
 }
+
+//$module_json = file('modules.txt');
+//var_dump(json_decode($module_json[0], true));
+
+$js = <<< HEREDOC
+<style>
+	.ui-autocomplete {
+		max-height: 160px;
+                width: 403px;
+		overflow-y: auto;
+		/* prevent horizontal scrollbar */
+		overflow-x: hidden;
+		/* add padding to account for vertical scrollbar */
+		padding-right: 20px;
+	}
+	/* IE 6 doesn't support max-height
+	 * we use height instead, but this forces the menu to always be this tall
+	 */
+	* html .ui-autocomplete {
+		height: 160px;
+	}
+</style>
+<script>
+    
+    jQuery(document).ready(function() {
+        
+        var courses_search = new Array();
+        var courses = new Array();
+        
+        jQuery.getJSON('http://localhost/moodle/kent/modulelist/index.php?action=allmodlist', function(data) {
+            for(var course in data.courses) {
+                courses_search.push(data.courses[course].fullname);
+                courses[data.courses[course].fullname] = course;   
+            }
+            jQuery('.rollover_crs_input').autocomplete({
+                minLength: 0,
+                source: courses_search,
+                select: function(event, ui) {
+                    jQuery(this).closest('.rollover_crs_from').find('.id_from').val(courses[ui.item.label]);
+                }
+            });
+        });
+    });
+</script>
+HEREDOC;
+
+echo $js;
 
 echo $OUTPUT->footer();
