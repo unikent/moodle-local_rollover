@@ -38,6 +38,7 @@ $scripts ='<link rel="stylesheet/less" type"text/css" href="styles.less">';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
+$scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
 
 echo $scripts;
 
@@ -68,7 +69,7 @@ $form = <<< HEREDOC
                             <div class='arrow_light'></div>
                         </div>
                     </div>
-                    <input type="hidden" name="id_from" value=""/>
+                    <input type="hidden" name="id_from" value="12415"/>
                     <input type="hidden" name="id_to" value="%1\$d"/>
                     <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                 </div>

@@ -232,7 +232,7 @@ function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FA
 
 function kent_get_formated_module_list() {
     $module_list = '';
-    $list_item = "<li class='rollover_option_item %1\$s %2\$s'><input class='rollover_checkbox' name='%3\$s' type='checkbox' checked/>%3\$s</li>";
+    $list_item = "<li class='rollover_option_item %1\$s %2\$s'><input class='rollover_checkbox' name='backup_%4\$s' type='checkbox' checked/>%3\$s</li>";
     
     $modules = kent_get_rollover_modules(TRUE);
     foreach($modules as $module => $dets) {
@@ -240,7 +240,7 @@ function kent_get_formated_module_list() {
         $m1 = ($dets['moodle_1_support'] == TRUE) ? 'm1': '';
         $m2 = ($dets['moodle_2_support'] == TRUE) ? 'm2': '';
         
-       $module_list .= sprintf($list_item, $m1, $m2, ucfirst($module));
+       $module_list .= sprintf($list_item, $m1, $m2, ucfirst($module), strtolower($module));
     } 
     
     return $module_list;
