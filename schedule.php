@@ -13,7 +13,6 @@
 require_once('../../config.php');
 require_once('lib.php');
 
-$CFG->kent_rollover_system = TRUE;
 //Check that rollover is switched on in config and there is a valid $USER logged in.
 if(!isset($CFG->kent_rollover_system) || !$CFG->kent_rollover_system || !isloggedin()){
    exit(1);
@@ -51,10 +50,14 @@ try {
     curl_close($ch);
 
     //Echo back status code from curl...
-    echo $output;
+    if( $output == 201 ) {
+      header("HTTP/1.1 201 Created");
+    } else {
+      header("HTTP/1.1 500 Server Error");
+    }
     exit(0);
 
 } catch (Exception $e) {pm($e);}
 
-echo "500"; //Internal server error
+header("HTTP/1.1 500 Server Error");
 exit(1);
