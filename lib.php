@@ -39,7 +39,7 @@ function kent_get_empty_courses(){
     //If we are an admin, then we need to see all courses
     if (has_capability('moodle/site:config', $context)){
         $courses = kent_get_all_courses();
-    } elseif(has_capability('moodle/course:update', $context)){
+    } else {
         $courses = kent_get_own_editable_courses();
     }
 
