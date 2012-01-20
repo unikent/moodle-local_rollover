@@ -68,6 +68,8 @@ $form = <<< HEREDOC
                             <div class='arrow_light'></div>
                         </div>
                     </div>
+                    <input type="hidden" name="id_from" value=""/>
+                    <input type="hidden" name="id_to" value="%1\$d"/>
                     <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                 </div>
             </form>
