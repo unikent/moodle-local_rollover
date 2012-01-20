@@ -1,7 +1,4 @@
 <?php
-//Comment this out when ready to use
-exit(1);
-
 /**
  * This script provides a web service which will accept a post of scheduling data for a rollover
  *
@@ -15,6 +12,12 @@ exit(1);
 //Now some library includes
 require_once('../../config.php');
 require_once('lib.php');
+
+$CFG->kent_rollover_system = TRUE;
+//Check that rollover is switched on in config and there is a valid $USER logged in.
+if(!isset($CFG->kent_rollover_system) || !$CFG->kent_rollover_system || !isloggedin()){
+   exit(1);
+}
 
 //Check the moodleness of this page request
 $site = get_site();
