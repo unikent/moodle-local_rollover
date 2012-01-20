@@ -59,10 +59,11 @@ function kent_get_own_editable_courses(){
     $params['userid'] = (int)$USER->id;
     $params['capability'] = 'moodle/course:update';
 
-    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
+    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
             FROM {$CFG->prefix}context con
             JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
             JOIN mdl_course c ON c.id=con.instanceid
+            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
             LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
             LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
             WHERE cms.course is null AND cse.section is null AND con.contextlevel=50
@@ -73,6 +74,10 @@ function kent_get_own_editable_courses(){
 
         foreach ($courses as $course) {
             if ($course->id == 1) continue;
+            //If we had no rollover status, then set to none
+            if($course->rollover_status === NULL){
+                $course->rollover_status = "none";
+            }
             $course_list[$course->id] = $course;
         }
     }
@@ -108,11 +113,12 @@ function kent_get_all_courses() {
 //                WHERE cms.course is null AND cse.section is null
 //                ORDER BY c.shortname ASC";
 
-        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cms.course, cse.section
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cms.course, cse.section, rol.what as rollover_status
                 FROM {$CFG->prefix}course c
+                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
                 LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
                 LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-                WHERE cms.course is null AND cse.section is null
+                WHERE cms.course is null AND cse.section is null 
                 ORDER BY c.shortname DESC";
 
         // pull out all course matching
@@ -121,6 +127,11 @@ function kent_get_all_courses() {
             // loop throught them
             foreach ($courses as $course) {
                 if ($course->id == 1) continue;
+                //If we had no rollover status, then set to none
+                if($course->rollover_status === NULL){
+                    $course->rollover_status = "none";
+                }
+                
                 $course_list[$course->id] = $course;
             }
         }
@@ -244,4 +255,73 @@ function kent_get_formated_module_list() {
     } 
     
     return $module_list;
+}
+
+/*
+ * Quick function to get list of rollover records
+ */
+function kent_get_rollover_records($course_id, $just_current=FALSE){
+    global $CFG, $DB;
+    $results = array();
+
+    //See if we just want the top current item
+    $limit = "";
+    if($just_current){
+        $limit = " LIMIT 0,1";
+    }
+
+    $sql = "SELECT * FROM {$CFG->prefix}rollover_events WHERE to_course={$course_id} ORDER BY id DESC{$limit}";
+
+    //Loop through results and add to array to return
+    if ($records = $DB->get_records_sql($sql)) {
+        foreach($records as $record){
+            $results[] = $record;
+        }
+    }
+
+    return $results;
+}
+
+/*
+ * Essentially a wrapper function for above to get the most current record
+ */
+function kent_get_current_rollover($course_id){
+    $record = array();
+    if($record = kent_get_rollover_records($course_id, TRUE)){
+        return $record[0];
+    }
+    //Otherwise return empty array
+    return $record;
+    
+}
+
+/*
+ * Get just status
+ */
+function kent_get_current_rollover_status($course_id){
+    $record = kent_get_current_rollover($course_id);
+    $status = "none";
+
+    if(!empty($record) && isset($record->what)){
+        $status = trim(strtolower($record->what));
+    }
+    
+    return $status;
+}
+
+
+/*
+ * Can we set a rollover?
+ */
+function kent_rollover_ability($course_id, $status=""){
+    //If status isn't passed, get it from course id
+    if($status == ""){
+        $status = kent_get_current_rollover_status($course_id);
+    }
+
+    if($status != "processing"){
+        return TRUE;
+    }
+
+    return FALSE;
 }
