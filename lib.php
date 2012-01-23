@@ -248,8 +248,8 @@ function kent_get_formated_module_list() {
     $modules = kent_get_rollover_modules(TRUE);
     foreach($modules as $module => $dets) {
         
-        $m1 = ($dets['moodle_1_support'] == TRUE) ? 'm1': '';
-        $m2 = ($dets['moodle_2_support'] == TRUE) ? 'm2': '';
+        $m1 = ($dets['moodle_1_support'] == TRUE) ? '': 'm1';
+        $m2 = ($dets['moodle_2_support'] == TRUE) ? '': 'm2';
         
        $module_list .= sprintf($list_item, $m1, $m2, ucfirst($module), strtolower($module));
     } 

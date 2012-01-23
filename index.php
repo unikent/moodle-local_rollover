@@ -42,12 +42,13 @@ $PAGE->set_heading(get_string('pluginname', 'local_rollover'));
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$scripts = '<link rel="stylesheet/less" type"text/css" href="styles.less">';
+$scripts ='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
+$scripts .= '<link rel="stylesheet/less" type"text/css" href="styles.less">';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
-$scripts .='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
 $scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
+$scripts .='<script src="scripts/autoComplete.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
 
 echo $scripts;
@@ -67,21 +68,23 @@ $form = <<< HEREDOC
                 </div>
                 <div class='rollover_crs_from'>
                     <div class='arrow'></div>
-                    <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
-                    <h4 class='rollover_advanced_title'>Advanced options</h4>
-                    <ul class='rollover_advanced_options'>
-                        $module_list
-                    </ul>
-                    <div class='more_advanced_wrap'>
-                        <div class='more_advanced'>
-                            <div class='text'>More options</div>
-                            <div class='arrow_border'></div>
-                            <div class='arrow_light'></div>
+                    <div class='from_form'>
+                        <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
+                        <h4 class='rollover_advanced_title'>Advanced options</h4>
+                        <ul class='rollover_advanced_options'>
+                            $module_list
+                        </ul>
+                        <div class='more_advanced_wrap'>
+                            <div class='more_advanced'>
+                                <div class='text'>More options</div>
+                                <div class='arrow_border'></div>
+                                <div class='arrow_light'></div>
+                            </div>
                         </div>
+                        <input type="hidden" name="id_from" class="id_from" value=""/>
+                        <input type="hidden" name="id_to" class="id_to" value="%1\$d"/>
+                        <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                     </div>
-                    <input type="hidden" name="id_from" class="id_from" value=""/>
-                    <input type="hidden" name="id_to" class="id_to" value="%1\$d"/>
-                    <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
                 </div>
             </form>
          </div>
@@ -101,52 +104,5 @@ if (!empty($courses)) {
 } else {
     echo 'There are no empty courses';
 }
-
-//$module_json = file('modules.txt');
-//var_dump(json_decode($module_json[0], true));
-
-$js = <<< HEREDOC
-<style>
-	.ui-autocomplete {
-		max-height: 160px;
-                width: 403px;
-		overflow-y: auto;
-		/* prevent horizontal scrollbar */
-		overflow-x: hidden;
-		/* add padding to account for vertical scrollbar */
-		padding-right: 20px;
-	}
-	/* IE 6 doesn't support max-height
-	 * we use height instead, but this forces the menu to always be this tall
-	 */
-	* html .ui-autocomplete {
-		height: 160px;
-	}
-</style>
-<script>
-    
-    jQuery(document).ready(function() {
-        
-        var courses_search = new Array();
-        var courses = new Array();
-        
-        jQuery.getJSON('http://localhost/moodle/kent/modulelist/index.php?action=allmodlist', function(data) {
-            for(var course in data.courses) {
-                courses_search.push(data.courses[course].fullname);
-                courses[data.courses[course].fullname] = course;   
-            }
-            jQuery('.rollover_crs_input').autocomplete({
-                minLength: 0,
-                source: courses_search,
-                select: function(event, ui) {
-                    jQuery(this).closest('.rollover_crs_from').find('.id_from').val(courses[ui.item.label]);
-                }
-            });
-        });
-    });
-</script>
-HEREDOC;
-
-echo $js;
 
 echo $OUTPUT->footer();

@@ -22,10 +22,22 @@ jQuery(document).ready(function() {
        data: o,
        statusCode: {
          201: function(data, s) {
-          button.html('doing');
+          jQuery(button).closest('.from_form').fadeOut('fast', function() {
+            jQuery(button).closest('.rollover_crs_from').addClass('pending').append('<h3>Pending...</h3>');
+            jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
+          });
          },
          500: function(data, s) {
-          button.html('fail');
+          jQuery(button).closest('.from_form').fadeOut('fast', function() {
+            jQuery(button).closest('.rollover_crs_from').animate({
+                backgroundColor: '#FAD7D7'
+             }, 500 );
+             jQuery(button).closest('.rollover_crs_from').find('.arrow').animate({
+                borderRightColor: '#FAD7D7'
+             }, 500 );
+            jQuery(button).closest('.rollover_crs_from').addClass('error').append('<h3>Error!</h3>');
+            jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
+          });
          }
        },
        error: function(j,t,e) {
