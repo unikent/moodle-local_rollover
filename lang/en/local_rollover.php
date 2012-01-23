@@ -31,3 +31,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Kent rollover';
+$string['no_courses'] = 'There are currently no courses which you have access to which require content rollover.  Please contact an administrator if you require any assistance.';

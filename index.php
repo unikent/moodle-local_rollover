@@ -91,6 +91,7 @@ $form = <<< HEREDOC
 HEREDOC;
 
 $courses = kent_get_empty_courses();
+
 if (!empty($courses)) {
     foreach ($courses as $course) {
         $desc = 'No description at this time.';
@@ -102,7 +103,7 @@ if (!empty($courses)) {
         printf($form, $course->id, $course->shortname, $course->fullname, $desc);
     }
 } else {
-    echo 'There are no empty courses';
+    echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
 }
 
 echo $OUTPUT->footer();
