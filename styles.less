@@ -7,6 +7,7 @@
         /* add padding to account for vertical scrollbar */
         padding-right: 20px;
 }
+
 /* IE 6 doesn't support max-height
  * we use height instead, but this forces the menu to always be this tall
  */
@@ -116,6 +117,7 @@
            border: solid 1px #E5E5E5;
            outline: 0;
            background: #fff;
+           background-image: none;
            font-size: 14px;
            font-weight: normal;
            color: #6E6E6E;
@@ -124,10 +126,6 @@
 
         .rollover_crs_input:focus {
             border-color: #8DA3C6;
-        }
-
-        .working {
-            background: #000 url('pix/loading.gif') no-repeat 395px center;
         }
 
         .rollover_crs_submit {

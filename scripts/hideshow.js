@@ -3,6 +3,7 @@ jQuery(document).ready(function() {
     var anitime = 200;
 
     jQuery(".more_advanced").toggle(function() {
+        jQuery(this).closest('.rollover_crs_from').addClass('expanded');
         jQuery(this).closest('.rollover_crs_from').find('.rollover_advanced_options').animate({
             height: "190px"
         }, anitime);
@@ -13,6 +14,7 @@ jQuery(document).ready(function() {
         jQuery('.arrow_border', this).hide();
         jQuery('.arrow_light', this).hide();
     }, function() {
+        jQuery(this).closest('.rollover_crs_from').removeClass('expanded');
         jQuery(this).closest('.rollover_crs_from').find('.rollover_advanced_options').animate({
             height: "86px"
         }, anitime);
