@@ -354,3 +354,30 @@ function kent_has_edit_course_access(){
     return FALSE;
 
 }
+
+
+/**
+ * Check if a specified course has any content based on modules and summaries
+ * @param <int> $course_id - Moodle Course ID
+ * @return <boolean> false if empty, true if not
+ */
+function kent_course_has_content($course_id){
+
+    global $CFG, $DB;
+
+    // count number of modules in this course
+    $no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
+
+    // if course has modules return true as it has content
+    if (is_int($no_modules) && $no_modules>0) return TRUE;
+
+    // count number of non-empty summaries
+    $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course_sections WHERE course={$course_id} AND section!=0 AND summary is not null AND summary !=''";
+    $no_modules = (int) $DB->count_records_sql($sql);
+
+    // if there are any non-empty summaries return true as it has content
+    if ($no_modules>0) return TRUE;
+
+    // must be empty, return false
+    return FALSE;
+}
