@@ -29,7 +29,7 @@ global $USER;
 
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
 require_login();
-require_capability('moodle/course:update', $systemcontext);
+//require_capability('moodle/course:update', $systemcontext);
 
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 $PAGE->set_url('/local/rollover/index.php');
