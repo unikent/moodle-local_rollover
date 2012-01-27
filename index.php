@@ -30,7 +30,7 @@ global $USER;
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
 require_login();
 
-if(kent_has_edit_course_access() || !has_capability('moodle/site:config', $systemcontext)) {
+if(!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
     throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
 
