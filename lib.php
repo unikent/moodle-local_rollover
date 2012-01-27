@@ -399,3 +399,35 @@ function kent_course_has_content($course_id){
     // must be empty, return false
     return FALSE;
 }
+
+
+/**
+ * Function to set a course to ignore being rolled over - if user is starting a course from scratch
+ */
+function kent_set_ignore_rollover($course_id){
+
+        global $USER;
+
+        $context = get_context_instance(CONTEXT_COURSE, $course_id);
+
+
+        $status = array('status' => FALSE);
+
+        if (has_capability('moodle/course:update', $context)){
+            $newrec = new stdClass;
+            $newrec->from_course = 0;
+            $newrec->to_course = $course_id;
+            $newrec->when = date("Y-m-d H:m:s");
+            $newrec->what = 'ignore';
+            $newrec->message = 'User: '.$USER->id.' set this course to be ignored.';
+
+            $cmt_id = $DB->insert_record('rollover_events', $newrec);
+
+            if (!empty($cmt_id)) {
+                $status['status'] = TRUE;
+            }
+        }
+        
+        return json_encode($status);
+
+}
