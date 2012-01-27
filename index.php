@@ -29,7 +29,11 @@ global $USER;
 
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
 require_login();
-//require_capability('moodle/course:update', $systemcontext);
+
+if(kent_has_edit_course_access() || !has_capability('moodle/site:config', $systemcontext)) {
+    throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
+}
+
 
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 $PAGE->set_url('/local/rollover/index.php');
@@ -62,32 +66,51 @@ $form = <<< HEREDOC
             <form method='post' name='rollover_form_%1\$d' action='schedule.php'>
                 <div class='rollover_crs_title'>
                     <div class='arrow'></div>
-                    <h3>%3\$s</h3>
+                    <h3><a href="">%3\$s</a></h3>
                     <p class='rollover_shrt_code'><span class='rollover_txt_head'>Short code: </span>%2\$s</p>
                     <p class='rollover_desc'><span class='rollover_txt_head'>Description: </span>%4\$s</p>
                 </div>
-                <div class='rollover_crs_from'>
-                    <div class='arrow'></div>
-                    <div class='from_form'>
-                        <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
-                        <h4 class='rollover_advanced_title'>Advanced options</h4>
-                        <ul class='rollover_advanced_options'>
-                            $module_list
-                        </ul>
-                        <div class='more_advanced_wrap'>
-                            <div class='more_advanced'>
-                                <div class='text'>More options</div>
-                                <div class='arrow_border'></div>
-                                <div class='arrow_light'></div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="id_from" class="id_from" value=""/>
-                        <input type="hidden" name="id_to" class="id_to" value="%1\$d"/>
-                        <button type='buttons' class='rollover_crs_submit'>Rollover!</button>
-                    </div>
-                </div>
+                %5\$s
             </form>
          </div>
+HEREDOC;
+
+$from_form = <<< HEREDOC
+<div class='rollover_crs_from'>
+    <div class='arrow'></div>
+    <div class='from_form'>
+        <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
+        <h4 class='rollover_advanced_title'>Advanced options</h4>
+        <ul class='rollover_advanced_options'>
+            $module_list
+        </ul>
+        <div class='more_advanced_wrap'>
+            <div class='more_advanced'>
+                <div class='text'>More options</div>
+                <div class='arrow_border'></div>
+                <div class='arrow_light'></div>
+            </div>
+        </div>
+        <input type="hidden" name="id_from" class="id_from" value=""/>
+        <input type="hidden" name="id_to" class="id_to" value="%1\$d"/>
+        <button type='buttons' class='rollover_crs_submit'>Rollover</button>
+    </div>
+</div>
+HEREDOC;
+
+$from_processing = <<< HEREDOC
+<div class='rollover_crs_from pending'>
+    <div class='arrow'></div>
+    <h3>Pending...</h3>
+</div>
+HEREDOC;
+
+$form_error = <<< HEREDOC
+<div class='rollover_crs_from error'>
+    <div class='arrow'></div>
+    <h3>Error</h3>
+    <p>System administrators are aware of this problem <br />and will contact you soon</p>
+</div>
 HEREDOC;
 
 $courses = kent_get_empty_courses();
@@ -99,8 +122,25 @@ if (!empty($courses)) {
             $desc = $course->summary;
             $desc = strip_tags($desc);
         }
+        
+        $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
+        
+        switch (kent_get_current_rollover_status($course->id)) {
+            case 'processing';
+                $from_content = $from_processing;
+                break;
+            case 'complete';
+                //Should not be used as the form should not show complete items
+                break;
+            case 'restoreerror';
+            case 'backuperror';
+                $from_content = $form_error;
+                break;
+            default:
+                $from_content = $from_form;
+        }
 
-        printf($form, $course->id, $course->shortname, $course->fullname, $desc);
+        printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
     }
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";

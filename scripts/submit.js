@@ -41,7 +41,7 @@ jQuery(document).ready(function() {
                             jQuery(button).closest('.rollover_crs_from').find('.arrow').animate({
                                 borderRightColor: '#FAD7D7'
                             }, 500 );
-                            jQuery(button).closest('.rollover_crs_from').addClass('error').append('<h3>Error!</h3>');
+                            jQuery(button).closest('.rollover_crs_from').addClass('error').append('<h3>Error!</h3><p>System administrators are aware of this problem <br />and will contact you soon</p>');
                             jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
                         });
                     }
