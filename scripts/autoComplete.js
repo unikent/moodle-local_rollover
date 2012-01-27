@@ -3,7 +3,7 @@ jQuery(document).ready(function() {
     var courses_search = new Array();
     var courses = new Array();
 
-    jQuery.getJSON('http://moodle-flt.kent.ac.uk/archive/modulelist/index.php?action=allmodlist', function(data) {
+    jQuery.getJSON('http://moodle-flt.kent.ac.uk/archive/kent/modulelist/index.php?action=allmodlist', function(data) {
         for(var course in data.courses) {
             courses_search.push(data.courses[course].fullname);
             courses[data.courses[course].fullname] = [course, '1.9'];   
