@@ -48,6 +48,7 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
 $scripts ='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
 $scripts .= '<link rel="stylesheet/less" type"text/css" href="styles.less">';
+$scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->kent_rollover_archive_autocomplete . '"; window.pendingMessage = "'. get_string('pendingmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
@@ -98,20 +99,9 @@ $from_form = <<< HEREDOC
 </div>
 HEREDOC;
 
-$from_processing = <<< HEREDOC
-<div class='rollover_crs_from pending'>
-    <div class='arrow'></div>
-    <h3>Pending...</h3>
-</div>
-HEREDOC;
+$from_processing = '<div class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('pendingmessage', 'local_rollover').'</div>';
 
-$form_error = <<< HEREDOC
-<div class='rollover_crs_from error'>
-    <div class='arrow'></div>
-    <h3>Error</h3>
-    <p>System administrators are aware of this problem <br />and will contact you soon</p>
-</div>
-HEREDOC;
+$form_error = '<div class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</div>';
 
 $courses = kent_get_empty_courses();
 
@@ -137,7 +127,7 @@ if (!empty($courses)) {
                 $from_content = $form_error;
                 break;
             default:
-                $from_content = $from_form;
+                $from_content = sprintf($from_form, $course->id);
         }
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
