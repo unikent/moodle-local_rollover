@@ -59,7 +59,7 @@ $scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
 echo $scripts;
 
 $module_list = kent_get_formated_module_list();
-
+$advanced_help_icon = $OUTPUT->help_icon('advanced_opt_help', 'local_rollover');
 //TODO - move this to function and pass in shortcode and embed into the form name.
 //TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
 $form = <<< HEREDOC
@@ -81,7 +81,7 @@ $from_form = <<< HEREDOC
     <div class='arrow'></div>
     <div class='from_form'>
         <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
-        <h4 class='rollover_advanced_title'>Advanced options</h4>
+        <h4 class='rollover_advanced_title'>Advanced options</h4>$advanced_help_icon
         <ul class='rollover_advanced_options'>
             $module_list
         </ul>
@@ -106,6 +106,10 @@ $form_error = '<div class="rollover_crs_from error"><div class="arrow"></div>'. 
 $courses = kent_get_empty_courses();
 
 if (!empty($courses)) {
+    
+    //Top page content
+    echo get_string('top_page_help', 'local_rollover');
+
     foreach ($courses as $course) {
         $desc = 'No description at this time.';
         if (!empty($course->summary)) {

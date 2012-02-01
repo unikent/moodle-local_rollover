@@ -35,3 +35,8 @@ $string['no_permissions'] = 'Sorry, but you do not currently have permissions to
 $string['no_courses'] = 'There are currently no courses which you have access to which require content rollover.  Please contact an administrator if you require any assistance.';
 $string['pendingmessage'] = '<h3>Pending...</h3>';
 $string['errormessage'] = '<h3>Error!</h3><p>System administrators are aware of this problem <br />and will contact you soon</p>';
+
+//Help text
+$string['top_page_help'] = '<p>To rollover content from a previous course to a course listed below, please select a course to rollover from and click the rollover button.</p>';
+$string['advanced_opt_help'] = 'Advanced rollover options';
+$string['advanced_opt_help_help'] = 'By default, all course module types are rolled over.  Uncheck any modules you do not wish to have as part of your rollover.';
