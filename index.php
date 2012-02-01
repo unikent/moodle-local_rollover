@@ -48,7 +48,7 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
 $scripts ='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
 $scripts .= '<link rel="stylesheet/less" type"text/css" href="styles.less">';
-$scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->kent_rollover_archive_autocomplete . '"; window.pendingMessage = "'. get_string('pendingmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
+$scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.pendingMessage = "'. get_string('pendingmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
