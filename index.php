@@ -52,6 +52,7 @@ $scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
+$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery.blockUI.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/autoComplete.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
@@ -109,6 +110,11 @@ if (!empty($courses)) {
     
     //Top page content
     echo get_string('top_page_help', 'local_rollover');
+
+    //Add in our confirmation dialog box and other error blocks ready
+    echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
+    echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
+    echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
 
     foreach ($courses as $course) {
         $desc = 'No description at this time.';
