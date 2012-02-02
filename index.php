@@ -60,7 +60,7 @@ $scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
 echo $scripts;
 
 $module_list = kent_get_formated_module_list();
-$advanced_help_icon = $OUTPUT->help_icon('advanced_opt_help', 'local_rollover');
+
 //TODO - move this to function and pass in shortcode and embed into the form name.
 //TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
 $form = <<< HEREDOC
@@ -82,7 +82,7 @@ $from_form = <<< HEREDOC
     <div class='arrow'></div>
     <div class='from_form'>
         <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
-        <h4 class='rollover_advanced_title'>Advanced options</h4>$advanced_help_icon
+        <h4 class='rollover_advanced_title'>Advanced options</h4>%1\$s
         <ul class='rollover_advanced_options'>
             $module_list
         </ul>
@@ -94,7 +94,7 @@ $from_form = <<< HEREDOC
             </div>
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
-        <input type="hidden" name="id_to" class="id_to" value="%1\$d"/>
+        <input type="hidden" name="id_to" class="id_to" value="%2\$d"/>
         <button type='buttons' class='rollover_crs_submit'>Rollover</button>
     </div>
 </div>
@@ -137,7 +137,7 @@ if (!empty($courses)) {
                 $from_content = $form_error;
                 break;
             default:
-                $from_content = sprintf($from_form, $course->id);
+                $from_content = sprintf($from_form, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
         }
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
