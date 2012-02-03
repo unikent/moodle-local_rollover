@@ -6,7 +6,7 @@ jQuery(document).ready(function() {
     jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading course lists.</div>' });
 
     //Mock url... remove later
-    window.autoCompleteUrl = 'http://localhost/moodle-www/kent/modulelist/index.php?action=modlist&terms=co32';
+    //window.autoCompleteUrl = 'http://localhost/moodle-www/kent/modulelist/index.php?action=modlist&terms=co32';
 
     jQuery.getJSON(window.autoCompleteUrl, function(data) {
 
