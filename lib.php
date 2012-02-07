@@ -33,7 +33,7 @@ function kent_get_empty_courses(){
     global $USER, $DB;
 
     $context = get_context_instance(CONTEXT_SYSTEM);
-
+    
     //TODO - Need to check the rollover log table once its ready as well maybe?
    
     //If we are an admin, then we need to see all courses
@@ -58,6 +58,8 @@ function kent_get_own_editable_courses(){
     $course_list = array();
     $params['userid'] = (int)$USER->id;
     $params['capability'] = 'moodle/course:update';
+
+
 
 //Disable the content checks - see new query below
 //    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
@@ -89,6 +91,7 @@ function kent_get_own_editable_courses(){
             }
             $course_list[$course->id] = $course;
         }
+
     }
 
     return $course_list;
