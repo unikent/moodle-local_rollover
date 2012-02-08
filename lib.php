@@ -409,22 +409,19 @@ function kent_course_has_content($course_id){
  */
 function kent_set_ignore_rollover($course_id){
 
-        global $USER;
+        global $USER, $DB;
 
         $context = get_context_instance(CONTEXT_COURSE, $course_id);
-
 
         $status = array('status' => FALSE);
 
         if (has_capability('moodle/course:update', $context)){
-            $newrec = new stdClass;
-            $newrec->from_course = 0;
-            $newrec->to_course = $course_id;
-            $newrec->when = date("Y-m-d H:m:s");
-            $newrec->what = 'ignore';
-            $newrec->message = 'User: '.$USER->id.' set this course to be ignored.';
+            $msg = 'User: '.$USER->id.' set this course to be ignored.';
+            $date = ''. date("Y-m-d H:m:s");
+            $newrec = array('from_course'=>0, 'to_course'=>$course_id, 'when'=>$date, 'what'=>'ignore', 'message'=>$msg);
 
-            $cmt_id = $DB->insert_record('rollover_events', $newrec);
+            $sql = 'INSERT INTO mdl_rollover_events (`from_course`, `to_course`, `when`, `what`, `message`) VALUES (?,?,?,?,?)';
+            $cmt_id = $DB->execute($sql, $newrec);
 
             if (!empty($cmt_id)) {
                 $status['status'] = TRUE;
