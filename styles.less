@@ -1,3 +1,63 @@
+.blockOverlay[style] {
+    background: #666 url(scripts/css/ui-lightness/images/ui-bg_diagonals-thick_20_666666_40x40.png) 50% 50% repeat !important;
+}
+
+.blockMsg[style] {
+    border-width: 1px !important;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+.ui-dialog {
+    background: #fff !important;
+    border: 1px solid #E3E3E3 !important;
+    padding: 0px !important;
+}
+
+.ui-dialog .ui-widget-header {
+    padding: 0.6em 1em !important;
+    background: #efefef;
+    border: 1px solid #fff;
+    color: #6f6f6f;
+    -webkit-border-bottom-right-radius: 0px;
+    -webkit-border-bottom-left-radius: 0px;
+    -moz-border-radius-bottomright: 0px;
+    -moz-border-radius-bottomleft: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+.ui-widget-header .ui-icon {
+    background-image: url(scripts/css/ui-lightness/images/ui-icons_222222_256x240.png) !important;
+}
+
+.ui-widget-header .ui-state-hover {
+    background: #c6c6c6 !important;
+    border: 1px solid #e3e3e3 !important;
+}
+
+.ui-widget-header .ui-state-hover .ui-icon {
+    background-image: url(scripts/css/ui-lightness/images/ui-icons_ffffff_256x240.png) !important;
+}
+
+.ui-widget-content {
+    border: none !important;
+    border-top: 1px solid #e3e3e3 !important;
+    color: #6f6f6f !important;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+    background: #fff !important;
+    border: none !important;
+    -webkit-border-bottom-right-radius: 4px !important;
+    -webkit-border-bottom-left-radius: 4px !important;
+    -moz-border-radius-bottomright: 4px !important;
+    -moz-border-radius-bottomleft: 4px !important;
+    border-bottom-right-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+}
+
 .ui-autocomplete {
         max-height: 160px;
         width: 403px;
@@ -7,6 +67,8 @@
         /* add padding to account for vertical scrollbar */
         padding-right: 20px;
 }
+
+
 
 /* IE 6 doesn't support max-height
  * we use height instead, but this forces the menu to always be this tall
@@ -40,8 +102,8 @@
 }
 
 .blockui_loading{
-    padding: 30px;
-    background: url('pix/loading.gif') no-repeat center 5px;
+    padding: 60px 20px 30px;
+    background: url('pix/loading.gif') no-repeat center 30px;
 }
 
 #dialog_id_from_error,
@@ -56,12 +118,12 @@
 
     .rollover_crs_title {
         float:left;
-        padding: 19px 20px 19px 20px;
+        padding: 20px;
         margin-right:2px;
-        width: 425px;
+        width: 373px;
         background: #E9FAD0;
         position: relative;
-        height: 191px;
+        height: 209px;
 
         .arrow {
             border-color: transparent #fff transparent transparent;
@@ -108,13 +170,13 @@
         float:left;
         width:425px;
         background: #eee;
-        padding: 10px 20px 10px 20px;
+        padding: 20px;
         position:relative;
         min-height: 209px;
 
         .helplink{
             position: absolute;
-            top: 67px;
+            top: 77px;
             left: 130px;
         }
         .arrow {
@@ -170,7 +232,6 @@
             list-style: none;
             margin: 0px;
             overflow: hidden;
-            height: 86px;
 
             .rollover_option_item {
                 font-size: 13px;

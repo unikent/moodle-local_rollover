@@ -55,7 +55,7 @@ jQuery(document).ready(function() {
                             statusCode: {
                                 201: function(data, s) {
                                     if(jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
-                                        jQuery(button).closest('.rollover_crs_from ').css('height', '313');
+                                        jQuery(button).closest('.rollover_crs_from ').css('height', window.pane_height);
                                     }
                                     jQuery(button).closest('.from_form').fadeOut('fast', function() {
                                         jQuery(button).closest('.rollover_crs_from').addClass('pending').append(window.pendingMessage);
@@ -64,7 +64,7 @@ jQuery(document).ready(function() {
                                 },
                                 500: function(data, s) {
                                     if(jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
-                                        jQuery(button).closest('.rollover_crs_from ').css('height', '313');
+                                        jQuery(button).closest('.rollover_crs_from ').css('height', window.pane_height);
                                     }
                                     jQuery(button).closest('.from_form').fadeOut('fast', function() {
                                         jQuery(button).closest('.rollover_crs_from').animate({
