@@ -30,6 +30,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2012011805;       // The current module version (Date: YYYYMMDDXX)
-$plugin->requires  = 2011112900;      // Requires this Moodle version
+$plugin->version   = 2012011809;       // The current module version (Date: YYYYMMDDXX)
 $plugin->component = 'local_rollover';
+$plugin->requires = 2010112400;  // Requires this Moodle version - at least 2.0
+$plugin->cron     = 0;
+$plugin->release = '1.0 (Build: 2011101202)';
+$plugin->maturity = MATURITY_STABLE;
