@@ -63,26 +63,33 @@ $module_list = kent_get_formated_module_list();
 
 //TODO - move this to function and pass in shortcode and embed into the form name.
 //TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
+$short_code_label_text = get_string('short_code_label_text', 'local_rollover');
+$description_label_text = get_string('description_label_text', 'local_rollover');
+
 $form = <<< HEREDOC
     <div class='rollover_item'>
             <form method='post' name='rollover_form_%1\$d' action='schedule.php'>
                 <div class='rollover_crs_title'>
                     <div class='arrow'></div>
                     <h3><a href="">%3\$s</a></h3>
-                    <p class='rollover_shrt_code'><span class='rollover_txt_head'>Short code: </span>%2\$s</p>
-                    <p class='rollover_desc'><span class='rollover_txt_head'>Description: </span>%4\$s</p>
+                    <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span>%2\$s</p>
+                    <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
                 </div>
                 %5\$s
             </form>
          </div>
 HEREDOC;
 
+$search_placeholder = get_string('search_placeholder', 'local_rollover');
+$advanced_options_label = get_string('advanced_options_label', 'local_rollover');
+$rollover_button_text = get_string('rollover_button_text', 'local_rollover');
+
 $from_form = <<< HEREDOC
 <div class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
-        <input type='text' class='rollover_crs_input' placeholder='Please enter course name..'/>
-        <h4 class='rollover_advanced_title'>Advanced options</h4>%1\$s
+        <input type='text' class='rollover_crs_input' placeholder='$search_placeholder'/>
+        <h4 class='rollover_advanced_title'>$advanced_options_label</h4>%1\$s
         <ul class='rollover_advanced_options'>
             $module_list
         </ul>
@@ -95,7 +102,7 @@ $from_form = <<< HEREDOC
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
         <input type="hidden" name="id_to" class="id_to" value="%2\$d"/>
-        <button type='buttons' class='rollover_crs_submit'>Rollover</button>
+        <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </div>
 HEREDOC;
@@ -115,9 +122,12 @@ if (!empty($courses)) {
     echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
+    echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
+
+    $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
 
     foreach ($courses as $course) {
-        $desc = 'No description at this time.';
+        $desc = $no_course_description_text;
         if (!empty($course->summary)) {
             $desc = $course->summary;
             $desc = strip_tags($desc);

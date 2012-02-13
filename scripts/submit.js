@@ -99,7 +99,6 @@ jQuery(document).ready(function() {
             if (search_string === '' || id_from === '' || isNaN(id_from)){
                 $("#dialog_id_from_error").dialog("open");
             } else if (isNaN(id_to)) {
-                alert("IDTO:"+id_to);
                 $("#dialog_id_to_error").dialog("open");
             } else {
                 $("#dialog_sure").dialog("open");

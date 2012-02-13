@@ -39,6 +39,15 @@ $string['are_you_sure_text'] = 'Are you sure you want to rollover this course?';
 
 $string['rollover_from_error_text'] = 'Please select a valid existing course to rollover from.';
 $string['rollover_to_error_text'] = 'No destination course set.  Please refresh this page and try again.  If this error persists, please contact an administrator.'; //Should never see this, but just incase.
+$string['rollover_autocomplete_error'] = 'Could not retrieve autocomplete data.  Please refresh this page and try again.  If this error persists, please contact an administrator.';
+
+$string['short_code_label_text'] = 'Short code';
+$string['description_label_text'] = 'Description';
+
+$string['search_placeholder'] = 'Please enter course name..';
+$string['advanced_options_label'] = 'Advanced options';
+$string['rollover_button_text'] = 'Rollover';
+$string['no_course_description_text'] = 'No description at this time.';
 
 //Help text
 $string['top_page_help'] = '<p>To rollover content from a previous course to a course listed below, please select a course to rollover from and click the rollover button.</p>';
