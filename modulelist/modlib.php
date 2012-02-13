@@ -151,8 +151,8 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
             foreach ($course_search_rs as $course) {
 
                 // turn the course into an object
-                //$course = make_context_subobj($course);
-                $course = context_instance_preload($course);
+                context_instance_preload($course);
+                $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
 
                 // ignore course if its the omit_course course
                 if ( $course->id == $omit_course ) continue;
@@ -164,7 +164,7 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
                 }
 
                 // check the user is able to use this course in a rollover
-                if (has_capability('moodle/course:update', $course->context)) {
+                if (has_capability('moodle/course:update', $coursecontext)) {
 
                     /*** BEGIN this course is a valid one to use for a rollover so add to the return_array ***/
 
@@ -207,33 +207,6 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
 
 
 /**
- * Check if a specified course has any content based on modules and summaries
- * @param <int> $course_id - Moodle Course ID
- * @return <boolean> false if empty, true if not
- */
-function courseHasContent($course_id){
-
-    global $CFG, $DB;
-
-    // count number of modules in this course
-    $no_modules = intval($DB->count_records('course_modules','course',$course_id));
-
-    // if course has modules return true as it has content
-    if (is_int($no_modules) && $no_modules>0) return true;
-
-    // count number of non-empty summaries
-    $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course_sections WHERE course={$course_id} AND section!=0 AND summary is not null AND summary !=''";
-    $no_modules = (int) $DB->count_records_sql($sql);
-
-    // if there are any non-empty summaries return true as it has content
-    if ($no_modules>0) return true;
-
-    // must be empty, return false
-    return false;
-}
-
-
-/**
  * Get a list of courses depending on role.  Admin can see everything
  */
 function kent_get_all_user_courses(&$data){
@@ -243,6 +216,7 @@ function kent_get_all_user_courses(&$data){
 
     //If we are an admin, then we need to see all courses
     if (has_capability('moodle/site:config', $context)){
+        echo "IN";
         $data['courses'] = kent_get_all_content_courses($data['max_records'], $data['contentless']);
     } else {
         $data['courses'] = kent_get_own_courses($data['max_records'], $data['contentless'], $data['orderbyrole']);
@@ -280,7 +254,6 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
     if(!$contentless){
         $content_restriction = " AND c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)";
     }
-
 
     $sql = "SELECT {$fields}
             FROM {$CFG->prefix}context con

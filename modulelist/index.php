@@ -10,7 +10,12 @@ require_once($CFG->libdir.'/adminlib.php');
 global $USER;
 //Check that rollover is switched on in config and there is a valid $USER logged in.
 if(!isset($CFG->kent_rollover_system) || !$CFG->kent_rollover_system || !isloggedin()){
-    l\halt(NOT_FOUND, "Rollover system not enabled.");
+    $data = array();
+    $error = 'Rollover system not enabled or user authenticated.';
+    $data['status'] = FALSE;
+    $data['errors'][] = $error;
+    kent_present_json($data);
+    l\halt(NOT_FOUND, $error);
 }
 
 //Modlist routing.
