@@ -11,7 +11,7 @@ global $USER;
 //Check that rollover is switched on in config and there is a valid $USER logged in.
 if(!isset($CFG->kent_rollover_system) || !$CFG->kent_rollover_system || !isloggedin()){
     $data = array();
-    $error = 'Rollover system not enabled or user authenticated.';
+    $error = 'Rollover system not enabled or user not authenticated.';
     $data['status'] = FALSE;
     $data['errors'][] = $error;
     kent_present_json($data);

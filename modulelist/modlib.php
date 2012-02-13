@@ -216,7 +216,6 @@ function kent_get_all_user_courses(&$data){
 
     //If we are an admin, then we need to see all courses
     if (has_capability('moodle/site:config', $context)){
-        echo "IN";
         $data['courses'] = kent_get_all_content_courses($data['max_records'], $data['contentless']);
     } else {
         $data['courses'] = kent_get_own_courses($data['max_records'], $data['contentless'], $data['orderbyrole']);
@@ -238,7 +237,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
 
     $course_list = array();
     $userid = (int)$USER->id;
-    $capability = 'moodle/course:update';
+    $params['capability'] = 'moodle/course:update';
     $fields = "";
     $order_by = "";
     $content_restriction = "";
@@ -257,12 +256,12 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
 
     $sql = "SELECT {$fields}
             FROM {$CFG->prefix}context con
-            JOIN {$CFG->prefix}role_assignments ra ON userid={$userid} AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability='{$capability}' AND rc.permission=1 ORDER BY rc.roleid ASC)
+            JOIN {$CFG->prefix}role_assignments ra ON userid={$userid} AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
             JOIN mdl_course c ON c.id=con.instanceid
             WHERE con.contextlevel=50 AND category != 390 AND category != 0{$content_restriction}{$order_by}";
 
     // pull out all course matching
-    if ($courses = $DB->get_records_sql($sql)) {
+    if ($courses = $DB->get_records_sql($sql, $params)) {
 
         $count = 1;
         foreach ($courses as $course) {
