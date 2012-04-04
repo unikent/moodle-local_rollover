@@ -77,7 +77,7 @@ function kent_get_own_editable_courses(){
             JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
             JOIN mdl_course c ON c.id=con.instanceid
             LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-            WHERE rol.what is null AND con.contextlevel=50
+            WHERE (rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
             ORDER BY c.shortname DESC";
 
     // pull out all course matching
@@ -138,7 +138,7 @@ function kent_get_all_courses() {
         $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
                 FROM {$CFG->prefix}course c
                 LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-                WHERE rol.what is null
+                WHERE rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored'
                 ORDER BY c.shortname DESC";
 
 

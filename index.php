@@ -48,7 +48,7 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
 $scripts ='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
 $scripts .= '<link rel="stylesheet/less" type"text/css" href="styles.less">';
-$scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.pendingMessage = "'. get_string('pendingmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
+$scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
@@ -107,7 +107,9 @@ $from_form = <<< HEREDOC
 </div>
 HEREDOC;
 
-$from_processing = '<div class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('pendingmessage', 'local_rollover').'</div>';
+$from_processing = '<div class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</div>';
+
+$from_requested = '<div class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('requestedmessage', 'local_rollover').'</div>';
 
 $form_error = '<div class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</div>';
 
@@ -136,14 +138,16 @@ if (!empty($courses)) {
         $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
         
         switch (kent_get_current_rollover_status($course->id)) {
-            case 'processing';
+            case 'requested':
+                $from_content = $from_requested;
+                break;
+            case 'processing':
                 $from_content = $from_processing;
                 break;
-            case 'complete';
+            case 'completed':
                 //Should not be used as the form should not show complete items
                 break;
-            case 'restoreerror';
-            case 'backuperror';
+            case 'errored':
                 $from_content = $form_error;
                 break;
             default:
