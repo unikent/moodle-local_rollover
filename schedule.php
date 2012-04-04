@@ -31,31 +31,59 @@ try {
     //Sanitize our post data
     $data = kent_filter_post_data();
 
-    //Turn data into JSON and carry on...
-    $json_data = json_encode($data);
+    // ok, we need to create a new rollover event in the moodle DB for this request
+    $from_course = $data['id_from'];
+    $to_course = $data['id_to'];
 
-    //Now punt off data to next location to get a response (java to set up rollover)
-    $ch = curl_init($java_location);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+    // remove those from the data so $data just contains the options
+    unset($data['id_from']);
+    unset($data['id_to']);
 
-    $response = curl_exec($ch);
-    $output = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    // json encode the remaining data (options)
+    $options = json_encode($data);
 
-    //Close resource
-    curl_close($ch);
+    // now insert this into the DB
+    // TODO: check if the to_course exists in here already and reject if so
+    // (to avoid multiple rollovers into the same course)
 
-    //Echo back status code from curl...
-    if( $output == 201 ) {
-      header("HTTP/1.1 201 Created");
+    $record = new stdClass();
+    $record->from_course = $from_course;
+    $record->to_course = $to_course;
+    $record->what = 'requested';
+    $record->options = $options;
+    $record->requested_at = date('Y-m-d H:i:s');
+
+    $id = $DB->insert_record('rollover_events', $record);
+
+    if ($id) {
+        header('HTTP/1.1 201 Created');
     } else {
-      header("HTTP/1.1 500 Server Error");
+        header('HTTP/1.1 500 Server Error');
     }
     exit(0);
+
+    //Now punt off data to next location to get a response (java to set up rollover)
+    // $ch = curl_init($java_location);
+    // curl_setopt($ch, CURLOPT_HEADER, 0);
+    // curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    // curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+    // curl_setopt($ch, CURLOPT_POST, true);
+    // curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
+
+    // $response = curl_exec($ch);
+    // $output = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    // //Close resource
+    // curl_close($ch);
+
+    // //Echo back status code from curl...
+    // if( $output == 201 ) {
+    //   header("HTTP/1.1 201 Created");
+    // } else {
+    //   header("HTTP/1.1 500 Server Error");
+    // }
+    // exit(0);
 
 } catch (Exception $e) {pm($e);}
 
