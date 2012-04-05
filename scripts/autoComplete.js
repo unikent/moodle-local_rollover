@@ -8,7 +8,7 @@ jQuery(document).ready(function() {
     //Mock url for localhost... remove later
     //window.autoCompleteUrl = 'http://localhost/moodle-www/kent/modulelist/index.php?action=modlist&terms=co32';
     //window.autoCompleteUrl = 'http://localhost/moodle/kent/modulelist/index.php?action=allmodlist'
-
+    
     $("#dialog_autocomplete_error").dialog({
          autoOpen: false,
          title: 'Rollover error',
