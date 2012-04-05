@@ -3,10 +3,11 @@ jQuery(document).ready(function() {
     var courses_search = new Array();
     var courses = new Array();
 
-    jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading course listsZ.</div>' });
+    jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading course lists.</div>' });
 
     //Mock url for localhost... remove later
     //window.autoCompleteUrl = 'http://localhost/moodle-www/kent/modulelist/index.php?action=modlist&terms=co32';
+    //window.autoCompleteUrl = 'http://localhost/moodle/kent/modulelist/index.php?action=allmodlist'
 
     $("#dialog_autocomplete_error").dialog({
          autoOpen: false,
