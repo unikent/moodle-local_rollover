@@ -59,26 +59,24 @@ function kent_get_own_editable_courses(){
     $params['userid'] = (int)$USER->id;
     $params['capability'] = 'moodle/course:update';
 
-
-
-//Disable the content checks - see new query below
-//    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-//            FROM {$CFG->prefix}context con
-//            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-//            JOIN mdl_course c ON c.id=con.instanceid
-//            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-//            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-//            LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-//            WHERE cms.course is null AND cse.section is null AND con.contextlevel=50
-//            ORDER BY c.shortname DESC";
-
     $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
             FROM {$CFG->prefix}context con
             JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
             JOIN mdl_course c ON c.id=con.instanceid
             LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-            WHERE (rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
+            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
+            LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
+            WHERE cms.course is null AND cse.section is null AND con.contextlevel=50
             ORDER BY c.shortname DESC";
+
+//Comment out above and this in if we don't care about courses with content already.
+//    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+//            FROM {$CFG->prefix}context con
+//            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
+//            JOIN mdl_course c ON c.id=con.instanceid
+//            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+//            WHERE (rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
+//            ORDER BY c.shortname DESC";
 
     // pull out all course matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
@@ -116,30 +114,20 @@ function kent_get_all_courses() {
     //Only return everything if an admin...
     if (has_capability('moodle/site:config', $context)){
 
-//Don't seem to need context in this case. - Keep this here incase we ever do.
-//        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, ctx.instanceid AS ctxinstance, cms.course, cse.section
-//                FROM {$CFG->prefix}course c
-//                LEFT JOIN {$CFG->prefix}context ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = 50)
-//                LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-//                LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-//                WHERE cms.course is null AND cse.section is null
-//                ORDER BY c.shortname ASC";
-
-
-//Disable the content checks
-//        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cms.course, cse.section, rol.what as rollover_status
-//                FROM {$CFG->prefix}course c
-//                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-//                LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-//                LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-//                WHERE cms.course is null AND cse.section is null
-//                ORDER BY c.shortname DESC";
-
-        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cms.course, cse.section, rol.what as rollover_status
                 FROM {$CFG->prefix}course c
                 LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-                WHERE rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored'
+                LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
+                LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
+                WHERE cms.course is null AND cse.section is null
                 ORDER BY c.shortname DESC";
+
+//Comment out above and this in if we don't care about courses with content already.
+//        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+//                FROM {$CFG->prefix}course c
+//                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+//                WHERE rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored'
+//                ORDER BY c.shortname DESC";
 
 
         // pull out all course matching
