@@ -244,6 +244,9 @@ function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FA
             $rollover_mods[$modname]['moodle_2_id'] = $mod->id;
             $rollover_mods[$modname]['visible'] = ($mod->visible == "1" ? TRUE : FALSE);
 
+            //Get proper name of module
+            $rollover_mods[$modname]['modulename'] = get_string('modulename', $modname);
+
             //If we don't want mods without moodle 1.9 bkup support, then unset it.
             if($m1_skip){
                 unset($rollover_mods[$modname]);
@@ -272,7 +275,7 @@ function kent_get_formated_module_list() {
         $m1 = ($dets['moodle_1_support'] == TRUE) ? '': 'm1';
         $m2 = ($dets['moodle_2_support'] == TRUE) ? '': 'm2';
         
-       $module_list .= sprintf($list_item, $m1, $m2, ucfirst($module), strtolower($module));
+       $module_list .= sprintf($list_item, $m1, $m2, ucfirst($dets['modulename']), strtolower($module));
     } 
     
     return $module_list;
