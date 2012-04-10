@@ -92,6 +92,26 @@ function kent_get_own_editable_courses(){
 
     }
 
+    //Pick up any courses which may not be empty, because they are in rollover progress as we need to report on these.
+    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+            FROM {$CFG->prefix}context con
+            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
+            JOIN mdl_course c ON c.id=con.instanceid
+            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+            WHERE (rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
+            ORDER BY c.shortname DESC";
+
+    // pull out all course matching
+    if ($courses = $DB->get_records_sql($sql, $params)) {
+
+        // loop throught them
+        foreach ($courses as $course) {
+            if ($course->id == 1) continue;
+            //Add or override on our central list.
+            $course_list[$course->id] = $course;
+        }
+    }            
+
     return $course_list;
 
 }
@@ -144,6 +164,23 @@ function kent_get_all_courses() {
                 $course_list[$course->id] = $course;
             }
         }
+
+        //Pick up any courses which may not be empty, because they are in rollover progress.
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+                FROM {$CFG->prefix}course c
+                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+                WHERE rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored'
+                ORDER BY c.shortname DESC";
+
+        // pull out all course matching
+        if ($courses = $DB->get_records_sql($sql, $params)) {
+            // loop throught them
+            foreach ($courses as $course) {
+                if ($course->id == 1) continue;
+                $course_list[$course->id] = $course;
+            }
+        }
+                
     }
 
     return $course_list;
