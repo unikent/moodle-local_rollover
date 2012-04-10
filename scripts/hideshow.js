@@ -10,7 +10,7 @@ jQuery(document).ready(function() {
             height: adv_height
         }, anitime);
         jQuery(this).closest('form').find('.rollover_crs_title').animate({
-            height: window.pane_height
+            height: "auto"
         }, anitime);
         jQuery('.text',this).text('Hide options');
         jQuery('.arrow_border', this).hide();
