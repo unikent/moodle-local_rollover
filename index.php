@@ -95,7 +95,7 @@ $from_form = <<< HEREDOC
         </ul>
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
-                <div class='text'>More options</div>
+                <div class='text'>Show options</div>
                 <div class='arrow_border'></div>
                 <div class='arrow_light'></div>
             </div>
