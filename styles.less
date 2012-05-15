@@ -1,3 +1,81 @@
+.gradient(@color: #F5F5F5, @start: #EEE, @stop: #FFF) {
+  background: @color;
+  background: -webkit-gradient(linear,
+                               left bottom,
+                               left top,
+                               color-stop(0, @start),
+                               color-stop(1, @stop));
+  background: -ms-linear-gradient(bottom,
+                                  @start,
+                                  @stop);
+  background: -moz-linear-gradient(center bottom,
+                                   @start 0%,
+                                   @stop 100%);
+}
+.bw-gradient(@color: #F5F5F5, @start: 0, @stop: 255) {
+  background: @color;
+  background: -webkit-gradient(linear,
+                               left bottom,
+                               left top,
+                               color-stop(0, rgb(@start,@start,@start)),
+                               color-stop(1, rgb(@stop,@stop,@stop)));
+  background: -ms-linear-gradient(bottom,
+                                  rgb(@start,@start,@start) 0%,
+                                  rgb(@start,@start,@start) 100%);
+  background: -moz-linear-gradient(center bottom,
+                                   rgb(@start,@start,@start) 0%,
+                                   rgb(@stop,@stop,@stop) 100%);
+}
+.drop-shadow(@x-axis: 0, @y-axis: 1px, @blur: 2px, @alpha: 0.1) {
+  -webkit-box-shadow: @x-axis @y-axis @blur rgba(0, 0, 0, @alpha);
+  -moz-box-shadow: @x-axis @y-axis @blur rgba(0, 0, 0, @alpha);
+  box-shadow: @x-axis @y-axis @blur rgba(0, 0, 0, @alpha);
+}
+.rounded(@radius: 2px) {
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
+  border-radius: @radius;
+  -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box; 
+}
+.border-radius(@topright: 0, @bottomright: 0, @bottomleft: 0, @topleft: 0) {
+  -webkit-border-top-right-radius: @topright;
+  -webkit-border-bottom-right-radius: @bottomright;
+  -webkit-border-bottom-left-radius: @bottomleft;
+  -webkit-border-top-left-radius: @topleft;
+  -moz-border-radius-topright: @topright;
+  -moz-border-radius-bottomright: @bottomright;
+  -moz-border-radius-bottomleft: @bottomleft;
+  -moz-border-radius-topleft: @topleft;
+  border-top-right-radius: @topright;
+  border-bottom-right-radius: @bottomright;
+  border-bottom-left-radius: @bottomleft;
+  border-top-left-radius: @topleft;
+  -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box; 
+}
+.opacity(@opacity: 0.5) {
+  -moz-opacity: @opacity;
+  -khtml-opacity: @opacity;
+  -webkit-opacity: @opacity;
+  opacity: @opacity;
+}
+.transition-duration(@duration: 0.2s) {
+  -moz-transition-duration: @duration;
+  -webkit-transition-duration: @duration;
+  transition-duration: @duration;
+}
+
+.inner-shadow(@horizontal:0, @vertical:1px, @blur:2px, @alpha: 0.4) {
+  -webkit-box-shadow: inset @horizontal @vertical @blur rgba(0, 0, 0, @alpha);
+  -moz-box-shadow: inset @horizontal @vertical @blur rgba(0, 0, 0, @alpha);
+  box-shadow: inset @horizontal @vertical @blur rgba(0, 0, 0, @alpha);
+}
+.box-shadow(@arguments) {
+  -webkit-box-shadow: @arguments;
+  -moz-box-shadow: @arguments;
+  box-shadow: @arguments;
+}
+
+
 .blockOverlay[style] {
     background: #666 url(scripts/css/ui-lightness/images/ui-bg_diagonals-thick_20_666666_40x40.png) 50% 50% repeat !important;
 }
@@ -113,17 +191,22 @@
 }
 
 .rollover_item {
-    overflow:auto;
     margin: 10px 0;
 
+    .rollover_layout {
+        width: 100%;
+        border-collapse: separate;
+
+    }
+
     .rollover_crs_title {
-        float:left;
-        margin-right:2px;
-        width: 37%;
-        padding: 3%;
-        background: #E9FAD0;
+        width: 50%;
+        padding: 20px;
+        background: #f3f3f3;
         position: relative;
-        height: 209px;
+        vertical-align: top;
+        border-right: 2px solid #fff;
+        text-shadow: 1px 1px 0px #fff;
 
         .arrow {
             border-color: transparent #fff transparent transparent;
@@ -167,24 +250,14 @@
     }
   
     .rollover_crs_from {
-        float:left;
-        width:425px;
         width: 50%;
-        background: #eee;
-        padding: 3%;
+        background: #f0f0f0;
+        padding: 20px;
         position:relative;
+        text-shadow: 1px 1px 0px #fff;
         
-
-        .helplink{
-            /*position: absolute;*/
-            /*top: 90px;*/
-            /*left: 130px;*/
-            float: left;
-            margin-top: 15px;
-            margin-left: 5px;
-        }
         .arrow {
-            border-color: transparent #eeeeee transparent transparent;
+            border-color: transparent #f0f0f0 transparent transparent;
             border-style: solid;
             border-width: 20px;
             width:0px;
@@ -213,19 +286,26 @@
         .rollover_crs_submit {
             width:75px;
             height:36px;
-            border-color: #E5E5E5;
-            border-style: solid;
-            border-width: 1px;
-            background-color: #fff;
+            color: #fff;
             cursor: pointer;
-            color: #6E6E6E;
+            border: 1px solid #214587;
+            .gradient(#27519f, #214587, #27519f);
+            .rounded(3px);
             font-size: 14px;
             float: right;
+            background-clip: border-box;
+        }
+
+        .rollover_crs_submit:hover {
+           .gradient(#2A58AC, #254E98, #2A58AC);
+        }
+
+        .rollover_crs_submit:active {
+           .gradient(#214485, #1C3A72, #214485);
         }
 
         .rollover_advanced_title {
-            /*border-top: 1px solid #E5E5E5;*/
-            margin: 12px 0;
+            margin: 0 0 12px 0;
             padding-top: 5px;
             font-weight: normal;
             font-size: 13px;
@@ -237,13 +317,13 @@
             list-style: none;
             margin: 0px;
             clear: both;
-            overflow: hidden;
+            display: none;
 
             .rollover_option_item {
                 font-size: 13px;
                 color: #6E6E6E;
                 margin: 4px 3px 4px 0;
-                width: 142px;
+                width: 45%;
                 float: left;
 
                 .rollover_checkbox {
@@ -277,11 +357,12 @@
         }
 
         .more_advanced_wrap {
-            position:absolute;
-            bottom: 40px;
-            left: 90px;
-            width: 60%;
+            clear: both;
+            width: 70%;
             text-align: center;
+            margin: 0 auto;
+            margin-bottom: 20px;
+            padding-top: 10px;
 
             .more_advanced {
                 position:relative;
@@ -289,6 +370,26 @@
                 color: #9A9A9A;
                 font-size: 12px;
                 cursor: pointer;
+                padding-bottom: 5px;
+
+                .helplink{
+                        display: inline;
+                        padding-left: 5px;
+                        
+                        a {
+                            img {
+                                vertical-align: top;
+                            }
+                        }
+                    }
+
+                .text {
+                    display: inline;
+                    font-weight: normal;
+                    font-size: 13px;
+                    color: #6E6E6E;
+                    padding-bottom: 5px;
+                }
                 
                 .arrow_border {
                     border-color: #DBDBDB transparent transparent transparent;
@@ -298,18 +399,18 @@
                     height:0px;
                     position:absolute;
                     left: 45%;
-                    top: 16px;
+                    top: 23px;
                 }
 
                 .arrow_light {
-                    border-color: #EEE transparent transparent transparent;
+                    border-color: #f3f3f3 transparent transparent transparent;
                     border-style: solid;
                     border-width: 10px;
                     width:0px;
                     height:0px;
                     position:absolute;
                     left: 45%;
-                    top: 15px;
+                    top: 22px;
                 }
             }
 
@@ -325,14 +426,43 @@
     }
 
     .pending {
+        color: #6e6e6e;
+        background: #E9FAD0;
+
+        .arrow {
+            border-color: transparent #E9FAD0 transparent transparent;
+        }
      
-       h3 {
+        h3 {
             text-align: center;
             padding-top: 0px;
-       }
+        }
+
+        p {
+            text-align: center;
+        }
+    }
+
+    .processing {
+        color: #6e6e6e;
+        background: #FAF8BD;
+
+        .arrow {
+            border-color: transparent #FAF8BD transparent transparent;
+        }
+     
+        h3 {
+            text-align: center;
+            padding-top: 0px;
+        }
+
+        p {
+            text-align: center;
+        }
     }
 
     .error {
+        color: #6e6e6e;
         background: #FAD7D7;
 
         .arrow {

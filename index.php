@@ -68,16 +68,20 @@ $description_label_text = get_string('description_label_text', 'local_rollover')
 
 $form = <<< HEREDOC
     <div class='rollover_item'>
-            <form method='post' name='rollover_form_%1\$d' action='schedule.php'>
-                <div class='rollover_crs_title'>
-                    <div class='arrow'></div>
-                    <h3><a href="">%3\$s</a></h3>
-                    <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span>%2\$s</p>
-                    <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
-                </div>
-                %5\$s
-            </form>
-         </div>
+        <form method='post' name='rollover_form_%1\$d' action='schedule.php'>
+            <table class='rollover_layout'>
+                <tr>
+                        <td class='rollover_crs_title'>
+                            <div class='arrow'></div>
+                            <h3><a href="">%3\$s</a></h3>
+                            <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span>%2\$s</p>
+                            <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
+                        </td>
+                        %5\$s
+                </tr>
+            </table>
+        </form>
+    </div>
 HEREDOC;
 
 $search_placeholder = get_string('search_placeholder', 'local_rollover');
@@ -85,33 +89,35 @@ $advanced_options_label = get_string('advanced_options_label', 'local_rollover')
 $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
 $from_form = <<< HEREDOC
-<div class='rollover_crs_from'>
+<td class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
         <input type='text' class='rollover_crs_input' placeholder='$search_placeholder'/>
-        <h4 class='rollover_advanced_title'>$advanced_options_label</h4>%1\$s
         <ul class='rollover_advanced_options'>
             $module_list
         </ul>
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
-                <div class='text'>Show options</div>
+                <div class='text'>Show advanced options</div>
+                %1\$s
+                <div style=' clear: both'></div>
                 <div class='arrow_border'></div>
                 <div class='arrow_light'></div>
+                
             </div>
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
         <input type="hidden" name="id_to" class="id_to" value="%2\$d"/>
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
-</div>
+</td>
 HEREDOC;
 
-$from_processing = '<div class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</div>';
+$from_processing = '<td class="rollover_crs_from processing"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</td>';
 
-$from_requested = '<div class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('requestedmessage', 'local_rollover').'</div>';
+$from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('requestedmessage', 'local_rollover').'</td>';
 
-$form_error = '<div class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</div>';
+$form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
 $courses = kent_get_empty_courses();
 

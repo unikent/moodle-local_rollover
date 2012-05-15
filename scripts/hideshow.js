@@ -1,31 +1,21 @@
-jQuery(document).ready(function() {
-
-    var anitime = 200;
-    var adv_height = jQuery('.rollover_advanced_options').height();
-    window.pane_height = jQuery('.rollover_crs_from').height();
-    jQuery('.rollover_advanced_options').css('height', '0')
-    jQuery(".more_advanced").toggle(function() {
-        jQuery(this).closest('.rollover_crs_from').addClass('expanded');
-        jQuery(this).closest('.rollover_crs_from').find('.rollover_advanced_options').animate({
-            height: adv_height
-        }, anitime);
-        jQuery(this).closest('form').find('.rollover_crs_title').animate({
-            height: "auto"
-        }, anitime);
-        jQuery('.text',this).text('Hide options');
-        jQuery('.arrow_border', this).hide();
-        jQuery('.arrow_light', this).hide();
-    }, function() {
-        jQuery(this).closest('.rollover_crs_from').removeClass('expanded');
-        jQuery(this).closest('.rollover_crs_from').find('.rollover_advanced_options').animate({
-            height: "0px"
-        }, anitime);
-        jQuery(this).closest('form').find('.rollover_crs_title').animate({
-            height: "auto"
-        }, anitime);
-        jQuery('.text',this).text('Show options');
-        jQuery('.arrow_border', this).show();
-        jQuery('.arrow_light', this).show();
+jQuery(function($) {
+    $('.more_advanced').click(function(e) {
+        if(e.target === $('.iconhelp',this)[0]){
+            return true;        
+        }
+        if($('.rollover_advanced_options').hasClass('open')) {
+            $('.text',this).text('Show advanced options');
+            $('.rollover_advanced_options').stop(true, true).slideUp('fast');
+            $('.rollover_advanced_options').removeClass('open');
+            $('.arrow_border', this).show();
+            $('.arrow_light', this).show();
+        } else {
+            $('.text',this).text('Hide advanced options');
+            $('.rollover_advanced_options').stop(true, true).slideDown('fast');
+            $('.rollover_advanced_options').addClass('open');
+            $('.arrow_border', this).hide();
+            $('.arrow_light', this).hide();
+        }
     });
 });
 
