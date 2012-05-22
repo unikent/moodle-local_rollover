@@ -5,10 +5,6 @@ jQuery(document).ready(function() {
 
 	jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading course lists.</div>' });
 
-	//Mock url for localhost... remove later
-	//window.autoCompleteUrl = 'http://localhost/moodle-www/kent/modulelist/index.php?action=modlist&terms=co32';
-	//window.autoCompleteUrl = 'http://localhost/moodle/kent/modulelist/index.php?action=allmodlist'
-
 	$("#dialog_autocomplete_error").dialog({
 		 autoOpen: false,
 		 title: 'Rollover error',
@@ -77,7 +73,10 @@ jQuery(document).ready(function() {
 									jQuery(this).closest('.rollover_crs_from').find('.id_from').val(courses[change_results[0]][0]);
 								}
 							}
-						});
+						}).focus(function() {
+                                                    $(this).autocomplete("search");
+                                                });
+
 					}
 				},
 				error: function(x, t, m){

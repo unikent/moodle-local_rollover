@@ -74,7 +74,7 @@ $form = <<< HEREDOC
                         <td class='rollover_crs_title'>
                             <div class='arrow'></div>
                             <h3><a href="">%3\$s</a></h3>
-                            <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span>%2\$s</p>
+                            <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span><span class='rollover_sc_num'>%2\$s</span></p>
                             <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
                         </td>
                         %5\$s
@@ -92,14 +92,14 @@ $from_form = <<< HEREDOC
 <td class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
-        <input type='text' class='rollover_crs_input' placeholder='$search_placeholder'/>
+        <input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>
         <ul class='rollover_advanced_options'>
             $module_list
         </ul>
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
                 <div class='text'>Show advanced options</div>
-                %1\$s
+                %2\$s
                 <div style=' clear: both'></div>
                 <div class='arrow_border'></div>
                 <div class='arrow_light'></div>
@@ -107,7 +107,7 @@ $from_form = <<< HEREDOC
             </div>
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
-        <input type="hidden" name="id_to" class="id_to" value="%2\$d"/>
+        <input type="hidden" name="id_to" class="id_to" value="%3\$d"/>
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </td>
@@ -157,7 +157,7 @@ if (!empty($courses)) {
                 $from_content = $form_error;
                 break;
             default:
-                $from_content = sprintf($from_form, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
+                $from_content = sprintf($from_form, $course->shortname, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
         }
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
