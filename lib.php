@@ -368,7 +368,10 @@ function kent_rollover_ability($course_id, $status=""){
         $status = kent_get_current_rollover_status($course_id);
     }
 
-    if($status != "processing"){
+    //As well as status, will need to see that the course has no content
+    $course_has_content = kent_course_has_content($course_id);
+
+    if($status != "processing" && !$course_has_content){
         return TRUE;
     }
 
