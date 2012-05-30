@@ -64,6 +64,10 @@ try {
 
     // these are used by the server to determine which CLI scripts to run, so
     // make sure they are set to something appropriate (that exists)
+    // 
+    // archive = the 1.9 archive (probably only used for backup)
+    // live = the 2.2 live install (used for restore, and maybe backup with training someday)
+    // training = the 2.2 live TRAINING install (used for restore)
     $record->backup_source = 'archive';
     $record->restore_target = 'live';
 
