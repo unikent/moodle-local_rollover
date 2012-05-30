@@ -13,22 +13,22 @@
 require_once('../../config.php');
 require_once('lib.php');
 
-//Check that rollover is switched on in config and there is a valid $USER logged in.
+// check that rollover is switched on in config and there is a valid $USER logged in.
 if(!isset($CFG->kent_rollover_system) || !$CFG->kent_rollover_system || !isloggedin()){
    exit(1);
 }
 
-//Check the moodleness of this page request
+// check the moodleness of this page request
 $site = get_site();
 if(!$site) die();
 
-//Set up our paths and bits
+// set up our paths and bits
 $java_location = ((isset($CFG->kent_rollover_scheduler_path) && ($CFG->kent_rollover_scheduler_path != "") ) ? $CFG->kent_rollover_scheduler_path : $CFG->wwwroot.'/local/rollover/test.php');
 $data = array();
 
-//Try and catch any problems (be it with filter_var or anything else)
+// try and catch any problems (be it with filter_var or anything else)
 try {
-    //Sanitize our post data
+    // sanitize our post data
     $data = kent_filter_post_data();
 
     // ok, we need to create a new rollover event in the moodle DB for this request
@@ -42,10 +42,19 @@ try {
     // json encode the remaining data (options)
     $options = json_encode($data);
 
-    // now insert this into the DB
-    // TODO: check if the to_course exists in here already and reject if so
-    // (to avoid multiple rollovers into the same course)
+    // check if the to_course exists in here already
+    $row = $DB->get_record('rollover_events', array(
+        'from_course' => $from_course,
+        'to_course' => $to_course
+    ));
 
+    if ($row) {
+        // it exists, so let's cancel this request (don't want to rollover > 1 time)
+        header('HTTP/1.1 500 Server Error');
+        exit(0);
+    }
+
+    // now insert this into the DB
     $record = new stdClass();
     $record->from_course = $from_course;
     $record->to_course = $to_course;
@@ -53,37 +62,43 @@ try {
     $record->options = $options;
     $record->requested_at = date('Y-m-d H:i:s');
 
+    // these are used by the server to determine which CLI scripts to run, so
+    // make sure they are set to something appropriate (that exists)
+    $record->backup_source = 'archive';
+    $record->restore_target = 'live';
+
     $id = $DB->insert_record('rollover_events', $record);
 
-    if ($id) {
-        header('HTTP/1.1 201 Created');
-    } else {
+    if (!$id) {
         header('HTTP/1.1 500 Server Error');
+        exit(0);
+    }
+
+    // this is super important, as it tells the backend which environment this
+    // request came from. There are two options right now, 'live' and 'training'
+    $environment = 'live';
+
+    // send a schedule request to the connect server backend
+    $ch = curl_init($java_location);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, array('id' => $id, 'environment' => $environment));
+
+    $response = curl_exec($ch);
+    $output = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    curl_close($ch);
+
+    // echo back status code from curl, or just fail with a 500 if it's not good
+    if( $output == 201 ) {
+      header("HTTP/1.1 201 Created");
+    } else {
+      header("HTTP/1.1 500 Server Error");
     }
     exit(0);
-
-    //Now punt off data to next location to get a response (java to set up rollover)
-    // $ch = curl_init($java_location);
-    // curl_setopt($ch, CURLOPT_HEADER, 0);
-    // curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-    // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    // curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-    // curl_setopt($ch, CURLOPT_POST, true);
-    // curl_setopt($ch, CURLOPT_POSTFIELDS, $json_data);
-
-    // $response = curl_exec($ch);
-    // $output = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    // //Close resource
-    // curl_close($ch);
-
-    // //Echo back status code from curl...
-    // if( $output == 201 ) {
-    //   header("HTTP/1.1 201 Created");
-    // } else {
-    //   header("HTTP/1.1 500 Server Error");
-    // }
-    // exit(0);
 
 } catch (Exception $e) {pm($e);}
 
