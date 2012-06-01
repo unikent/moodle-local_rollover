@@ -418,10 +418,20 @@ function kent_course_has_content($course_id){
     global $CFG, $DB;
 
     // count number of modules in this course
-    $no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
+    //$no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
 
+    $course_modules = $DB->get_records('course_modules', array('course'=>$course_id));
+    $course_modules_count = count($course_modules);
     // if course has modules return true as it has content
-    if (is_int($no_modules) && $no_modules>0) return TRUE;
+    if ($course_modules_count>1) {
+        return TRUE;
+    } else if($course_modules_count == 1) {
+        $m = $DB->get_record('modules', array('id'=>$course_modules[key($course_modules)]->module));
+        if($m->name != 'forum') {
+            return TRUE;
+        }
+    }
+
 
     // count number of non-empty summaries
     $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course_sections WHERE course={$course_id} AND section!=0 AND summary is not null AND summary !=''";
@@ -429,6 +439,8 @@ function kent_course_has_content($course_id){
 
     // if there are any non-empty summaries return true as it has content
     if ($no_modules>0) return TRUE;
+
+
 
     // must be empty, return false
     return FALSE;
