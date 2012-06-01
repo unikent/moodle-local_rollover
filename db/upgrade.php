@@ -8,7 +8,7 @@ function xmldb_local_rollover_upgrade($oldversion) {
   $dbman = $DB->get_manager();
 
   if( $oldversion < 2012011815 ) {
-    upgrade_plugin_savepoint(true, 2012011809, 'local', 'rollover');
+    upgrade_plugin_savepoint(true, 2012011815, 'local', 'rollover');
   }
 
   if ($oldversion < 2012053001) {
