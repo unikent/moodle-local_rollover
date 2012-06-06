@@ -104,7 +104,7 @@ try {
     }
     exit(0);
 
-} catch (Exception $e) {pm($e);}
+} catch (Exception $e) {kent_json_errors($e);}
 
 header("HTTP/1.1 500 Server Error");
 exit(1);

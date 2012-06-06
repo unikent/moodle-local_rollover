@@ -239,7 +239,7 @@ function kent_get_all_courses() {
 *
 * @param object $object exception object
 */
-function pm($obj) {
+function kent_json_errors($obj) {
 
     $data['status'] = FALSE;
     $data['errors'][] = htmlentities(print_r($obj, TRUE));
