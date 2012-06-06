@@ -97,7 +97,7 @@ try {
     curl_close($ch);
 
     // echo back status code from curl, or just fail with a 500 if it's not good
-    if( $output == 201 ) {
+    if( $output == 201 || $output == "201" ) {
       header("HTTP/1.1 201 Created");
     } else {
       header("HTTP/1.1 500 Server Error");
