@@ -3,7 +3,7 @@ jQuery(document).ready(function() {
 	var courses_search = new Array();
 	var courses = new Array();
 
-	jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading course lists.</div>' });
+	jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading module lists.</div>' });
 
 	$("#dialog_autocomplete_error").dialog({
 		 autoOpen: false,

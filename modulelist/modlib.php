@@ -40,7 +40,7 @@ function kent_total_courses(&$data){
     $data['total_courses'] = (isset($data['courses']) ? count($data['courses']) : 0);
 
     if($data['total_courses'] == 0){
-        $data['errors'][] = 'No courses found.  Check search criteria or access to Moodle instance.';
+        $data['errors'][] = 'No modules found.  Check search criteria or access to Moodle instance.';
         $data['status'] = FALSE;
     }
 }
@@ -61,7 +61,7 @@ function kent_modlist_search(&$data){
 
     // This list is all the same modules, sort reverse alphabetically so the last year is at the top of the list if we have courses
     if (count($data['courses']) <= 0) {
-        $data['errors'][] = 'No courses were found!';
+        $data['errors'][] = 'No modules were found!';
     }
 
     $data['status'] = TRUE;
