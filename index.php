@@ -143,6 +143,15 @@ if (!empty($courses)) {
         
         $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
         
+        //Extract the shortname without year - only grabs the first
+        $pattern = "([a-zA-Z]{2,4}[0-9]{3,4})";
+        preg_match($pattern, $course->shortname, $matches);
+
+        $shortcode = "";
+        if($matches != FALSE){
+            $shortcode = $matches[0];
+        }
+        
         switch (kent_get_current_rollover_status($course->id)) {
             case 'requested':
                 $from_content = $from_requested;
@@ -157,7 +166,7 @@ if (!empty($courses)) {
                 $from_content = $form_error;
                 break;
             default:
-                $from_content = sprintf($from_form, $course->shortname, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
+                $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
         }
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
