@@ -62,6 +62,12 @@ try {
     $record->options = $options;
     $record->requested_at = date('Y-m-d H:i:s');
 
+    if (isset($CFG->kent_rollover_environment)) {
+        $rollover_env = $CFG->kent_rollover_environment;
+    } else {
+        $rollover_env = 'live';
+    }
+
     // these are used by the server to determine which CLI scripts to run, so
     // make sure they are set to something appropriate (that exists)
     // 
@@ -69,7 +75,7 @@ try {
     // live = the 2.2 live install (used for restore, and maybe backup with training someday)
     // training = the 2.2 live TRAINING install (used for restore)
     $record->backup_source = 'archive';
-    $record->restore_target = 'live';
+    $record->restore_target = $rollover_env;
 
     $id = $DB->insert_record('rollover_events', $record);
 
@@ -80,7 +86,7 @@ try {
 
     // this is super important, as it tells the backend which environment this
     // request came from. There are two options right now, 'live' and 'training'
-    $environment = 'live';
+    $environment = $rollover_env;
 
     // send a schedule request to the connect server backend
     $ch = curl_init($java_location);
