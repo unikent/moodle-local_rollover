@@ -9,7 +9,9 @@
         <FIELD NAME="requested_at" TYPE="datetime" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="to_course" NEXT="what"/>
         <FIELD NAME="what" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" ENUM="false" COMMENT="event type, requested|processing|completed|errored" PREVIOUS="requested_at" NEXT="options"/>
         <FIELD NAME="options" TYPE="text" NOTNULL="false" SEQUENCE="false" ENUM="false" COMMENT="json serialized options object" PREVIOUS="what" NEXT="message"/>
-        <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="options" />
+        <FIELD NAME="message" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="options" NEXT="backup_source" />
+        <FIELD NAME="backup_source" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="message" NEXT="restore_target"/>
+        <FIELD NAME="restore_target" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="backup_source" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
