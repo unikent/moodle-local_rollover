@@ -112,7 +112,7 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
         }
 
         if(!$contentless){
-            $content_restriction = "c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND ";
+            $content_restriction = "(c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) AND ";
         }
 
         $userid = (int) $USER->id;
@@ -258,7 +258,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
     $order_by = " ORDER BY c.shortname DESC";
 
     if(!$contentless){
-        $content_restriction = "c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND ";
+        $content_restriction = "(c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) AND ";
     }
 
     $userid = (int) $USER->id;
@@ -337,7 +337,7 @@ function kent_get_all_content_courses($max_records=0, $contentless=FALSE) {
         $order_by = " ORDER BY c.shortname DESC";
 
         if(!$contentless){
-            $content_restriction = " AND c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)";
+            $content_restriction = " AND (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1))";
         }
 
         //Context doesn't seem to be needed - keep this here just in case (Goes underneath FROM of query below.
