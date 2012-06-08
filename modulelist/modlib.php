@@ -93,6 +93,9 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
     $courses_returned = array();
     $more_courses = false;
 
+    $context = context_system::instance();
+    $adminuseraccess = has_capability('moodle/site:config', $context);
+
     // build some neat SQL to search first the course shortname and then the course fullname
     foreach(array('shortname', 'fullname') as $course_field) {
     //foreach(array('shortname', 'fullname', 'summary') as $course_field) {
@@ -123,34 +126,42 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
 
         //New query will check categories as well - which should cover DA's
 
+        $role_restriction_1 = " AND con.id IN (
+                            SELECT DISTINCT ra.contextid
+                            FROM {$CFG->prefix}role_assignments ra
+                            WHERE ra.userid = :userid AND ra.roleid IN (
+                                SELECT DISTINCT roleid
+                                FROM {$CFG->prefix}role_capabilities rc
+                                WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
+                            )
+                        )";
+
+        $role_restriction_2 = " AND con.id IN (
+                            SELECT DISTINCT ra.contextid
+                            FROM {$CFG->prefix}role_assignments ra
+                            WHERE ra.userid = :userid2 AND ra.roleid IN (
+                                SELECT DISTINCT roleid
+                                FROM {$CFG->prefix}role_capabilities rc
+                                WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
+                            )
+                        )";
+
+        if($adminuseraccess){
+            $role_restriction_1 = "";
+            $role_restriction_2 = "";
+        }
+
         $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
                 FROM {$CFG->prefix}course c
-                WHERE ({$search_phrase} AND {$content_restriction}c.category IN (
+                WHERE ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.category IN (
                     SELECT DISTINCT con.instanceid
                     FROM {$CFG->prefix}context con
-                    WHERE con.contextlevel = 40 AND con.id IN (
-                        SELECT DISTINCT ra.contextid
-                        FROM {$CFG->prefix}role_assignments ra
-                        WHERE ra.userid = :userid AND ra.roleid IN (
-                            SELECT DISTINCT roleid
-                            FROM {$CFG->prefix}role_capabilities rc 
-                            WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
-                        )
-                    )
-                )) OR ({$search_phrase} AND {$content_restriction}c.id IN (
+                    WHERE con.contextlevel = 40{$role_restriction_1}
+                )) OR ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.id IN (
                     SELECT DISTINCT con.instanceid
                     FROM {$CFG->prefix}context con
-                    WHERE con.contextlevel = 50 AND con.id IN (
-                        SELECT DISTINCT ra.contextid
-                        FROM {$CFG->prefix}role_assignments ra
-                        WHERE ra.userid = :userid2 AND ra.roleid IN (
-                            SELECT DISTINCT roleid
-                            FROM {$CFG->prefix}role_capabilities rc
-                            WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
-                        )
-                    )
+                    WHERE con.contextlevel = 50{$role_restriction_2}
                  )) ORDER BY c.shortname DESC";
-
 
         // run the course search query
         $course_search_rs = $DB->get_recordset_sql($sql, $params);
@@ -270,7 +281,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
     //New query will check categories as well - which should cover DA's
         $sql = "SELECT DISTINCT {$fields}
                 FROM {$CFG->prefix}course c
-                WHERE ({$content_restriction}c.category IN (
+                WHERE ({$content_restriction}c.category != 0 AND c.category IN (
                     SELECT DISTINCT con.instanceid
                     FROM {$CFG->prefix}context con
                     WHERE con.contextlevel = 40 AND con.id IN (
@@ -282,7 +293,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
                             WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
                         )
                     )
-                )) OR ({$content_restriction}c.id IN (
+                )) OR ({$content_restriction}c.category != 0 AND c.id IN (
                     SELECT DISTINCT con.instanceid
                     FROM {$CFG->prefix}context con
                     WHERE con.contextlevel = 50 AND con.id IN (
