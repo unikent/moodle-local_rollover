@@ -102,7 +102,7 @@ function kent_get_own_editable_courses(){
                             WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
                         )
                      )
-            ) ORDER BY c.shortname DESC";
+            ) ORDER BY c.shortname ASC";
 
     // pull out all module matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
@@ -188,7 +188,7 @@ function kent_get_all_courses() {
                 LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
                 LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
                 WHERE cse.section is null
-                ORDER BY c.shortname DESC";
+                ORDER BY c.shortname ASC";
 
 
         // pull out all module matching
@@ -225,7 +225,7 @@ function kent_get_all_courses() {
                 FROM {$CFG->prefix}course c
                 LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
                 WHERE rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored'
-                ORDER BY c.shortname DESC";
+                ORDER BY c.shortname ASC";
 
         // pull out all module matching
         if ($courses = $DB->get_records_sql($sql, $params)) {
