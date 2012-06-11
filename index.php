@@ -68,7 +68,7 @@ $description_label_text = get_string('description_label_text', 'local_rollover')
 
 $form = <<< HEREDOC
     <div class='rollover_item'>
-        <form method='post' name='rollover_form_%1\$d' action='schedule.php'>
+        <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action='schedule.php'>
             <table class='rollover_layout'>
                 <tr>
                         <td class='rollover_crs_title'>
