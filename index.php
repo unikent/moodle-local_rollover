@@ -134,7 +134,19 @@ if (!empty($courses)) {
 
     $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
 
-    foreach ($courses as $course) {
+    // pagination stuff
+    $baseurl = new moodle_url($PAGE->URL);
+    $current_page = optional_param('page', 0, PARAM_INT);
+    $per_page = 20;
+    $offset = $current_page == 0 ? 0 : $current_page * $per_page;
+    $total_courses = count($courses);
+
+    // get the slice of $courses for this page
+    $show_courses = array_slice($courses, $offset, $per_page);
+
+    echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
+
+    foreach ($show_courses as $course) {
         $desc = $no_course_description_text;
         if (!empty($course->summary)) {
             $desc = $course->summary;
@@ -171,6 +183,9 @@ if (!empty($courses)) {
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
     }
+
+    echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
+    
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
 }
