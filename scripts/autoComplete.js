@@ -7,7 +7,8 @@ jQuery(document).ready(function() {
 
 	var course_data = getCourseDataFromCache();
 
-	if (!course_data) {
+	// if the cache was empty, or any of the arrays is empty, just force a refresh
+	if (!course_data || course_data.courses.length == 0 || course_data.courses_search.length == 0) {
 		course_data = refreshCourseData();
 	} else {
 		// no need to fetch, the cache was ok, so just populate with the cache data
@@ -130,6 +131,10 @@ var getCourseDataFromCache = function() {
 	}
 
 	var cache = JSON.parse(cache_json);
+
+	if (!cache) {
+		return null;
+	}
 
 	// use cached value if the timestamp is not older than 5 min
 	if (cache.timestamp + 300000 > new Date().getTime()) {
