@@ -173,10 +173,6 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
 
             foreach ($course_search_rs as $course) {
 
-                // turn the module into an object
-                context_instance_preload($course);
-                $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
-
                 // ignore module if its the omit_course module
                 if ( $course->id == $omit_course ) continue;
 
