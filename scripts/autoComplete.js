@@ -133,7 +133,7 @@ var getCourseDataFromCache = function() {
 
 	// use cached value if the timestamp is not older than 5 min
 	if (cache.timestamp + 300000 > new Date().getTime()) {
-		console.log('fetched autocomplete data from localstorage');
+		
 		return {
 			courses: cache.courses,
 			courses_search: cache.courses_search
@@ -179,7 +179,7 @@ var refreshCourseData = function() {
 						courses_search: course_data.courses_search
 					};
 					localStorage.setItem('rollover_autocomplete_data', JSON.stringify(local_data));
-					console.log('cached autocomplete to localstorage');
+					
 				}
 
 				populateCourseAutoComplete(course_data);
