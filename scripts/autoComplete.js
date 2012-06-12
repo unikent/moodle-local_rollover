@@ -3,7 +3,18 @@ jQuery(document).ready(function() {
 	var courses_search = new Array();
 	var courses = new Array();
 
-	jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading module lists.</div>' });
+	
+
+	var course_data = getCourseDataFromCache();
+
+	if (!course_data) {
+		course_data = refreshCourseData();
+	} else {
+		// no need to fetch, the cache was ok, so just populate with the cache data
+		populateCourseAutoComplete(course_data);
+	}
+
+	
 
 	$("#dialog_autocomplete_error").dialog({
 		 autoOpen: false,
@@ -36,6 +47,7 @@ jQuery(document).ready(function() {
 			// hopefully the user has been logged in by now, so we can make the
 			// modulelist api request
 
+	/*
 	jQuery.ajax({
 		url: window.autoCompleteUrl,
 		dataType: 'json',
@@ -90,6 +102,7 @@ jQuery(document).ready(function() {
 		},
 		timeout: 20000 //20 Seconds max to try and fetch
 	});
+	*/
 
 		/*
 		},
@@ -103,3 +116,111 @@ jQuery(document).ready(function() {
 	
 });
 
+
+var getCourseDataFromCache = function() {
+
+	if (!localStorage || !JSON) {
+		return null;
+	}
+
+	var cache_json = localStorage.getItem('rollover_autocomplete_data');
+
+	if (!cache_json) {
+		return null;
+	}
+
+	var cache = JSON.parse(cache_json);
+
+	// use cached value if the timestamp is not older than 5 min
+	if (cache.timestamp + 300000 > new Date().getTime()) {
+		console.log('fetched autocomplete data from localstorage');
+		return {
+			courses: cache.courses,
+			courses_search: cache.courses_search
+		};
+	} else {
+		return null;
+	}
+}
+
+var refreshCourseData = function() {
+
+	jQuery.blockUI({ message: '<div class="blockui_loading">Please wait, loading module lists.</div>' });
+
+	var course_data = {
+		courses: [],
+		courses_search: []
+	};
+
+	jQuery.ajax({
+		url: window.autoCompleteUrl,
+		dataType: 'json',
+		success: function(data){
+
+			//First check if we have courses and error if so.
+			if (data === null){
+				jQuery.unblockUI();
+				$("#dialog_autocomplete_error").dialog("open");
+			} else {
+
+				jQuery.unblockUI();
+				if (data !== null){
+					for(var course in data.courses) {
+						course_data.courses_search.push(data.courses[course].fullname);
+						course_data.courses[data.courses[course].fullname] = [course, '1.9'];
+					}
+				}
+
+				// try to cache this data to localstorage if possible
+				if (localStorage && JSON) {
+					local_data = {
+						timestamp: new Date().getTime(),
+						courses: course_data.courses,
+						courses_search: course_data.courses_search
+					};
+					localStorage.setItem('rollover_autocomplete_data', JSON.stringify(local_data));
+					console.log('cached autocomplete to localstorage');
+				}
+
+				populateCourseAutoComplete(course_data);
+
+			}
+		},
+		error: function(x, t, m){
+			jQuery.unblockUI();
+			$("#dialog_autocomplete_error").dialog("open");
+		},
+		timeout: 20000 //20 Seconds max to try and fetch
+	});
+
+}
+
+var populateCourseAutoComplete = function(course_data) {
+
+	jQuery('.rollover_crs_input').autocomplete({
+		minLength: 1,
+		source: function(request, response) {
+			var results = jQuery.ui.autocomplete.filter(course_data.courses_search, request.term);
+			response(results.slice(0, 30));
+		},
+		delay: 0,
+		select: function(event, ui) {
+			jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[ui.item.label][0]);
+			if(course_data.courses[ui.item.label][1] === '1.9') {
+				jQuery(this).parent().find('.m1 input').attr('disabled', 'disabled').removeAttr('checked');
+			} else {
+				jQuery(this).parent().find('.m1 input').attr('checked', 'checked').removeAttr('disabled');
+			}
+		},
+		change: function(event, ui){
+			var change_results = jQuery.ui.autocomplete.filter(course_data.courses_search, jQuery(this).val().trim());
+			if(change_results.length === 0 || jQuery(this).val() === ''){
+				jQuery(this).closest('.rollover_crs_from').find('.id_from').val('');
+			} else {
+				jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[change_results[0]][0]);
+			}
+		}
+	}).focus(function() {
+		$(this).autocomplete("search");
+	});
+};
