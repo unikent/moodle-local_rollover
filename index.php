@@ -185,7 +185,8 @@ if (!empty($courses)) {
     }
 
     echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
-    
+    echo "<div class='paging-spacer'></div>";
+
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
 }
