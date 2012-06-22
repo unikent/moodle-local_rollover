@@ -125,8 +125,13 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
         $params['capability2'] = 'moodle/course:update';
 
         //New query will check categories as well - which should cover DA's
-
-        $role_restriction_1 = " AND con.id IN (
+        $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
+                FROM {$CFG->prefix}course c
+                WHERE ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.category IN (
+                    SELECT DISTINCT conx.instanceid
+                    FROM {$CFG->prefix}context con
+                    JOIN {$CFG->prefix}context conx ON conx.path LIKE CONCAT('',con.path,'%')
+                    WHERE con.contextlevel = 40 AND conx.contextlevel = 40 AND con.id IN (
                             SELECT DISTINCT ra.contextid
                             FROM {$CFG->prefix}role_assignments ra
                             WHERE ra.userid = :userid AND ra.roleid IN (
@@ -134,9 +139,11 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
                                 FROM {$CFG->prefix}role_capabilities rc
                                 WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
                             )
-                        )";
-
-        $role_restriction_2 = " AND con.id IN (
+                        )
+                )) OR ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.id IN (
+                    SELECT DISTINCT con.instanceid
+                    FROM {$CFG->prefix}context con
+                    WHERE con.contextlevel = 50 AND con.id IN (
                             SELECT DISTINCT ra.contextid
                             FROM {$CFG->prefix}role_assignments ra
                             WHERE ra.userid = :userid2 AND ra.roleid IN (
@@ -144,24 +151,25 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
                                 FROM {$CFG->prefix}role_capabilities rc
                                 WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
                             )
-                        )";
-
-        if($adminuseraccess){
-            $role_restriction_1 = "";
-            $role_restriction_2 = "";
-        }
-
-        $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
-                FROM {$CFG->prefix}course c
-                WHERE ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.category IN (
-                    SELECT DISTINCT con.instanceid
-                    FROM {$CFG->prefix}context con
-                    WHERE con.contextlevel = 40{$role_restriction_1}
-                )) OR ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.id IN (
-                    SELECT DISTINCT con.instanceid
-                    FROM {$CFG->prefix}context con
-                    WHERE con.contextlevel = 50{$role_restriction_2}
+                        )
                  )) ORDER BY c.shortname DESC";
+
+
+
+        //Override query if an admin
+        if($adminuseraccess){
+            $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
+                    FROM {$CFG->prefix}course c
+                    WHERE ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.category IN (
+                        SELECT DISTINCT con.instanceid
+                        FROM {$CFG->prefix}context con
+                        WHERE con.contextlevel = 40
+                    )) OR ({$search_phrase} AND {$content_restriction}c.category != 0 AND c.id IN (
+                        SELECT DISTINCT con.instanceid
+                        FROM {$CFG->prefix}context con
+                        WHERE con.contextlevel = 50
+                     )) ORDER BY c.shortname DESC";
+        }
 
         // run the module search query
         $course_search_rs = $DB->get_recordset_sql($sql, $params);
@@ -278,9 +286,10 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
         $sql = "SELECT DISTINCT {$fields}
                 FROM {$CFG->prefix}course c
                 WHERE ({$content_restriction}c.category != 0 AND c.category IN (
-                    SELECT DISTINCT con.instanceid
+                    SELECT DISTINCT conx.instanceid
                     FROM {$CFG->prefix}context con
-                    WHERE con.contextlevel = 40 AND con.id IN (
+                    JOIN {$CFG->prefix}context conx ON conx.path LIKE CONCAT('',con.path,'%')
+                    WHERE con.contextlevel = 40 AND conx.contextlevel = 40 AND con.id IN (
                         SELECT DISTINCT ra.contextid
                         FROM {$CFG->prefix}role_assignments ra
                         WHERE ra.userid = :userid AND ra.roleid IN (

@@ -79,9 +79,10 @@ function kent_get_own_editable_courses(){
             LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
             {$content_check}
             WHERE {$where_check} AND c.category IN (
-                SELECT DISTINCT con.instanceid
+                SELECT DISTINCT conx.instanceid
                 FROM {$CFG->prefix}context con
-                WHERE con.instanceid != 0 AND con.contextlevel = 40 AND con.id IN (
+                JOIN {$CFG->prefix}context conx ON conx.path LIKE CONCAT('',con.path,'%')
+                WHERE con.instanceid != 0 AND con.contextlevel = 40 AND conx.contextlevel = 40 AND con.id IN (
                     SELECT DISTINCT ra.contextid
                     FROM {$CFG->prefix}role_assignments ra
                     WHERE ra.userid = :userid AND ra.roleid IN (
