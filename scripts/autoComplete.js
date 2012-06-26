@@ -5,15 +5,15 @@ jQuery(document).ready(function() {
 
 	
 
-	var course_data = getCourseDataFromCache();
+	//var course_data = getCourseDataFromCache();
 
 	// if the cache was empty, or the search array is empty, just force a refresh
-	if (!course_data || course_data.courses_search.length == 0) {
-		course_data = refreshCourseData();
-	} else {
+	//if (!course_data || course_data.courses_search.length == 0) {
+	var course_data = refreshCourseData();
+	//} else {
 		// no need to fetch, the cache was ok, so just populate with the cache data
-		populateCourseAutoComplete(course_data);
-	}
+		//populateCourseAutoComplete(course_data);
+	//}
 
 	
 
