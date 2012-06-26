@@ -125,21 +125,20 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
         $sql = "SELECT DISTINCT
      c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
       LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-      {$content_check}
       INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
       INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
       INNER JOIN {$CFG->prefix}context con ON
         ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
           OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
               (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
-              WHERE {$search_phrase} {$content_restriction}ORDER BY c.shortname asc";
+              WHERE {$search_phrase} {$content_restriction}AND c.category != 0 ORDER BY c.shortname asc";
 
 
         //Override query if an admin
         if($adminuseraccess){
             $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
                     FROM {$CFG->prefix}course c
-                    WHERE {$search_phrase} AND {$content_restriction}c.category != 0
+                    WHERE {$search_phrase} {$content_restriction}AND c.category != 0
                     ORDER BY c.shortname DESC";
         }
 
@@ -257,7 +256,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
     ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
       OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
           (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
-          WHERE (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) ORDER BY c.shortname asc";
+          WHERE (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) AND c.category != 0 ORDER BY c.shortname asc";
 
     // pull out all module matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
