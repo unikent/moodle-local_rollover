@@ -123,8 +123,7 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
         $params['capability'] = 'moodle/course:update';
 
         $sql = "SELECT DISTINCT
-     c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
-      LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+     c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible FROM {$CFG->prefix}course c
       INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
       INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
       INNER JOIN {$CFG->prefix}context con ON
@@ -248,8 +247,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
 
     //New query will check categories as well - which should cover DA's
     $sql = "SELECT DISTINCT
- c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
-  LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+ c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible FROM {$CFG->prefix}course c
   INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
   INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
   INNER JOIN {$CFG->prefix}context con ON
