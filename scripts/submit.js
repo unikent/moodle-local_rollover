@@ -47,7 +47,6 @@ jQuery(document).ready(function() {
                  buttons: {
                      "Yes": function() {
                          $(this).dialog("close");
-                         console.log(o);
                          jQuery.ajax({
                             url: 'schedule.php',
                             type: "POST",
@@ -79,7 +78,6 @@ jQuery(document).ready(function() {
                                 }
                             },
                             error: function(j,t,e) {
-                                console.log(e);
                                 button.html('error');
                             }
                         });
