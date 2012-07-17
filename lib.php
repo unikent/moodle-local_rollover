@@ -9,7 +9,7 @@ function kent_list_rollover_courses(){
     $courses = kent_get_empty_courses();
 
     if(!empty($courses)){
-     
+
        $output = "<ul>";
        foreach($courses as $course){
            $output .= "<li>" . $course->id . " - " . $course->shortname . "</li>";
@@ -54,26 +54,50 @@ function kent_get_own_editable_courses(){
     global $CFG, $USER, $DB;
 
     $course_list = array();
-    $params['userid'] = (int)$USER->id;
-    $params['capability'] = 'moodle/course:update';
 
-    $content_check = "LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0";
+
+    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, modinfo, summary, visible', 'shortname ASC', 0, 999999);
+
+    $list = "";
+    foreach($content_courses["courses"] as $tmp_course){
+         $list .= $tmp_course->id . ",";
+    }
+    $list = rtrim($list, ",");
+
     $where_check = "cse.section is null";
+    $content_check = "LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0";
 
-    $sql = "SELECT DISTINCT
- c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
-  LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-  {$content_check}
-  INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
-  INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
-  INNER JOIN {$CFG->prefix}context con ON
-    ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
-      OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
-          (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
-          WHERE {$where_check} ORDER BY c.shortname asc";
+    
+    //Now check and get ones with content only
+    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
+     FROM {$CFG->prefix}course c
+     LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+     {$content_check}
+     JOIN {$CFG->prefix}context ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
+     WHERE {$where_check} AND c.category != 0 AND c.id IN ($list)";
+
+
+//    $params['userid'] = (int)$USER->id;
+//    $params['capability'] = 'moodle/course:update';
+//
+//
+
+//    $sql = "SELECT DISTINCT
+// c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
+//  LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+//  {$content_check}
+//  INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
+//  INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
+//  INNER JOIN {$CFG->prefix}context con ON
+//    ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
+//      OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
+//          (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
+//          WHERE {$where_check} ORDER BY c.shortname asc";
 
     // pull out all module matching
-    if ($courses = $DB->get_records_sql($sql, $params)) {
+
+    if ($courses = $DB->get_records_sql($sql)) {
+    //if ($courses = $DB->get_records_sql($sql, $params)) {
 
         foreach ($courses as $course) {
             if ($course->id == 1) continue;
@@ -89,7 +113,7 @@ function kent_get_own_editable_courses(){
                 }
             } elseif($no_modules > 1) {
                 continue; //Skip if we have more than one module
-            } 
+            }
 
             //If we had no rollover status, then set to none
             if($course->rollover_status === NULL){
@@ -113,11 +137,18 @@ function kent_get_own_editable_courses(){
     //Need to do the same now without the content check to get rollover status for those still running
     $content_check = "";
     $where_check = "(rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored')";
+    //Now check and get ones with content only
+    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
+     FROM {$CFG->prefix}course c
+     LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+     {$content_check}
+     JOIN {$CFG->prefix}context ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
+     WHERE {$where_check} AND c.category != 0 AND c.id IN ($list)";
 
-    //use same query as before with the above tweaks
 
     // pull out all module matching
-    if ($courses = $DB->get_records_sql($sql, $params)) {
+    if ($courses = $DB->get_records_sql($sql)) {
+//    if ($courses = $DB->get_records_sql($sql, $params)) {
 
         // loop throught them
         foreach ($courses as $course) {
@@ -126,7 +157,7 @@ function kent_get_own_editable_courses(){
             //Add or override on our central list.
             $course_list[$course->id] = $course;
         }
-    }            
+    }
 
     return $course_list;
 
@@ -183,7 +214,7 @@ function kent_get_all_courses() {
                 if($course->rollover_status === NULL){
                     $course->rollover_status = "none";
                 }
-                
+
                 $course_list[$course->id] = $course;
             }
         }
@@ -203,7 +234,7 @@ function kent_get_all_courses() {
                 $course_list[$course->id] = $course;
             }
         }
-                
+
     }
 
     return $course_list;
@@ -240,7 +271,7 @@ function kent_filter_post_data(){
     }
 
     return $data;
-    
+
 }
 
 
@@ -316,16 +347,16 @@ function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FA
 function kent_get_formated_module_list() {
     $module_list = '';
     $list_item = "<li class='rollover_option_item %1\$s %2\$s'><input class='rollover_checkbox' name='backup_%4\$s' type='checkbox' checked/>%3\$s</li>";
-    
+
     $modules = kent_get_rollover_modules(TRUE);
     foreach($modules as $module => $dets) {
-        
+
         $m1 = ($dets['moodle_1_support'] == TRUE) ? '': 'm1';
         $m2 = ($dets['moodle_2_support'] == TRUE) ? '': 'm2';
-        
+
        $module_list .= sprintf($list_item, $m1, $m2, ucfirst($dets['modulename']), strtolower($module));
-    } 
-    
+    }
+
     return $module_list;
 }
 
@@ -364,7 +395,7 @@ function kent_get_current_rollover($course_id){
     }
     //Otherwise return empty array
     return $record;
-    
+
 }
 
 /*
@@ -377,7 +408,7 @@ function kent_get_current_rollover_status($course_id){
     if(!empty($record) && isset($record->what)){
         $status = trim(strtolower($record->what));
     }
-    
+
     return $status;
 }
 
@@ -454,8 +485,8 @@ function kent_course_has_content($course_id){
     $no_summaries = (int) $DB->count_records_sql($sql);
 
     // if there are any non-empty summaries return true as it has content
-    if ($no_summaries > 0) return true;	
-	
+    if ($no_summaries > 0) return true;
+
     // If not, then secondly count number of mods in this module
     $no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
 
@@ -512,7 +543,134 @@ function kent_set_ignore_rollover($course_id){
                 $status['status'] = true;
             }
         }
-        
+
         return json_encode($status);
 
+}
+
+
+/**
+ * Returns list of courses current $USER is enrolled in and can access
+ *
+ * - $fields is an array of field names to ADD
+ *   so name the fields you really need, which will
+ *   be added and uniq'd
+ *
+ * @param string|array $fields
+ * @param string $sort
+ * @param int $limit max number of courses
+ * @return array
+ */
+function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder ASC', $page, $perpage) {
+    global $DB, $USER;
+
+    // Guest account does not have any courses
+    if (isguestuser() or !isloggedin()) {
+        return(array());
+    }
+
+    $basefields = array('id', 'category', 'sortorder',
+                        'shortname', 'fullname', 'idnumber',
+                        'startdate', 'visible',
+                        'groupmode', 'groupmodeforce');
+
+    if (empty($fields)) {
+        $fields = $basefields;
+    } else if (is_string($fields)) {
+        // turn the fields from a string to an array
+        $fields = explode(',', $fields);
+        $fields = array_map('trim', $fields);
+        $fields = array_unique(array_merge($basefields, $fields));
+    } else if (is_array($fields)) {
+        $fields = array_unique(array_merge($basefields, $fields));
+    } else {
+        throw new coding_exception('Invalid $fields parameter in enrol_get_my_courses()');
+    }
+    if (in_array('*', $fields)) {
+        $fields = array('*');
+    }
+
+    $orderby = "";
+    $sort    = trim($sort);
+    if (!empty($sort)) {
+        $rawsorts = explode(',', $sort);
+        $sorts = array();
+        foreach ($rawsorts as $rawsort) {
+            $rawsort = trim($rawsort);
+            if (strpos($rawsort, 'c.') === 0) {
+                $rawsort = substr($rawsort, 2);
+            }
+            $sorts[] = trim($rawsort);
+        }
+        $sort = 'c.'.implode(',c.', $sorts);
+        $orderby = "ORDER BY $sort";
+    }
+
+    $wheres = array("c.id <> :siteid");
+    $params = array('siteid'=>SITEID);
+
+    if (isset($USER->loginascontext) and $USER->loginascontext->contextlevel == CONTEXT_COURSE) {
+        // list _only_ this course - anything else is asking for trouble...
+        $wheres[] = "courseid = :loginas";
+        $params['loginas'] = $USER->loginascontext->instanceid;
+    }
+
+    $coursefields = 'c.' .join(',c.', $fields);
+    list($ccselect, $ccjoin) = context_instance_preload_sql('c.id', CONTEXT_COURSE, 'ctx');
+    $wheres = implode(" AND ", $wheres);
+
+    //note: we can not use DISTINCT + text fields due to Oracle and MS limitations, that is why we have the subselect there
+
+    $sql = "SELECT $coursefields $ccselect
+              FROM {course} c
+              JOIN (SELECT DISTINCT e.courseid
+                      FROM {enrol} e
+                      JOIN {user_enrolments} ue ON (ue.enrolid = e.id AND ue.userid = :userid)
+                     WHERE ue.status = :active AND e.status = :enabled AND ue.timestart < :now1 AND (ue.timeend = 0 OR ue.timeend > :now2)
+                   ) en ON (en.courseid = c.id)
+           $ccjoin
+             WHERE $wheres
+          $orderby";
+    $params['userid']  = $USER->id;
+    $params['active']  = ENROL_USER_ACTIVE;
+    $params['enabled'] = ENROL_INSTANCE_ENABLED;
+    $params['now1']    = round(time(), -2); // improves db caching
+    $params['now2']    = $params['now1'];
+
+    //$totalcourses = count($DB->get_records_sql($sql, $params));
+    //$courses = $DB->get_records_sql($sql, $params, $page, $perpage);
+    $courses = $DB->get_records_sql($sql, $params);
+
+    $totalcourses = count($courses);
+    $courseset = array_slice($courses, $page, $perpage, true);
+
+    // preload contexts and check visibility
+    foreach ($courseset as $id=>$course) {
+        context_instance_preload($course);
+        /*if (!$course->visible) {
+            if (!$context = get_context_instance(CONTEXT_COURSE, $id)) {
+                unset($courseset[$id]);
+                continue;
+            }
+            if (!has_capability('moodle/course:viewhiddencourses', $context)) {
+                unset($courseset[$id]);
+                continue;
+            }
+        }*/
+        if ($context = get_context_instance(CONTEXT_COURSE, $id)) {
+            if (has_capability('moodle/course:viewhiddencourses', $context)) {
+                $course->user_can_view = true;
+            } else {
+                $course->user_can_view = false;
+            }
+            if (has_capability('moodle/course:visibility', $context)) {
+                $course->user_can_adjust_visibility = true;
+            } else {
+                $course->user_can_adjust_visibility = false;
+            }
+        }
+        $courseset[$id] = $course;
+    }
+
+    return array('totalcourses' => $totalcourses, 'courses' => $courseset);
 }

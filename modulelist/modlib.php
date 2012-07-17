@@ -114,36 +114,39 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
             }
         }
 
-        if(!$contentless){
-            $content_restriction = "AND (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) ";
+        $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, modinfo, summary, visible', 'shortname ASC', 0, 999999);
+
+        $list = "";
+        foreach($content_courses["courses"] as $tmp_course){
+             $list .= $tmp_course->id . ",";
+        }
+        $list = rtrim($list, ",");
+
+        if ($search_phrase != ""){
+            $search_phrase .= " AND";
         }
 
-        $userid = (int) $USER->id;
-        $params['userid'] = $userid;
-        $params['capability'] = 'moodle/course:update';
-
-        $sql = "SELECT DISTINCT
-     c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible FROM {$CFG->prefix}course c
-      INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
-      INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
-      INNER JOIN {$CFG->prefix}context con ON
-        ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
-          OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
-              (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
-              WHERE {$search_phrase} {$content_restriction}AND c.category != 0 ORDER BY c.shortname asc";
-
+        //Now check and get ones with content only
+        $sql = "SELECT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel
+         FROM {$CFG->prefix}course c
+         JOIN {$CFG->prefix}context ctx
+         ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
+         WHERE {$search_phrase} c.category != 390 AND c.category != 0 AND c.id IN ($list)
+         AND (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1)
+              OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)
+         )";
 
         //Override query if an admin
         if($adminuseraccess){
             $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
                     FROM {$CFG->prefix}course c
-                    WHERE {$search_phrase} {$content_restriction}AND c.category != 0
+                    WHERE {$search_phrase} (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1)
+                    OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND c.category != 390 AND c.category != 0 AND c.category != 0
                     ORDER BY c.shortname DESC";
         }
-
+        
+        $course_search_rs = $DB->get_recordset_sql($sql);
         // run the module search query
-        $course_search_rs = $DB->get_recordset_sql($sql, $params);
-
         if ($course_search_rs) {
 
             // count the total number of modules here
@@ -230,44 +233,41 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
 
     global $CFG, $USER, $DB;
 
+    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, modinfo, summary, visible', 'shortname ASC', 0, 999999);
+
     $course_list = array();
-    $userid = (int)$USER->id;
-    $params['capability'] = 'moodle/course:update';
-    $fields = "";
-    $order_by = "";
-    $content_restriction = "";
 
-    if(!$contentless){
-        $content_restriction = "(c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) AND ";
+    $list = "";
+    foreach($content_courses["courses"] as $tmp_course){
+         $list .= $tmp_course->id . ",";
     }
+    $list = rtrim($list, ",");
 
-    $userid = (int) $USER->id;
-    $params['userid'] = $userid;
-    $params['capability'] = 'moodle/course:update';
+    //Now check and get ones with content only
+    $tmpsql = "SELECT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel
+     FROM {$CFG->prefix}course c
+     JOIN {$CFG->prefix}context ctx
+     ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
+     WHERE c.category != 0 AND c.id IN ($list)
+     AND (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1)
+          OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)
+     )";
 
-    //New query will check categories as well - which should cover DA's
-    $sql = "SELECT DISTINCT
- c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible FROM {$CFG->prefix}course c
-  INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
-  INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
-  INNER JOIN {$CFG->prefix}context con ON
-    ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
-      OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
-          (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
-          WHERE (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1) OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)) AND c.category != 0 ORDER BY c.shortname asc";
 
-    // pull out all module matching
-    if ($courses = $DB->get_records_sql($sql, $params)) {
-
-        $count = 1;
-        foreach ($courses as $course) {
+     if ($results = $DB->get_records_sql($tmpsql)) {
+         $course_list = array();
+         $count = 1;
+         foreach($results as $result){
             if ($max_records > 0 && $count > $max_records) break;
-            if ($course->id == 1) continue;
-                $course_list[$course->id]['shortname'] = $course->shortname;
-                $course_list[$course->id]['fullname'] = $course->fullname;
-            ++$count;
-        }
-    }
+            $course_id = $result->id;
+            $coursecontext = get_context_instance(CONTEXT_COURSE, $result->id);
+            if (has_capability('moodle/course:update', $coursecontext)) {
+                $course_list[$course_id]['shortname'] = $result->shortname;
+                $course_list[$course_id]['fullname'] = $result->fullname;
+                ++$count;
+            }
+         }
+     }
 
     return $course_list;
 
