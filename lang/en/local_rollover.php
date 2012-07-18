@@ -35,7 +35,7 @@ $string['no_permissions'] = 'Sorry, but you do not currently have permissions to
 $string['no_courses'] = 'There are currently no modules which you have access to which require content rollover.  Please contact an administrator if you require any assistance.';
 $string['processingmessage'] = '<h3>Scheduled for rollover</h3><p>Your request will be completed in the next 24 hours.</p>';
 $string['requestedmessage'] = '<h3>Successfully scheduled</h3><p>Your request will be completed in the next 24 hours.</p>';
-$string['errormessage'] = '<h3>Error!</h3><p>System administrators are aware of this problem <br />and will contact you soon</p>';
+$string['errormessage'] = '<h3>Error!</h3><p>Please contact your FLT if this problem still<br/>remains after an hour.</p>';
 $string['are_you_sure_text'] = 'Are you sure you want to rollover this module?';
 
 $string['rollover_from_error_text'] = 'Please select a valid existing module to rollover from.';
