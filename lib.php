@@ -69,7 +69,7 @@ function kent_get_own_editable_courses(){
 
     
     //Now check and get ones with content only
-    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
+    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
      FROM {$CFG->prefix}course c
      LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
      {$content_check}
@@ -138,7 +138,7 @@ function kent_get_own_editable_courses(){
     $content_check = "";
     $where_check = "(rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored')";
     //Now check and get ones with content only
-    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
+    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
      FROM {$CFG->prefix}course c
      LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
      {$content_check}
