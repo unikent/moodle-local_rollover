@@ -157,6 +157,8 @@ var refreshCourseData = function() {
 		courses_search: []
 	};
 
+	console.log(window.autoCompleteUrl);
+
 	jQuery.ajax({
 		url: window.autoCompleteUrl,
 		dataType: 'json',
