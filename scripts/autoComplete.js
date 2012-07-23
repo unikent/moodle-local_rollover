@@ -173,8 +173,8 @@ var refreshCourseData = function() {
 				jQuery.unblockUI();
 				if (data !== null){
 					for(var course in data.courses) {
-						course_data.courses_search.push(data.courses[course].fullname);
-						course_data.courses[data.courses[course].fullname] = [course, '1.9'];
+						course_data.courses_search.push(data.courses[course].shortname + " - " + data.courses[course].fullname);
+						course_data.courses[data.courses[course].shortname + " - " + data.courses[course].fullname] = [course, '1.9'];
 					}
 				}
 
@@ -213,6 +213,7 @@ var populateCourseAutoComplete = function(course_data) {
 		delay: 0,
 		select: function(event, ui) {
 			jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[ui.item.label][0]);
+
 			if(course_data.courses[ui.item.label][1] === '1.9') {
 				jQuery(this).parent().find('.m1 input').attr('disabled', 'disabled').removeAttr('checked');
 			} else {
