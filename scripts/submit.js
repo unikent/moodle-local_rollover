@@ -78,6 +78,7 @@ jQuery(document).ready(function() {
                                 }
                             },
                             error: function(j,t,e) {
+                                console.log(j)
                                 button.html('error');
                             }
                         });

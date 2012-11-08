@@ -190,6 +190,44 @@
     display: none;
 }
 
+#rollover_search {
+  position: relative;
+  padding: 15px;
+  margin-bottom: 20px;
+  //width: 100%;
+  background: #f6f6f6;
+  border: 1px solid #e3e3e3;
+
+  #srch { 
+    display: block;
+    padding: 10px;
+    margin: 0px auto;
+    width: 97%;
+  }
+  #srch_submit {
+    position: absolute;
+    right: 17px;
+    top: 15px;
+    padding: 9px;
+    color: #fff;
+    text-shadow: 0px 0px 0px transparent;
+    .gradient(#27519f, #214587, #27519f);
+    border: 1px solid #214587;
+    .border-radius(0);
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+  }
+
+  #srch_submit:hover {
+    .gradient(#2A58AC, #254E98, #2A58AC);
+  }
+
+  #srch_submit:active {
+    .gradient(#214485, #1C3A72, #214485);
+  }
+}
+
 .paging {
   padding: 6px 10px;
   border-top: 1px solid #e3e3e3;

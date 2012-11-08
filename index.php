@@ -48,9 +48,10 @@ echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
 $scripts ='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
 $scripts .= '<link rel="stylesheet/less" type"text/css" href="styles.less">';
-$scripts .= '<script type="text/javascript"> window.autoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.oldMoodleAuthUrl="' . $CFG->kent_rollover_archive_auth_path . '"; window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
+$scripts .= '<script type="text/javascript"> window.archiveAutoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.autoCompleteUrl="'. $CFG->wwwroot.'/local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1"; window.oldMoodleAuthUrl="' . $CFG->kent_rollover_archive_auth_path . '"; window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.2.0.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
+$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/underscore-min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery.blockUI.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
@@ -68,7 +69,7 @@ $description_label_text = get_string('description_label_text', 'local_rollover')
 
 $form = <<< HEREDOC
     <div class='rollover_item'>
-        <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action='schedule.php'>
+        <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action=''>
             <table class='rollover_layout'>
                 <tr>
                         <td class='rollover_crs_title'>
@@ -107,6 +108,7 @@ $from_form = <<< HEREDOC
             </div>
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
+        <input type="hidden" name="src_from" class="src_from" value=""/>
         <input type="hidden" name="id_to" class="id_to" value="%3\$d"/>
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
@@ -119,7 +121,16 @@ $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></di
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
-$courses = kent_get_empty_courses();
+$search = optional_param('srch', null, PARAM_TEXT);
+
+echo '<div id="rollover_search">
+        <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="get">
+        <input type="text" id="srch" name="srch" value="' . $search . '"placeholder="SEARCH FOR ROLLOVER"/>
+        <input type="submit" id="srch_submit" value="Search" />
+        </form>
+        </div>';
+
+$courses = kent_get_empty_courses($search);
 
 if (!empty($courses)) {
     
@@ -135,7 +146,7 @@ if (!empty($courses)) {
     $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
 
     // pagination stuff
-    $baseurl = new moodle_url($PAGE->URL);
+    $baseurl = new moodle_url($PAGE->URL, array('srch'=>$search));
     $current_page = optional_param('page', 0, PARAM_INT);
     $per_page = 20;
     $offset = $current_page == 0 ? 0 : $current_page * $per_page;
@@ -158,9 +169,8 @@ if (!empty($courses)) {
         $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
 
         //Extract the shortname without year - only grabs the first
-        $pattern = "([a-zA-Z]{2,4}[0-9]{3,4})";
+        $pattern = "([a-zA-Z]{2,4}[0-9]{1,4})";
         preg_match($pattern, $course->shortname, $matches);
-
         $shortcode = "";
         if($matches != FALSE){
             $shortcode = $matches[0];
@@ -175,6 +185,7 @@ if (!empty($courses)) {
                 break;
             case 'completed':
                 //Should not be used as the form should not show complete items
+                $from_content = $from_requested;
                 break;
             case 'errored':
                 $from_content = $form_error;

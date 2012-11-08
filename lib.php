@@ -29,7 +29,7 @@ function kent_list_rollover_courses(){
 /**
  * Returns list of modules for user
  */
-function kent_get_empty_courses(){
+function kent_get_empty_courses($srch = ''){
     global $USER, $DB;
 
     $context = get_context_instance(CONTEXT_SYSTEM);
@@ -39,6 +39,23 @@ function kent_get_empty_courses(){
         $courses = kent_get_all_courses();
     } else {
         $courses = kent_get_own_editable_courses();
+    }
+
+
+
+    if($srch != '') {
+        $srch = strip_tags(strtolower($srch));
+        $courses = array_filter($courses, function($c) use ($srch) { 
+            if(strpos(strtolower($c->shortname), $srch) !== false) {
+                return true;
+            } elseif (strpos(strtolower($c->fullname), $srch) !== false) {
+                return true;
+            } elseif (strpos(strtolower($c->summary), $srch) !== false) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
     return $courses;
