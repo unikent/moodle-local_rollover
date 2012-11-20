@@ -126,12 +126,12 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
             $search_phrase .= " AND";
         }
 
-        //Now check and get ones with content only
+        //Now check and get ones with content only .. ignore removed category 58 on Live
         $sql = "SELECT c.id, c.shortname, c.fullname, c.category, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel
          FROM {$CFG->prefix}course c
          JOIN {$CFG->prefix}context ctx
          ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-         WHERE {$search_phrase} c.category != 390 AND c.category != 0 AND c.id IN ($list)
+         WHERE {$search_phrase} c.category != 58 AND c.category != 0 AND c.id IN ($list)
          AND (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1)
               OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)
          )";
@@ -141,7 +141,7 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
             $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
                     FROM {$CFG->prefix}course c
                     WHERE {$search_phrase} (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1)
-                    OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND c.category != 390 AND c.category != 0 AND c.category != 0
+                    OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND c.category != 58 AND c.category != 0
                     ORDER BY c.shortname DESC";
         }
         
@@ -248,7 +248,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
      FROM {$CFG->prefix}course c
      JOIN {$CFG->prefix}context ctx
      ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE c.category != 0 AND c.id IN ($list)
+     WHERE c.category != 0 AND c.category != 58 AND c.id IN ($list)
      AND (c.id = (SELECT course FROM {$CFG->prefix}course_modules WHERE course=c.id LIMIT 0,1)
           OR c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)
      )";
@@ -306,7 +306,7 @@ function kent_get_all_content_courses($max_records=0, $contentless=FALSE) {
 
         $sql = "SELECT {$fields}
                 FROM {$CFG->prefix}course c
-                WHERE category != 0{$content_restriction}{$order_by}" ;
+                WHERE category != 58 AND category != 0{$content_restriction}{$order_by}" ;
 
         // pull out all modules matching
         if ($courses = $DB->get_records_sql($sql)) {
