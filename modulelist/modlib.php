@@ -33,10 +33,10 @@ function kent_get_data(){
 
 
 /**
-* Function to bolt on total courses.
+* Function to bolt on total modules.
 */
 function kent_total_courses(&$data){
-    //Give total of courses incase we need it
+    //Give total of modules incase we need it
     $data['total_courses'] = (isset($data['courses']) ? count($data['courses']) : 0);
 
     if($data['total_courses'] == 0){
@@ -59,7 +59,7 @@ function kent_modlist_search(&$data){
 
     $data['courses'] = kent_search_user_courses($data['action'], $search_term_array, -1, $data['more_courses'], $data['max_records'], $data['contentless'], $data['orderbyrole']);
 
-    // This list is all the same modules, sort reverse alphabetically so the last year is at the top of the list if we have courses
+    // This list is all the same modules, sort reverse alphabetically so the last year is at the top of the list if we have modules
     if (count($data['courses']) <= 0) {
         $data['errors'][] = 'No modules were found!';
     }
@@ -69,19 +69,19 @@ function kent_modlist_search(&$data){
 
 
 /**
- * Search all courses for ones whose shortname and fullname match the search terms
- * Discovered courses must be updateable by the logged in user and have some content
+ * Search all modules for ones whose shortname and fullname match the search terms
+ * Discovered modules must be updateable by the logged in user and have some content
  *
- * This function was written for the Kent_Rollover block, but nabbed and tweaked for the course list web service to show courses
- * which could be used as a source course for a content rollover.
+ * This function was written for the Kent_Rollover block, but nabbed and tweaked for the module list web service to show modules
+ * which could be used as a source module for a content rollover.
  *
- * @param String or Array of Strings $searchterms - phrases to match against in course short or fullname. If a string, it is split into an array of strings around spaces
- * @param int $omit_course a single course id to omit in the search results (usually the one the user is in)
- * @param boolean $ignore_empty Don't list empty course (default false)
- * @param &boolean $more_courses passed by reference, if there were more courses other than the ones returned, this is set to true
+ * @param String or Array of Strings $searchterms - phrases to match against in module short or fullname. If a string, it is split into an array of strings around spaces
+ * @param int $omit_course a single module id to omit in the search results (usually the one the user is in)
+ * @param boolean $ignore_empty Don't list empty module (default false)
+ * @param &boolean $more_courses passed by reference, if there were more modules other than the ones returned, this is set to true
  * @param int $max_records this field sets the maximum number of results to return. Default is 25.
- * @param bool $contentless Set to FALSE by default not fetch courses without content
- * @return Array of formatted shortnames (of the form: NAME (YYYY/YYYY) ) indexed by the course ids.
+ * @param bool $contentless Set to FALSE by default not fetch modules without content
+ * @return Array of formatted shortnames (of the form: NAME (YYYY/YYYY) ) indexed by the module ids.
  */
 function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_courses=null, $max_records=0, $contentless=FALSE, $orderbyrole=FALSE) {
 
@@ -89,14 +89,14 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
 
     if (!is_array($searchterms)) $searchterms = explode(array(" ",","), $searchterms);
 
-    // all found courses will be formated and placed in the following array which is returned
+    // all found modules will be formated and placed in the following array which is returned
     $courses_returned = array();
     $more_courses = false;
 
     $context = context_system::instance();
     $adminuseraccess = has_capability('moodle/site:config', $context);
 
-    // build some neat SQL to search first the course shortname and then the course fullname
+    // build some neat SQL to search first the module shortname and then the module fullname
     foreach(array('shortname', 'fullname') as $course_field) {
     //foreach(array('shortname', 'fullname', 'summary') as $course_field) {
 
@@ -163,32 +163,32 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
                     WHERE con.contextlevel = 50{$role_restriction_2}
                  )) ORDER BY c.shortname DESC";
 
-        // run the course search query
+        // run the module search query
         $course_search_rs = $DB->get_recordset_sql($sql, $params);
 
         if ($course_search_rs) {
 
-            // count the total number of courses here
+            // count the total number of modules here
             $course_count = 1;
 
             foreach ($course_search_rs as $course) {
 
-                // turn the course into an object
+                // turn the module into an object
                 context_instance_preload($course);
                 $coursecontext = get_context_instance(CONTEXT_COURSE, $course->id);
 
-                // ignore course if its the omit_course course
+                // ignore module if its the omit_course module
                 if ( $course->id == $omit_course ) continue;
 
-                // Have we reached the limit of the number of courses to return?
+                // Have we reached the limit of the number of modules to return?
                 if ($max_records > 0 && $course_count > $max_records){
                     $more_courses = true;
                     break;
                 }
 
-                // check the user is able to use this course in a rollover
+                // check the user is able to use this module in a rollover
 
-                /*** BEGIN this course is a valid one to use for a rollover so add to the return_array ***/
+                /*** BEGIN this module is a valid one to use for a rollover so add to the return_array ***/
 
                 // we're going to change the text so the year is printed nicely (yyyy/yyyy)
                 $matches = array();
@@ -222,20 +222,20 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
 
     }
 
-    // return the formated list of discovered courses
+    // return the formated list of discovered modules
     return $courses_returned;
 }
 
 
 /**
- * Get a list of courses depending on role.  Admin can see everything
+ * Get a list of modules depending on role.  Admin can see everything
  */
 function kent_get_all_user_courses(&$data){
     global $USER;
 
     $context = context_system::instance();
 
-    //If we are an admin, then we need to see all courses
+    //If we are an admin, then we need to see all modules
     if (has_capability('moodle/site:config', $context)){
         $data['courses'] = kent_get_all_content_courses($data['max_records'], $data['contentless']);
     } else {
@@ -248,9 +248,9 @@ function kent_get_all_user_courses(&$data){
 
 
 /**
- * Returns list of courses for user which has content
+ * Returns list of modules for user which has content
  * @param int $max_records Set to 0 by default to fetch all. Set max records if you want to limit how much is returned.
- * @param bool $contentless Set to FALSE by default not fetch courses without content
+ * @param bool $contentless Set to FALSE by default not fetch modules without content
  */
 function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=FALSE){
 
@@ -307,7 +307,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
                     )
                  )) ORDER BY c.shortname DESC";
 
-    // pull out all course matching
+    // pull out all module matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
 
         $count = 1;
@@ -326,9 +326,9 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
 
 
 /**
- * Returns all courses with content.  For admin use only!
+ * Returns all modules with content.  For admin use only!
  * @param int $max_records Set to 0 by default to fetch all. Set max records if you want to limit how much is returned.
- * @param bool $contentless Set to FALSE by default not fetch courses without content
+ * @param bool $contentless Set to FALSE by default not fetch modules without content
  */
 function kent_get_all_content_courses($max_records=0, $contentless=FALSE) {
 
@@ -359,7 +359,7 @@ function kent_get_all_content_courses($max_records=0, $contentless=FALSE) {
                 FROM {$CFG->prefix}course c
                 WHERE category != 0{$content_restriction}{$order_by}" ;
 
-        // pull out all course matching
+        // pull out all modules matching
         if ($courses = $DB->get_records_sql($sql)) {
                 // loop throught them
                 $count = 1;
