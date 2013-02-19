@@ -59,15 +59,25 @@ function kent_get_own_editable_courses(){
     $params['userid'] = (int)$USER->id;
     $params['capability'] = 'moodle/course:update';
 
+
     $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
             FROM {$CFG->prefix}context con
             JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
             JOIN mdl_course c ON c.id=con.instanceid
             LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
             LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-            LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-            WHERE cms.course is null AND cse.section is null AND con.contextlevel=50
+            WHERE cse.section is null AND con.contextlevel=50
             ORDER BY c.shortname DESC";
+    
+//    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+//            FROM {$CFG->prefix}context con
+//            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
+//            JOIN mdl_course c ON c.id=con.instanceid
+//            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+//            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
+//            LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
+//            WHERE cms.course is null AND cse.section is null AND con.contextlevel=50
+//            ORDER BY c.shortname DESC";
 
 //Comment out above and this in if we don't care about courses with content already.
 //    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
@@ -83,6 +93,20 @@ function kent_get_own_editable_courses(){
 
         foreach ($courses as $course) {
             if ($course->id == 1) continue;
+
+            // count number of modules in this course
+            $no_modules = intval($DB->count_records('course_modules',array('course' => $course->id)));
+
+            //If we only have one module, then check it is a news forum and re-evaluate
+            if($no_modules == 1){
+                $no_modules_news = kent_check_news_forum($course->id);
+                if (is_int($no_modules_news) && $no_modules_news == 0){
+                    continue; //If its not a news forum and something else, then skip
+                }
+            } elseif($no_modules > 1) {
+                continue; //Skip if we have more than one module
+            } 
+
             //If we had no rollover status, then set to none
             if($course->rollover_status === NULL){
                 $course->rollover_status = "none";
@@ -107,6 +131,7 @@ function kent_get_own_editable_courses(){
         // loop throught them
         foreach ($courses as $course) {
             if ($course->id == 1) continue;
+
             //Add or override on our central list.
             $course_list[$course->id] = $course;
         }
@@ -134,13 +159,21 @@ function kent_get_all_courses() {
     //Only return everything if an admin...
     if (has_capability('moodle/site:config', $context)){
 
-        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cms.course, cse.section, rol.what as rollover_status
+
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cse.section, rol.what as rollover_status
                 FROM {$CFG->prefix}course c
                 LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
                 LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-                LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-                WHERE cms.course is null AND cse.section is null
+                WHERE cse.section is null
                 ORDER BY c.shortname DESC";
+
+//        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cms.course, cse.section, rol.what as rollover_status
+//                FROM {$CFG->prefix}course c
+//                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+//                LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
+//                LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
+//                WHERE cms.course is null AND cse.section is null
+//                ORDER BY c.shortname DESC";
 
 //Comment out above and this in if we don't care about courses with content already.
 //        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
@@ -157,6 +190,20 @@ function kent_get_all_courses() {
             foreach ($courses as $course) {
                 if ($course->id == 1) continue;
                 //If we had no rollover status, then set to none
+
+                // count number of modules in this course
+                $no_modules = intval($DB->count_records('course_modules',array('course' => $course->id)));
+
+                //If we only have one module, then check it is a news forum and re-evaluate
+                if($no_modules == 1){
+                    $no_modules_news = kent_check_news_forum($course->id);
+                    if (is_int($no_modules_news) && $no_modules_news == 0){
+                        continue; //If its not a news forum and something else, then skip
+                    }
+                } elseif($no_modules > 1) {
+                    continue; //Skip if we have more than one module
+                }
+
                 if($course->rollover_status === NULL){
                     $course->rollover_status = "none";
                 }
@@ -417,20 +464,19 @@ function kent_course_has_content($course_id){
 
     global $CFG, $DB;
 
-    // count number of modules in this course
-    //$no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
+// count number of modules in this course
+    $no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
 
-    $course_modules = $DB->get_records('course_modules', array('course'=>$course_id));
-    $course_modules_count = count($course_modules);
-    // if course has modules return true as it has content
-    if ($course_modules_count>1) {
-        return TRUE;
-    } else if($course_modules_count == 1) {
-        $m = $DB->get_record('modules', array('id'=>$course_modules[key($course_modules)]->module));
-        if($m->name != 'forum') {
-            return TRUE;
+    //If we only have one module, then check it is a news forum and re-evaluate
+    if($no_modules == 1){
+        $no_modules = kent_check_news_forum($course_id);
+        if (is_int($no_modules) && $no_modules>0){
+            return FALSE; //If we have a news forum, then say it has no content technically
         }
     }
+
+    // if course has modules return true as it has content
+    if (is_int($no_modules) && $no_modules>0) return TRUE;
 
 
     // count number of non-empty summaries
@@ -444,6 +490,21 @@ function kent_course_has_content($course_id){
 
     // must be empty, return false
     return FALSE;
+}
+
+
+/**
+ * Function to find out if there are any news forums
+ */
+function kent_check_news_forum($course_id){
+
+    global $DB, $CFG;
+
+    $sql = "SELECT COUNT(id) FROM {$CFG->prefix}forum WHERE course={$course_id} AND type = 'news'";
+    $no_modules = (int) $DB->count_records_sql($sql);
+
+    return $no_modules;
+
 }
 
 

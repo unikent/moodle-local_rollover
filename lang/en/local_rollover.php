@@ -40,7 +40,9 @@ $string['are_you_sure_text'] = 'Are you sure you want to rollover this course?';
 
 $string['rollover_from_error_text'] = 'Please select a valid existing course to rollover from.';
 $string['rollover_to_error_text'] = 'No destination course set.  Please refresh this page and try again.  If this error persists, please contact an administrator.'; //Should never see this, but just incase.
-$string['rollover_autocomplete_error'] = 'Could not retrieve autocomplete data.  Please refresh this page and try again.  If this error persists, please contact an administrator.';
+//$string['rollover_autocomplete_error'] = 'Could not retrieve autocomplete data.  Please refresh this page and try again.  If this error persists, please contact an administrator.';
+$string['rollover_autocomplete_error'] = 'Could not retrieve autocomplete data. <br/><br/>Please note that you need to be also logged into the current <a target="_blank" href="https://moodle.kent.ac.uk/moodle">Moodle website</a> to carry out rollovers and avoid this error.  This is a temporary measure until student exams are finished and so not to cause interruption to that service.<br/><br/>We apologise for any temporary inconvenience caused.';
+
 
 $string['short_code_label_text'] = 'Short code';
 $string['description_label_text'] = 'Description';
