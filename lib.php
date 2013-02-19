@@ -415,7 +415,8 @@ function kent_get_current_rollover_status($course_id){
 
 
 /*
- * Can we set a rollover?
+ * Can we set a rollover? actually, this is more accurately defined as
+ * 'should we show the rollover box?'
  */
 function kent_rollover_ability($course_id, $status=""){
     //If status isn't passed, get it from course id
@@ -426,11 +427,19 @@ function kent_rollover_ability($course_id, $status=""){
     //As well as status, will need to see that the course has no content
     $course_has_content = kent_course_has_content($course_id);
 
-    if($status != "processing" && !$course_has_content){
-        return TRUE;
+    // if($status != "processing" && !$course_has_content){
+    //     return true;
+    // }
+
+    // Don't show the rollover box if the status is completed (it's done), or there
+    // is no rollover status and the course already has content (no rolling over into
+    // already-populated courses)
+    if ($status == 'completed' || ($status == 'none' && $course_has_content) ) {
+        return false;
     }
 
-    return FALSE;
+    // in all other cases, do show the rollover box
+    return true;
 }
 
 
@@ -453,12 +462,12 @@ function kent_has_edit_course_access(){
     if ($courses = $DB->get_record_sql($sql, $params)) {
         $assignments = (int)$courses->assignments;
         if($assignments > 0){
-            return TRUE;
+            return true;
         }
 
     }
 
-    return FALSE;
+    return false;
 
 }
 
@@ -477,7 +486,7 @@ function kent_course_has_content($course_id){
     $no_summaries = (int) $DB->count_records_sql($sql);
 
     // if there are any non-empty summaries return true as it has content
-    if ($no_summaries > 0) return TRUE;	
+    if ($no_summaries > 0) return true;	
 	
     // If not, then secondly count number of mods in this module
     $no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
@@ -486,25 +495,14 @@ function kent_course_has_content($course_id){
     if($no_modules == 1){
         $no_modules = kent_check_news_forum($course_id);
         if (is_int($no_modules) && $no_modules == 0){
-            return TRUE; //If we have no news forum, then the one module we have must have been added by a user, so the module has content.
+            return true; //If we have no news forum, then the one module we have must have been added by a user, so the course has content.
         }
-    }
-
-    // if course has modules return true as it has content
-    if (is_int($no_modules) && $no_modules>0) return TRUE;
-
-
-    // count number of non-empty summaries
-    $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course_sections WHERE course={$course_id} AND section!=0 AND summary is not null AND summary !=''";
-    $no_modules = (int) $DB->count_records_sql($sql);
-
-    // if there are any non-empty summaries return true as it has content
-    if ($no_modules>0) return TRUE;
-
-
+    } elseif ($no_modules > 1) {
+		return true; //For certain has content if more than one module
+	}
 
     // must be empty, return false
-    return FALSE;
+    return false;
 }
 
 
@@ -532,7 +530,7 @@ function kent_set_ignore_rollover($course_id){
 
         $context = get_context_instance(CONTEXT_COURSE, $course_id);
 
-        $status = array('status' => FALSE);
+        $status = array('status' => false);
 
         if (has_capability('moodle/course:update', $context)){
             $msg = 'User: '.$USER->id.' set this module to be ignored.';
@@ -543,7 +541,7 @@ function kent_set_ignore_rollover($course_id){
             $cmt_id = $DB->execute($sql, $newrec);
 
             if (!empty($cmt_id)) {
-                $status['status'] = TRUE;
+                $status['status'] = true;
             }
         }
         
