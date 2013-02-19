@@ -57,36 +57,54 @@ function kent_get_own_editable_courses(){
 
     $course_list = array();
     $params['userid'] = (int)$USER->id;
+    $params['userid2'] = (int)$USER->id;
     $params['capability'] = 'moodle/course:update';
+    $params['capability2'] = 'moodle/course:update';
+
+    //This query only does course level permission checks.
+    //    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+    //            FROM {$CFG->prefix}context con
+    //            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
+    //            JOIN mdl_course c ON c.id=con.instanceid
+    //            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+    //            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
+    //            WHERE cse.section is null AND con.contextlevel=50
+    //            ORDER BY c.shortname DESC";
 
 
+    $content_check = "LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0";
+    $where_check = "cse.section is null";
+
+    //New query will check categories as well - which should cover DA's
     $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-            FROM {$CFG->prefix}context con
-            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-            JOIN mdl_course c ON c.id=con.instanceid
+            FROM {$CFG->prefix}course c
             LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-            WHERE cse.section is null AND con.contextlevel=50
-            ORDER BY c.shortname DESC";
-    
-//    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-//            FROM {$CFG->prefix}context con
-//            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-//            JOIN mdl_course c ON c.id=con.instanceid
-//            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-//            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-//            LEFT JOIN {$CFG->prefix}course_modules cms ON c.id = cms.course
-//            WHERE cms.course is null AND cse.section is null AND con.contextlevel=50
-//            ORDER BY c.shortname DESC";
-
-//Comment out above and this in if we don't care about courses with content already.
-//    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-//            FROM {$CFG->prefix}context con
-//            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-//            JOIN mdl_course c ON c.id=con.instanceid
-//            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-//            WHERE (rol.what is null OR rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
-//            ORDER BY c.shortname DESC";
+            {$content_check}
+            WHERE {$where_check} AND c.category IN (
+                SELECT DISTINCT con.instanceid
+                FROM {$CFG->prefix}context con
+                WHERE con.instanceid != 0 AND con.contextlevel = 40 AND con.id IN (
+                    SELECT DISTINCT ra.contextid
+                    FROM {$CFG->prefix}role_assignments ra
+                    WHERE ra.userid = :userid AND ra.roleid IN (
+                        SELECT DISTINCT roleid
+                        FROM {$CFG->prefix}role_capabilities rc
+                        WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
+                    )
+                 )
+            ) OR c.id IN (
+                    SELECT DISTINCT con.instanceid
+                    FROM {$CFG->prefix}context con
+                    WHERE con.instanceid != 0 AND con.contextlevel = 50 AND con.id IN (
+                        SELECT DISTINCT ra.contextid
+                        FROM {$CFG->prefix}role_assignments ra
+                        WHERE ra.userid = :userid2 AND ra.roleid IN (
+                            SELECT DISTINCT roleid
+                            FROM {$CFG->prefix}role_capabilities rc
+                            WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
+                        )
+                     )
+            ) ORDER BY c.shortname DESC";
 
     // pull out all course matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
@@ -116,14 +134,21 @@ function kent_get_own_editable_courses(){
 
     }
 
+    //OLD version pre category check
     //Pick up any courses which may not be empty, because they are in rollover progress as we need to report on these.
-    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-            FROM {$CFG->prefix}context con
-            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-            JOIN mdl_course c ON c.id=con.instanceid
-            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-            WHERE (rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
-            ORDER BY c.shortname DESC";
+//    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+//            FROM {$CFG->prefix}context con
+//            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
+//            JOIN mdl_course c ON c.id=con.instanceid
+//            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+//            WHERE (rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored') AND con.contextlevel=50
+//            ORDER BY c.shortname DESC";
+
+    //Need to do the same now without the content check to get rollover status for those still running
+    $content_check = "";
+    $where_check = "(rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored')";
+
+    //use same query as before with the above tweaks
 
     // pull out all course matching
     if ($courses = $DB->get_records_sql($sql, $params)) {

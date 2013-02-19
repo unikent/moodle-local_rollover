@@ -102,46 +102,58 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
         $order_by = "";
 
         if ($type == 'modlist'){
-            $search_phrase = "{$course_field} LIKE '{$searchterms[0]}%'";
+            $search_phrase = "c.{$course_field} LIKE '{$searchterms[0]}%'";
         } else { //We do a standard search with multiple bits
             //This will be slow, but not as slow as it used to be...
             foreach ($searchterms as $searchterm) {
                 if ($search_phrase) $search_phrase .= ' AND ';
-                $search_phrase .= " {$course_field} LIKE '%{$searchterm}%' ";
+                $search_phrase .= " c.{$course_field} LIKE '%{$searchterm}%' ";
             }
         }
 
         if(!$contentless){
-            $content_restriction = " AND c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)";
+            $content_restriction = "c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND ";
         }
 
-        if (!$orderbyrole){
-            $order_by = " ORDER BY c.shortname DESC";
-            //This combines the check for content
-            $sql = "SELECT c.id, c.shortname, c.fullname,
-                    ctx.id AS ctxid, ctx.path AS ctxpath,
-                    ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel
-                    FROM {$CFG->prefix}course c
-                    JOIN {$CFG->prefix}context ctx
-                    ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-                    WHERE {$search_phrase} AND category != 390 AND category != 0{$content_restriction}{$order_by}";
-        } else {
-            //New query to order by role importance
-            $userid = (int)$USER->id;
-            $order_by = " ORDER BY ra.roleid DESC, c.shortname DESC";
-            $sql = "SELECT ra.roleid, c.id, c.shortname, c.fullname,
-                    ctx.id AS ctxid, ctx.path AS ctxpath,
-                    ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel
-                    FROM {$CFG->prefix}course c
-                    JOIN {$CFG->prefix}context ctx
-                    ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-                    JOIN {$CFG->prefix}role_assignments ra
-                    ON (ctx.id = ra.contextid)
-                    WHERE {$search_phrase} AND ra.userid={$userid} AND category != 390 AND category != 0{$content_restriction}{$order_by}";
-        }
+        $userid = (int) $USER->id;
+        $params['userid'] = $userid;
+        $params['userid2'] = $userid;
+        $params['capability'] = 'moodle/course:update';
+        $params['capability2'] = 'moodle/course:update';
+
+        //New query will check categories as well - which should cover DA's
+
+        $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible
+                FROM {$CFG->prefix}course c
+                WHERE ({$search_phrase} AND {$content_restriction}c.category IN (
+                    SELECT DISTINCT con.instanceid
+                    FROM {$CFG->prefix}context con
+                    WHERE con.contextlevel = 40 AND con.id IN (
+                        SELECT DISTINCT ra.contextid
+                        FROM {$CFG->prefix}role_assignments ra
+                        WHERE ra.userid = :userid AND ra.roleid IN (
+                            SELECT DISTINCT roleid
+                            FROM {$CFG->prefix}role_capabilities rc 
+                            WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
+                        )
+                    )
+                )) OR ({$search_phrase} AND {$content_restriction}c.id IN (
+                    SELECT DISTINCT con.instanceid
+                    FROM {$CFG->prefix}context con
+                    WHERE con.contextlevel = 50 AND con.id IN (
+                        SELECT DISTINCT ra.contextid
+                        FROM {$CFG->prefix}role_assignments ra
+                        WHERE ra.userid = :userid2 AND ra.roleid IN (
+                            SELECT DISTINCT roleid
+                            FROM {$CFG->prefix}role_capabilities rc
+                            WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
+                        )
+                    )
+                 )) ORDER BY c.shortname DESC";
+
 
         // run the course search query
-        $course_search_rs = $DB->get_recordset_sql($sql);
+        $course_search_rs = $DB->get_recordset_sql($sql, $params);
 
         if ($course_search_rs) {
 
@@ -164,30 +176,28 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
                 }
 
                 // check the user is able to use this course in a rollover
-                if (has_capability('moodle/course:update', $coursecontext)) {
 
-                    /*** BEGIN this course is a valid one to use for a rollover so add to the return_array ***/
+                /*** BEGIN this course is a valid one to use for a rollover so add to the return_array ***/
 
-                    // we're going to change the text so the year is printed nicely (yyyy/yyyy)
-                    $matches = array();
+                // we're going to change the text so the year is printed nicely (yyyy/yyyy)
+                $matches = array();
 
-                    // Look to see if a year is part of the module name (4 digits) as long as its not of the form xxxx/xxxx or part of a larger string
-                    $found = preg_match_all('/[ (]([0-9]{4})/', $course->shortname, $matches);
+                // Look to see if a year is part of the module name (4 digits) as long as its not of the form xxxx/xxxx or part of a larger string
+                $found = preg_match_all('/[ (]([0-9]{4})/', $course->shortname, $matches);
 
-                    if ($found !== FALSE && $found > 0) {
-                        // if the year is found on its own, replace it with: last-year/this-year notation
-                        $module_year = "(" . ($matches[$found][0] - 1) . "/" . $matches[$found][0] . ")";
-                        $courses_returned[$course->id]['shortname'] = str_replace($matches[$found][0], $module_year, $course->shortname);
-                    } else {
-                        // couldn't find a year so just print the shortname
-                        $courses_returned[$course->id]['shortname'] = $course->shortname;
-                    }
-
-                    //Also add in fullname
-                    $courses_returned[$course->id]['fullname'] = $course->fullname;
-
-                    /*** END ***/
+                if ($found !== FALSE && $found > 0) {
+                    // if the year is found on its own, replace it with: last-year/this-year notation
+                    $module_year = "(" . ($matches[$found][0] - 1) . "/" . $matches[$found][0] . ")";
+                    $courses_returned[$course->id]['shortname'] = str_replace($matches[$found][0], $module_year, $course->shortname);
+                } else {
+                    // couldn't find a year so just print the shortname
+                    $courses_returned[$course->id]['shortname'] = $course->shortname;
                 }
+
+                //Also add in fullname
+                $courses_returned[$course->id]['fullname'] = $course->fullname;
+
+                /*** END ***/
 
                 // incremenet the counter to the end of the recordset to determine the max number of results
                 $course_count++;
@@ -246,19 +256,45 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
     //$fields = "c.id, c.shortname";
 
     $order_by = " ORDER BY c.shortname DESC";
-    if($orderbyrole){
-        $order_by = " ORDER BY ra.roleid DESC, c.shortname DESC";
-    }
 
     if(!$contentless){
-        $content_restriction = " AND c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1)";
+        $content_restriction = "c.id = (SELECT course FROM {$CFG->prefix}course_sections WHERE course=c.id AND section!=0 AND summary is not null AND summary !='' LIMIT 0,1) AND ";
     }
 
-    $sql = "SELECT {$fields}
-            FROM {$CFG->prefix}context con
-            JOIN {$CFG->prefix}role_assignments ra ON userid={$userid} AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-            JOIN mdl_course c ON c.id=con.instanceid
-            WHERE con.contextlevel=50 AND category != 390 AND category != 0{$content_restriction}{$order_by}";
+    $userid = (int) $USER->id;
+    $params['userid'] = $userid;
+    $params['userid2'] = $userid;
+    $params['capability'] = 'moodle/course:update';
+    $params['capability2'] = 'moodle/course:update';
+
+    //New query will check categories as well - which should cover DA's
+        $sql = "SELECT DISTINCT {$fields}
+                FROM {$CFG->prefix}course c
+                WHERE ({$content_restriction}c.category IN (
+                    SELECT DISTINCT con.instanceid
+                    FROM {$CFG->prefix}context con
+                    WHERE con.contextlevel = 40 AND con.id IN (
+                        SELECT DISTINCT ra.contextid
+                        FROM {$CFG->prefix}role_assignments ra
+                        WHERE ra.userid = :userid AND ra.roleid IN (
+                            SELECT DISTINCT roleid
+                            FROM {$CFG->prefix}role_capabilities rc
+                            WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
+                        )
+                    )
+                )) OR ({$content_restriction}c.id IN (
+                    SELECT DISTINCT con.instanceid
+                    FROM {$CFG->prefix}context con
+                    WHERE con.contextlevel = 50 AND con.id IN (
+                        SELECT DISTINCT ra.contextid
+                        FROM {$CFG->prefix}role_assignments ra
+                        WHERE ra.userid = :userid2 AND ra.roleid IN (
+                            SELECT DISTINCT roleid
+                            FROM {$CFG->prefix}role_capabilities rc
+                            WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
+                        )
+                    )
+                 )) ORDER BY c.shortname DESC";
 
     // pull out all course matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
@@ -310,7 +346,7 @@ function kent_get_all_content_courses($max_records=0, $contentless=FALSE) {
 
         $sql = "SELECT {$fields}
                 FROM {$CFG->prefix}course c
-                WHERE category != 390 AND category != 0{$content_restriction}{$order_by}" ;
+                WHERE category != 0{$content_restriction}{$order_by}" ;
 
         // pull out all course matching
         if ($courses = $DB->get_records_sql($sql)) {
