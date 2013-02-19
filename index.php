@@ -150,11 +150,10 @@ if (!empty($courses)) {
         $desc = $no_course_description_text;
         if (!empty($course->summary)) {
             $desc = $course->summary;
-            $desc = strip_tags($desc);
         }
-        
+
         $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
-        
+
         //Extract the shortname without year - only grabs the first
         $pattern = "([a-zA-Z]{2,4}[0-9]{3,4})";
         preg_match($pattern, $course->shortname, $matches);
@@ -163,7 +162,7 @@ if (!empty($courses)) {
         if($matches != FALSE){
             $shortcode = $matches[0];
         }
-        
+
         switch (kent_get_current_rollover_status($course->id)) {
             case 'requested':
                 $from_content = $from_requested;
@@ -185,7 +184,6 @@ if (!empty($courses)) {
     }
 
     echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
-    echo "<div class='paging-spacer'></div>";
 
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
