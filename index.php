@@ -144,7 +144,10 @@ if (!empty($courses)) {
     // get the slice of $courses for this page
     $show_courses = array_slice($courses, $offset, $per_page);
 
-    echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
+    //Show paging if we have more courses than per page allowed.
+    if($total_courses > $per_page){
+        echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
+    }
 
     foreach ($show_courses as $course) {
         $desc = $no_course_description_text;
@@ -183,7 +186,12 @@ if (!empty($courses)) {
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
     }
 
-    echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
+    //Show paging if we have more courses than per page allowed.
+    if($total_courses > $per_page){
+        echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
+    }
+
+    echo "<div class='paging-spacer'></div>";
 
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";

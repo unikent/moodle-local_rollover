@@ -55,55 +55,22 @@ function kent_get_own_editable_courses(){
 
     $course_list = array();
     $params['userid'] = (int)$USER->id;
-    $params['userid2'] = (int)$USER->id;
     $params['capability'] = 'moodle/course:update';
-    $params['capability2'] = 'moodle/course:update';
 
-    //This query only does module level permission checks.
-    //    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-    //            FROM {$CFG->prefix}context con
-    //            JOIN {$CFG->prefix}role_assignments ra ON userid=:userid AND con.id=ra.contextid AND roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)
-    //            JOIN mdl_course c ON c.id=con.instanceid
-    //            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-    //            LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-    //            WHERE cse.section is null AND con.contextlevel=50
-    //            ORDER BY c.shortname DESC";
-
-
-    $content_check = "LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0";
+    $content_check = "LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0";
     $where_check = "cse.section is null";
 
-    //New query will check categories as well - which should cover DA's
-    $sql = "SELECT DISTINCT c.id, c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
-            FROM {$CFG->prefix}course c
-            LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-            {$content_check}
-            WHERE {$where_check} AND c.category IN (
-                SELECT DISTINCT conx.instanceid
-                FROM {$CFG->prefix}context con
-                JOIN {$CFG->prefix}context conx ON conx.path LIKE CONCAT('',con.path,'%')
-                WHERE con.instanceid != 0 AND con.contextlevel = 40 AND conx.contextlevel = 40 AND con.id IN (
-                    SELECT DISTINCT ra.contextid
-                    FROM {$CFG->prefix}role_assignments ra
-                    WHERE ra.userid = :userid AND ra.roleid IN (
-                        SELECT DISTINCT roleid
-                        FROM {$CFG->prefix}role_capabilities rc
-                        WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC
-                    )
-                 )
-            ) OR c.id IN (
-                    SELECT DISTINCT con.instanceid
-                    FROM {$CFG->prefix}context con
-                    WHERE con.instanceid != 0 AND con.contextlevel = 50 AND con.id IN (
-                        SELECT DISTINCT ra.contextid
-                        FROM {$CFG->prefix}role_assignments ra
-                        WHERE ra.userid = :userid2 AND ra.roleid IN (
-                            SELECT DISTINCT roleid
-                            FROM {$CFG->prefix}role_capabilities rc
-                            WHERE rc.capability=:capability2 AND rc.permission=1 ORDER BY rc.roleid ASC
-                        )
-                     )
-            ) ORDER BY c.shortname ASC";
+    $sql = "SELECT DISTINCT
+ c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
+  LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+  {$content_check}
+  INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
+  INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
+  INNER JOIN {$CFG->prefix}context con ON
+    ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
+      OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
+          (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
+          WHERE {$where_check} ORDER BY c.shortname asc";
 
     // pull out all module matching
     if ($courses = $DB->get_records_sql($sql, $params)) {
