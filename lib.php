@@ -499,14 +499,10 @@ function kent_check_mod_types($course_id){
 
     global $DB, $CFG;
 
-<<<<<<< HEAD
-    $sql = "SELECT COUNT(id) FROM {$CFG->prefix}forum WHERE course={$course_id} AND type = 'news'";
-=======
 	// $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course WHERE course={$course_id} AND type = 'news'";
     $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course_modules AS cm WHERE course={$course_id}
                 AND cm.module IN (SELECT id FROM {$CFG->prefix}modules AS m
                                   WHERE m.name != 'forum' AND m.name != 'aspirelists')";
->>>>>>> Fixing error with module checks for the rollover tool and problems with multiple functions in the aspirelists module
     $no_modules = (int) $DB->count_records_sql($sql);
 
     return $no_modules;
