@@ -91,7 +91,7 @@ function kent_get_own_editable_courses(){
      LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
      {$content_check}
      JOIN {$CFG->prefix}context ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE {$where_check} AND c.category != 0 AND c.id IN ($list)";
+     WHERE {$where_check} AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
 
 
 //    $params['userid'] = (int)$USER->id;
@@ -149,7 +149,7 @@ function kent_get_own_editable_courses(){
      LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
      {$content_check}
      JOIN {$CFG->prefix}context ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE {$where_check} AND c.category != 0 AND c.id IN ($list)";
+     WHERE {$where_check} AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
 
 
     // pull out all module matching
@@ -192,7 +192,7 @@ function kent_get_all_courses() {
                 FROM {$CFG->prefix}course c
                 LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
                 LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-                WHERE cse.section is null
+                WHERE cse.section is null AND c.category != 58
                 ORDER BY c.shortname ASC";
 
 
