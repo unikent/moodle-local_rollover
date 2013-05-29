@@ -78,6 +78,25 @@ var getArchiveCourseData = function() {
 
 }
 
+var get2012CourseData = function() {
+
+	jQuery.blockUI({ message: 
+		'<div class="blockui_loading">Please wait, loading 2012/2013 module lists.</div>' });
+
+	return jQuery.ajax({
+		url: window.twentyTwelveAutoCompleteUrl,
+		dataType: 'json',
+		success: function(data){
+			jQuery.unblockUI();
+		},
+		error: function(x, t, m){
+			jQuery.unblockUI();
+		},
+		timeout: 20000 //20 Seconds max to try and fetch
+	});
+
+}
+
 var getCurrentCourseData = function() {
 	jQuery.blockUI({ message: 
 		'<div class="blockui_loading">Please wait, loading Current module lists.</div>' });
@@ -101,7 +120,7 @@ var refreshCourseData = function() {
 	//on stackoverflow. 
 	//http://stackoverflow.com/questions/5518181/jquery-deferreds-when-and-the-fail-callback-arguments
 
-	jQuery.whenAll(getArchiveCourseData(), getCurrentCourseData()).always(function(aData, cData){
+	jQuery.whenAll(getArchiveCourseData(), getCurrentCourseData(), get2012CourseData()).always(function(aData, cData, tData){
 
 		var course_data = {
 			courses: [],
@@ -116,7 +135,7 @@ var refreshCourseData = function() {
 			aData = aData[0];
 			for(var course in aData.courses) {
 
-				var search = aData.courses[course].shortname + " - " + aData.courses[course].fullname;
+				var search = "(archive) - " + aData.courses[course].shortname + " - " + aData.courses[course].fullname;
 
 				course_data.courses_search.push(search);
 				course_data.courses[search] = [course, '1.9'];
@@ -129,7 +148,7 @@ var refreshCourseData = function() {
 			cData = cData[0];
 			for(var course in cData.courses) {
 
-				var search = cData.courses[course].shortname + " - " + cData.courses[course].fullname;
+				var search = "(2013/2014) " + cData.courses[course].shortname + " - " + cData.courses[course].fullname;
 
 				if($.inArray(search, course_data.courses_search) != -1) {
 					course_data.courses_search.push(search + ' [Moodle 2/Duplicate]');
@@ -137,6 +156,24 @@ var refreshCourseData = function() {
 				} else {
 					course_data.courses_search.push(search);
 					course_data.courses[search] = [course, '2'];
+				}	
+			}
+		}
+
+		if(tData[1] === 'error' || tData[0] === null) {
+			errors.push('We were unable to access the 2012/2013 Moodle modules! You will not be able to rollover from 2012/2013 modules');
+		} else {
+			tData = tData[0];
+			for(var course in tData.courses) {
+
+				var search = "(2012/2013) " + tData.courses[course].shortname + " - " + tData.courses[course].fullname;
+
+				if($.inArray(search, course_data.courses_search) != -1) {
+					course_data.courses_search.push(search + ' [Moodle 2/Duplicate]');
+					course_data.courses[search + ' [Moodle 2/Duplicate]'] = [course, 'twentytwelve'];
+				} else {
+					course_data.courses_search.push(search);
+					course_data.courses[search] = [course, 'twentytwelve'];
 				}	
 			}
 		}

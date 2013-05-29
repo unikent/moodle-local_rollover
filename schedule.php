@@ -74,7 +74,8 @@ try {
     // archive = the 1.9 archive (probably only used for backup)
     // live = the 2.2 live install (used for restore, and maybe backup with training someday)
     // training = the 2.2 live TRAINING install (used for restore)
-    $record->backup_source = $data['src_from'] == '2' ? 'live' : 'archive';
+    $record->backup_source = $data['src_from'] == '2' ? 'live' : ($data['src_from'] == 'twentytwelve' ? 'twentytwelve' : 'archive');
+
     $record->restore_target = $rollover_env;
 
     $id = $DB->insert_record('rollover_events', $record);
