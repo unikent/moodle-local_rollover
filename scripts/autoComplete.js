@@ -208,7 +208,6 @@ var populateCourseAutoComplete = function(course_data) {
 			} else {
 				jQuery(this).parent().find('.m1 input').attr('checked', 'checked').removeAttr('disabled');
 			}
-			console.log('boob');
 		},
 		change: function(event, ui){
 			var change_results = jQuery.ui.autocomplete.filter(course_data.courses_search, jQuery(this).val().trim());
