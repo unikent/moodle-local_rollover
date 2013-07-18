@@ -41,7 +41,9 @@ try {
 
     //Fix so that we do not rollover Turnitin inboxes from previous years (as we can't)
     if($data['backup_source'] != "live"){
-        $data['backup_turnitintool'] = "0";
+        if(isset($data['backup_turnitintool'])){
+            unset($data['backup_turnitintool']);
+        }
     }
 
     // json encode the remaining data (options)
