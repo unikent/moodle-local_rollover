@@ -135,7 +135,7 @@ var refreshCourseData = function() {
 			aData = aData[0];
 			for(var course in aData.courses) {
 
-				var search = "(archive) - " + aData.courses[course].shortname + " - " + aData.courses[course].fullname;
+				var search = "[archive]: - " + aData.courses[course].shortname + " - " + aData.courses[course].fullname;
 
 				course_data.courses_search.push(search);
 				course_data.courses[search] = [course, '1.9'];
@@ -148,7 +148,7 @@ var refreshCourseData = function() {
 			cData = cData[0];
 			for(var course in cData.courses) {
 
-				var search = "(2013/2014) " + cData.courses[course].shortname + " - " + cData.courses[course].fullname;
+				var search = "[2013/2014]: " + cData.courses[course].shortname + " - " + cData.courses[course].fullname;
 
 				if($.inArray(search, course_data.courses_search) != -1) {
 					course_data.courses_search.push(search + ' [Moodle 2/Duplicate]');
@@ -166,7 +166,7 @@ var refreshCourseData = function() {
 			tData = tData[0];
 			for(var course in tData.courses) {
 
-				var search = "(2012/2013) " + tData.courses[course].shortname + " - " + tData.courses[course].fullname;
+				var search = "[2012/2013]: " + tData.courses[course].shortname + " - " + tData.courses[course].fullname;
 
 				if($.inArray(search, course_data.courses_search) != -1) {
 					course_data.courses_search.push(search + ' [Moodle 2/Duplicate]');

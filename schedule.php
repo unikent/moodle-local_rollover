@@ -39,6 +39,11 @@ try {
     unset($data['id_from']);
     unset($data['id_to']);
 
+    //Fix so that we do not rollover Turnitin inboxes from previous years (as we can't)
+    if($data['backup_source'] != "live"){
+        $data['backup_turnitintool'] = "0";
+    }
+
     // json encode the remaining data (options)
     $options = json_encode($data);
 
