@@ -197,11 +197,12 @@ var populateCourseAutoComplete = function(course_data) {
 		minLength: 1,
 		source: function(request, response) {
 			var id_to = jQuery(this.element).closest('.rollover_crs_from').find('.id_to').val();
-			
+
 			var course = -1;
 			// loop through courses to find this course by id
 			for(var c in course_data.courses) {
-				if(course_data.courses[c][0] == id_to) {
+				// check version number is 2
+				if(course_data.courses[c][0] == id_to && course_data.courses[c][1] == 2) {
 					course = c;
 					break;
 				}
@@ -252,7 +253,8 @@ var populateCourseAutoComplete = function(course_data) {
 				var course = -1;
 				// loop through courses
 				for(var c in course_data.courses) {
-					if(c == t) {
+					// check version number is 2
+					if(c == t && course_data.courses[c][1] == 2) {
 						course = course_data.courses[c][0]
 						break;
 					}
