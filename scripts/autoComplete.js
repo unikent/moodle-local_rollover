@@ -196,7 +196,26 @@ var populateCourseAutoComplete = function(course_data) {
 	jQuery('.rollover_crs_input').autocomplete({
 		minLength: 1,
 		source: function(request, response) {
-			var results = jQuery.ui.autocomplete.filter(course_data.courses_search, request.term);
+			var id_to = jQuery(this.element).closest('.rollover_crs_from').find('.id_to').val();
+			
+			var course = -1;
+			// loop through courses to find this course by id
+			for(var c in course_data.courses) {
+				if(course_data.courses[c][0] == id_to) {
+					course = c;
+					break;
+				}
+			}
+
+			// create a filtered copy without this course id as an option
+			var filtered_course_data = jQuery.extend(true, {}, course_data);
+
+			if(course != -1) {
+				// filter this id_to out of data
+				filtered_course_data.courses_search.splice(filtered_course_data.courses_search.indexOf(course), 1);
+			}
+
+			var results = jQuery.ui.autocomplete.filter(filtered_course_data.courses_search, request.term);
 			response(results.slice(0, 30));
 		},
 		delay: 0,
@@ -226,24 +245,45 @@ var populateCourseAutoComplete = function(course_data) {
 	jQuery('.rollover_crs_input').each(function() {
 		var srch = $(this).val();
  		if(srch) {
+ 			var id_to = $(this).closest('.rollover_crs_from').find('.id_to').val();
+
 			var results = _.filter(course_data.courses_search, function(t) {
+				// do not select if this is this module
+				var course = -1;
+				// loop through courses
+				for(var c in course_data.courses) {
+					if(c == t) {
+						course = course_data.courses[c][0]
+						break;
+					}
+				}
+
+				// exclude this course
+				if(id_to == course) {
+					return false;
+				}
+
 				return t.indexOf(srch) != -1;
 			}).reverse();
 
 			var shrt_cd = $(this).closest('.rollover_layout').find('.rollover_sc_num').text() + ' ';
 
-			if(results[0].split('-')[0] === shrt_cd) {
-				results.shift();
-			}
 			if(results.length > 0) {
-
-				if(course_data.courses[results[0]][1] === '1.9') {
-					$(this).parent().find('.m1 input').attr('disabled', 'disabled').removeAttr('checked');
+				if(results[0].split('-')[0] === shrt_cd) {
+					results.shift();
 				}
+				if(results.length > 0) {
 
-				$(this).val(results[0]);
-				$(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[results[0]][0]);
-				$(this).closest('.rollover_crs_from').find('.src_from').val(course_data.courses[results[0]][1]);
+					if(course_data.courses[results[0]][1] === '1.9') {
+						$(this).parent().find('.m1 input').attr('disabled', 'disabled').removeAttr('checked');
+					}
+
+					$(this).val(results[0]);
+					$(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[results[0]][0]);
+					$(this).closest('.rollover_crs_from').find('.src_from').val(course_data.courses[results[0]][1]);
+				}
+			} else {
+				$(this).val("");
 			}
 		}
 	})
