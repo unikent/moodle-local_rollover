@@ -288,6 +288,8 @@ function kent_filter_post_data(){
 */
 function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FALSE){
 
+    $m1_blacklist = array("ouwiki");
+
     global $CFG, $DB;
     $modules = $DB->get_records("modules");
 
@@ -312,8 +314,11 @@ function kent_get_rollover_modules($only_visible=FALSE, $must_have_m1_support=FA
 
             //Moodle 1 backup/restore check
             $rollover_mods[$modname]['moodle_1_support'] = FALSE;
-            if (file_exists($moodle_one_modfile)) {
-                $rollover_mods[$modname]['moodle_1_support'] = TRUE;
+            // check not blacklisted
+            if(!in_array($modname, $m1_blacklist)) {
+                if (file_exists($moodle_one_modfile)) {
+                    $rollover_mods[$modname]['moodle_1_support'] = TRUE;
+                }
             }
 
             $m1_skip = (($must_have_m1_support && !$rollover_mods[$modname]['moodle_1_support']) ? TRUE : FALSE);
