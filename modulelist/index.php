@@ -109,6 +109,6 @@ if($data['total_courses'] == 0){
 } catch (Exception $e) {pm($e);}
 
 //Package up and return our JSON
-header('Access-Control-Allow-Origin: *.kent.ac.uk');
+header('Access-Control-Allow-Origin: https://*.kent.ac.uk');
 header('Content-type: application/json');
 echo json_encode($data);
