@@ -18,15 +18,6 @@ require_once($CFG->libdir . '/filelib.php');
 
 global $USER;
 
-/* $url = 'http://localhost/moodle/kent/modulelist/index.php?action=allmodlist';
-  $ch = curl_init($url);
-  curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-  $output = curl_exec($ch);
-  curl_close($ch);
-
-  var_dump($output);
- */
-
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
 require_login();
 

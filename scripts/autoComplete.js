@@ -59,58 +59,38 @@ jQuery(document).ready(function() {
 	
 });
 
-var getArchiveCourseData = function() {
+var getCourseData = function(from) {
 
 	jQuery.blockUI({ message: 
-		'<div class="blockui_loading">Please wait, loading Archive module lists.</div>' });
+		'<div class="blockui_loading">Please wait, loading module lists.</div>' });
 
 	return jQuery.ajax({
-		url: window.archiveAutoCompleteUrl,
+		url: from,
 		dataType: 'json',
 		success: function(data){
 			jQuery.unblockUI();
 		},
 		error: function(x, t, m){
+			if (x.status == 401) {
+				
+			}
 			jQuery.unblockUI();
 		},
-		timeout: 20000 //20 Seconds max to try and fetch
+		timeout: 20000 // 20 Seconds max to try and fetch
 	});
 
+}
+
+var getArchiveCourseData = function() {
+	return getCourseData(window.archiveAutoCompleteUrl);
 }
 
 var get2012CourseData = function() {
-
-	jQuery.blockUI({ message: 
-		'<div class="blockui_loading">Please wait, loading 2012/2013 module lists.</div>' });
-
-	return jQuery.ajax({
-		url: window.twentyTwelveAutoCompleteUrl,
-		dataType: 'json',
-		success: function(data){
-			jQuery.unblockUI();
-		},
-		error: function(x, t, m){
-			jQuery.unblockUI();
-		},
-		timeout: 20000 //20 Seconds max to try and fetch
-	});
-
+	return getCourseData(window.twentyTwelveAutoCompleteUrl);
 }
 
 var getCurrentCourseData = function() {
-	jQuery.blockUI({ message: 
-		'<div class="blockui_loading">Please wait, loading Current module lists.</div>' });
- 	return jQuery.ajax({
-		url: window.autoCompleteUrl,
-		dataType: 'json',
-		success: function(data) {
-			jQuery.unblockUI();
-		},
-		error: function(x, t, m){
-			jQuery.unblockUI();
-		},
-		timeout: 20000
-	});
+	return getCourseData(window.autoCompleteUrl);
 }
 
 var refreshCourseData = function() {
