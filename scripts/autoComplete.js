@@ -66,7 +66,7 @@ var getCourseData = function(from) {
 
 	return jQuery.ajax({
 		url: from,
-		dataType: 'json',
+		dataType: 'jsonp',
 		success: function(data){
 			jQuery.unblockUI();
 		},

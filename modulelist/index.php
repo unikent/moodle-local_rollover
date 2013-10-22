@@ -110,5 +110,17 @@ if($data['total_courses'] == 0){
 
 //Package up and return our JSON
 header('Access-Control-Allow-Origin: *.kent.ac.uk');
-header('Content-type: application/json');
-echo json_encode($data);
+
+// Support JSONP
+if (isset($_GET['callback'])) {
+    if (preg_match('/\W/', $_GET['callback'])) {
+        header('HTTP/1.1 400 Bad Request');
+        exit();
+    }
+
+    header('Content-type: application/javascript; charset=utf-8');
+    echo sprintf('%s(%s);', $_GET['callback'], json_encode($data));
+} else {
+    header('Content-type: application/json');
+    echo json_encode($data);
+}
