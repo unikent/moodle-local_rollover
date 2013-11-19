@@ -260,7 +260,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
          foreach($results as $result){
             if ($max_records > 0 && $count > $max_records) break;
             $course_id = $result->id;
-            $coursecontext = get_context_instance(CONTEXT_COURSE, $result->id);
+            $coursecontext = context_course::instance($result->id);
             if (has_capability('moodle/course:update', $coursecontext)) {
                 $course_list[$course_id]['shortname'] = $result->shortname;
                 $course_list[$course_id]['fullname'] = $result->fullname;

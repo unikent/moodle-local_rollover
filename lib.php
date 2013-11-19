@@ -539,7 +539,7 @@ function kent_set_ignore_rollover($course_id){
 
         global $USER, $DB;
 
-        $context = get_context_instance(CONTEXT_COURSE, $course_id);
+        $context = context_course::instance($course_id);
 
         $status = array('status' => false);
 
@@ -660,7 +660,7 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
     foreach ($courseset as $id=>$course) {
         context_instance_preload($course);
         /*if (!$course->visible) {
-            if (!$context = get_context_instance(CONTEXT_COURSE, $id)) {
+            if (!$context = context_course::instance($id)) {
                 unset($courseset[$id]);
                 continue;
             }
@@ -669,7 +669,7 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
                 continue;
             }
         }*/
-        if ($context = get_context_instance(CONTEXT_COURSE, $id)) {
+        if ($context = context_course::instance($id)) {
             if (has_capability('moodle/course:viewhiddencourses', $context)) {
                 $course->user_can_view = true;
             } else {

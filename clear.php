@@ -38,7 +38,7 @@ if(!$site) die();
 
 $course = intval($data['course']);
 
-$context = get_context_instance(CONTEXT_COURSE, $course);
+$context = context_course::instance($course);
 
 //Ensure that current user can access course and has correct permissions!
 if($context != FALSE && has_capability('moodle/course:update', $context)) {
