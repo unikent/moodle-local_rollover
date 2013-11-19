@@ -32,7 +32,7 @@ function kent_list_rollover_courses(){
 function kent_get_empty_courses($srch = ''){
     global $USER, $DB;
 
-    $context = get_context_instance(CONTEXT_SYSTEM);
+    $context = context_system::instance();
 
     //If we are an admin, then we need to see all modules
     if (has_capability('moodle/site:config', $context)){
@@ -183,7 +183,7 @@ function kent_get_all_courses() {
     $params = array();
     $course_list = array();
 
-    $context = get_context_instance(CONTEXT_SYSTEM);
+    $context = context_system::instance();
     //Only return everything if an admin...
     if (has_capability('moodle/site:config', $context)){
 

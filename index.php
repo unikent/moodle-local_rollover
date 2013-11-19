@@ -18,7 +18,7 @@ require_once($CFG->libdir . '/filelib.php');
 
 global $USER;
 
-$systemcontext = get_context_instance(CONTEXT_SYSTEM);
+$systemcontext = context_system::instance();
 require_login();
 
 if(!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
@@ -26,7 +26,7 @@ if(!kent_has_edit_course_access() && !has_capability('moodle/site:config', $syst
 }
 
 
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 $PAGE->set_url('/local/rollover/index.php');
 $PAGE->set_pagelayout('admin');
 $PAGE->navbar->add(get_string('pluginname', 'local_rollover'));
