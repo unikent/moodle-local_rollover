@@ -18,25 +18,9 @@ require_once('../lib.php');
 require_once($CFG->libdir.'/adminlib.php');
 global $USER;
 
-$loggedin = false;
-if(isset($CFG->saml_auth) && $CFG->saml_auth && is_enabled_auth("saml")){
-    $contentfile = file_get_contents($CFG->dirroot . '/auth/saml/saml_config.php');
-    $saml_param = json_decode($contentfile);
-    include_once($saml_param->samllib.'/_autoload.php');
-    $as = new SimpleSAML_Auth_Simple($saml_param->sp_source);
+require_login();
 
-    //Check if authenticated by SAML first and with no USER object, require login to log us in!
-    if ($as->isAuthenticated() && empty($USER->id)){
-          require_login();
-    }
-
-    if($as->isAuthenticated() && !empty($USER->id)){
-          $loggedin = true; //This should eventually happen
-    }
-
-} else {
-    $loggedin = isloggedin(); //Otherwise we depend on the standard isloggedin check without SAML checks.
-}
+$loggedin = isloggedin();
 
 //Check that rollover is switched on in config and there is a valid $USER logged in.
 if( (isset($CFG->kent_rollover_system) && $CFG->kent_rollover_system === false) || !$loggedin ) {
