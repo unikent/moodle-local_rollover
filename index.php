@@ -34,17 +34,18 @@ $PAGE->navbar->add(get_string('pluginname', 'local_rollover'));
 $PAGE->set_title(get_string('pluginname', 'local_rollover'));
 $PAGE->set_heading(get_string('pluginname', 'local_rollover'));
 
+$PAGE->requires->jquery();
+$PAGE->requires->jquery_plugin('migrate');
+$PAGE->requires->jquery_plugin('ui');
+$PAGE->requires->jquery_plugin('ui-css');
+$PAGE->requires->jquery_plugin('blockui', 'theme_kent');
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$scripts ='<link rel="stylesheet" href="scripts/css/ui-lightness/jquery-ui-1.8.17.custom.css" type="text/css" />';
-$scripts .= '<link rel="stylesheet/less" type"text/css" href="styles.less">';
+$scripts .= '<link rel="stylesheet/css" type"text/css" href="scripts/css/styles.min.css">';
 $scripts .= '<script type="text/javascript"> window.twentyTwelveAutoCompleteUrl = "'.$CFG->kent_rollover_2012_ws_path.'"; window.archiveAutoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.autoCompleteUrl="'. $CFG->kent_rollover_ws_path.'"; window.oldMoodleAuthUrl="' . $CFG->kent_rollover_archive_auth_path . '"; window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
-$scripts .='<script src="' . $CFG->wwwroot . '/lib/less/less-1.4.2.min.js" type="text/javascript"></script>';
-$scripts .='<script src="' . $CFG->wwwroot . '/lib/jquery/jquery-1.7.1.min.js" type="text/javascript"></script>';
 $scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/underscore-min.js" type="text/javascript"></script>';
-$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery-ui-1.8.17.custom.min.js" type="text/javascript"></script>';
-$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/jquery.blockUI.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/autoComplete.js" type="text/javascript"></script>';
 $scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
