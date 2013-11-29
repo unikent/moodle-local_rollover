@@ -40,17 +40,17 @@ $PAGE->requires->jquery_plugin('ui');
 $PAGE->requires->jquery_plugin('ui-css');
 $PAGE->requires->jquery_plugin('blockui', 'theme_kent');
 
+$PAGE->requires->js("/local/rollover/scripts/js/underscore-min.js");
+$PAGE->requires->js("/local/rollover/scripts/hideshow.js");
+$PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
+$PAGE->requires->js("/local/rollover/scripts/submit.js");
+
+$PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
+
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$scripts .= '<link rel="stylesheet/css" type"text/css" href="scripts/css/styles.min.css">';
-$scripts .= '<script type="text/javascript"> window.twentyTwelveAutoCompleteUrl = "'.$CFG->kent_rollover_2012_ws_path.'"; window.archiveAutoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.autoCompleteUrl="'. $CFG->kent_rollover_ws_path.'"; window.oldMoodleAuthUrl="' . $CFG->kent_rollover_archive_auth_path . '"; window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
-$scripts .='<script src="' . $CFG->wwwroot . '/local/rollover/scripts/js/underscore-min.js" type="text/javascript"></script>';
-$scripts .='<script src="scripts/hideshow.js" type="text/javascript"></script>';
-$scripts .='<script src="scripts/autoComplete.js" type="text/javascript"></script>';
-$scripts .='<script src="scripts/submit.js" type="text/javascript"></script>';
-
-echo $scripts;
+echo '<script type="text/javascript"> window.twentyTwelveAutoCompleteUrl = "'.$CFG->kent_rollover_2012_ws_path.'"; window.archiveAutoCompleteUrl ="' . $CFG->kent_rollover_archive_ws_path . '"; window.autoCompleteUrl="'. $CFG->kent_rollover_ws_path.'"; window.oldMoodleAuthUrl="' . $CFG->kent_rollover_archive_auth_path . '"; window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'"; window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";</script>';
 
 $module_list = kent_get_formated_module_list();
 
