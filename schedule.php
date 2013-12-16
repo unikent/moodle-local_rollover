@@ -26,7 +26,7 @@ $site = get_site();
 if(!$site) die();
 
 // set up our paths and bits
-$java_location = ((isset($CFG->kent_rollover_scheduler_path) && ($CFG->kent_rollover_scheduler_path != "") ) ? $CFG->kent_rollover_scheduler_path : $CFG->wwwroot.'/local/rollover/test.php');
+$java_location = $CFG->kent->paths['connect'] . 'rollover/schedule';
 $data = array();
 
 // try and catch any problems (be it with filter_var or anything else)
