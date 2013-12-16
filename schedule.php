@@ -13,9 +13,12 @@
 require_once('../../config.php');
 require_once('lib.php');
 
+require_login();
+
 // check that rollover is switched on in config and there is a valid $USER logged in.
-if(!isset($CFG->kent_rollover_system) || !$CFG->kent_rollover_system || !isloggedin()){
-   exit(1);
+if (!connect_isEnabled()) {
+    header('HTTP/1.0 401 Unauthorized', true, 401);
+    exit(1);
 }
 
 // check the moodleness of this page request

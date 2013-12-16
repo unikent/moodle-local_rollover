@@ -21,10 +21,7 @@ function kent_list_rollover_courses(){
     } else {
         return "<p>Sorry.  No courses are accessible.</p>";
     }
-
-
 }
-
 
 /**
  * Returns list of modules for user
@@ -685,4 +682,11 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
     }
 
     return array('totalcourses' => $totalcourses, 'courses' => $courseset);
+}
+
+/**
+ * Is Connect enabled?
+ */
+function connect_isEnabled() {
+    return $CFG->kent->environment == "dev" || ($CFG->kent->environment == "live" && $CFG->kent->distribution == LIVE_MOODLE);
 }

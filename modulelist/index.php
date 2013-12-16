@@ -20,10 +20,8 @@ global $USER;
 
 require_login();
 
-$loggedin = isloggedin();
-
-//Check that rollover is switched on in config and there is a valid $USER logged in.
-if( (isset($CFG->kent_rollover_system) && $CFG->kent_rollover_system === false) || !$loggedin ) {
+// check that rollover is switched on in config and there is a valid $USER logged in.
+if (!connect_isEnabled()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }
