@@ -114,7 +114,7 @@ function kent_search_user_courses($type, $searchterms, $omit_course=-1, &$more_c
             }
         }
 
-        $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, modinfo, summary, visible', 'shortname ASC', 0, 999999);
+        $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, summary, visible', 'shortname ASC', 0, 999999);
 
         $list = "";
         foreach($content_courses["courses"] as $tmp_course){
@@ -233,7 +233,7 @@ function kent_get_own_courses($max_records=0, $contentless=FALSE, $orderbyrole=F
 
     global $CFG, $USER, $DB;
 
-    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, modinfo, summary, visible', 'shortname ASC', 0, 999999);
+    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, summary, visible', 'shortname ASC', 0, 999999);
 
     $course_list = array();
 

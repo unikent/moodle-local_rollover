@@ -70,7 +70,7 @@ function kent_get_own_editable_courses(){
     $course_list = array();
 
 
-    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, modinfo, summary, visible', 'shortname ASC', 0, 999999);
+    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, summary, visible', 'shortname ASC', 0, 999999);
 
     $list = "";
     foreach($content_courses["courses"] as $tmp_course){
@@ -79,15 +79,15 @@ function kent_get_own_editable_courses(){
     $list = rtrim($list, ",");
 
     $where_check = "cse.section is null";
-    $content_check = "LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0";
+    $content_check = "LEFT JOIN {course_sections} cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0";
 
     
     //Now check and get ones with content only
     $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
-     FROM {$CFG->prefix}course c
-     LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
+     FROM {course} c
+     LEFT JOIN {rollover_events} rol ON rol.to_course = c.id
      {$content_check}
-     JOIN {$CFG->prefix}context ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
+     JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
      WHERE {$where_check} AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
 
 
@@ -625,7 +625,11 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
     }
 
     $coursefields = 'c.' .join(',c.', $fields);
-    list($ccselect, $ccjoin) = context_instance_preload_sql('c.id', CONTEXT_COURSE, 'ctx');
+
+    $ccselect = ', ' . context_helper::get_preload_record_columns_sql('ctx');
+    $ccjoin = "LEFT JOIN {context} ctx ON (ctx.instanceid = c.id AND ctx.contextlevel = :contextlevel)";
+    $params['contextlevel'] = CONTEXT_COURSE;
+
     $wheres = implode(" AND ", $wheres);
 
     //note: we can not use DISTINCT + text fields due to Oracle and MS limitations, that is why we have the subselect there
@@ -655,7 +659,7 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
 
     // preload contexts and check visibility
     foreach ($courseset as $id=>$course) {
-        context_instance_preload($course);
+        context_helper::preload_from_record($course);
         /*if (!$course->visible) {
             if (!$context = context_course::instance($id)) {
                 unset($courseset[$id]);
