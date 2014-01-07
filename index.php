@@ -57,7 +57,7 @@ foreach ($CFG->connect->rollover_targets as $target) {
 $PAGE->requires->js_init_call('M.local_rollover.init', array(json_encode($targets)), false, array(
     'name' => 'local_rollover',
     'fullpath' => '/local/rollover/scripts/js/rollover.js',
-    'requires' => array("node", "io", "dump", "json-parse")
+    'requires' => array("node", "io", "dump", "json-parse", "moodle-core-notification")
 ));
 
 $PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");

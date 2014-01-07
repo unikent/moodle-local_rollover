@@ -12,26 +12,48 @@ M.local_rollover = {
      * Init :)
      */
     init : function(Y, urls) {
+
+        var loadingPanel = new M.core.dialogue({
+            headerContent: "Please Wait",
+            bodyContent: "Loading data...",
+            visible: false,
+            lightbox: true,
+            zIndex: 100,
+            closeButtonTitle: "Close"
+        });
+        loadingPanel.centerDialogue();
+        loadingPanel.show();
+
         // Grab a list of Moodles
     	var moodle_urls = Y.JSON.parse(urls);
 
         // Check auth status on all Moodles
         for (var moodle in moodle_urls) {
-        	this.grabData(moodle, moodle_urls[moodle]);
+        	this.grabData(moodle, moodle_urls[moodle], loadingPanel);
         }
     },
 
     /**
      * Grab course listings from the target Moodle
      */
-    grabData : function(mdl, url) {
+    grabData : function(mdl, url, panel) {
+    	var self = this;
+
     	this.checkAuth(url, function(result) {
     		if (result === true) {
-    			console.log("Authed!");
+    			var item = Y.one("#auth-status-" + mdl);
+    			if (item) {
+    				item.remove();
+    			}
     		} else {
+    			var auth_url = result;
+    			if (panel) {
+					panel.get('contentBox').append("<p id=\"auth-status-" + mdl + "\">Please auth with " + mdl + " (<a href=\"" + url + "\">click here</a>)</p>");
+	    		}
+
     			// Retry in 5 seconds
     			setTimeout(function() {
-    				this.grabData(mdl, url);
+    				self.grabData(mdl, url, false);
     			}, 5000);
     		}
     	});
