@@ -11,12 +11,13 @@
  * @copyright  2011 Your Name
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+global $USER, $CFG, $PAGE, $OUTPUT;
+
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/filelib.php');
-
-global $USER;
 
 $systemcontext = context_system::instance();
 require_login();
@@ -24,7 +25,6 @@ require_login();
 if(!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
     throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
-
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url('/local/rollover/index.php');
@@ -42,8 +42,24 @@ $PAGE->requires->jquery_plugin('blockui', 'theme_kent');
 
 $PAGE->requires->js("/local/rollover/scripts/js/underscore-min.js");
 $PAGE->requires->js("/local/rollover/scripts/hideshow.js");
-$PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
+//$PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 $PAGE->requires->js("/local/rollover/scripts/submit.js");
+
+$PAGE->requires->string_for_js('requestedmessage', 'local_rollover');
+$PAGE->requires->string_for_js('errormessage', 'local_rollover');
+
+// Build a list of rollover targets
+$targets = array();
+foreach ($CFG->connect->rollover_targets as $target) {
+    $targets[$target] = $CFG->kent->paths[$target];
+}
+
+// Init rollovers
+$PAGE->requires->js_init_call('M.local_rollover.init', array(json_encode($targets)), false, array(
+    'name' => 'local_rollover',
+    'fullpath' => '/local/rollover/scripts/js/rollover.js',
+    'requires' => array("node", "io", "dump", "json-parse")
+));
 
 $PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
 
