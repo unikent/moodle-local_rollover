@@ -51,9 +51,9 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
 echo '<script type="text/javascript">
+window.autoCompleteUrl="' . $CFG->kent->paths[LIVE_MOODLE] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
 window.twentyTwelveAutoCompleteUrl = "' . $CFG->kent->paths['2012'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
 window.archiveAutoCompleteUrl ="' . $CFG->kent->paths['archive'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
-window.autoCompleteUrl="' . $CFG->kent->paths[LIVE_MOODLE] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
 window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'";
 window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";
 </script>';
