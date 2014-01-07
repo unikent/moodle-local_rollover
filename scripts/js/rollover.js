@@ -7,6 +7,10 @@
 M.local_rollover = {
     Y : null,
     transaction : [],
+
+    /**
+     * Init :)
+     */
     init : function(Y, urls) {
         // Grab a list of Moodles
     	var moodle_urls = Y.JSON.parse(urls);
@@ -16,6 +20,10 @@ M.local_rollover = {
         	this.grabData(moodle, moodle_urls[moodle]);
         }
     },
+
+    /**
+     * Grab course listings from the target Moodle
+     */
     grabData : function(mdl, url) {
     	this.checkAuth(url, function(result) {
     		if (result === true) {
@@ -28,6 +36,10 @@ M.local_rollover = {
     		}
     	});
     },
+
+    /**
+     * Check if we are authenticated on the target Moodle
+     */
     checkAuth : function(url, callback) {
     	// Are we authed with the target installation?
         Y.io(url + "local/rollover/ajax/auth.php", {
