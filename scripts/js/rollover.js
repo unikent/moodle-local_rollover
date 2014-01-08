@@ -45,6 +45,7 @@ M.local_rollover = {
     			if (item) {
     				item.remove();
     			}
+                // TODO - grab the data
     		} else {
     			var auth_url = result;
     			if (panel) {
