@@ -12,16 +12,21 @@
  * max_records -- Optional, if not set - 0 is passed by default and this gets everything.
  * contentless -- Optional, if not set - 0 is passed by default which means that it does not fetch contentless courses
  */
+global $CFG, $USER;
+
 require_once('../../../config.php');
 require_once('modlib.php');
 require_once('../lib.php');
 require_once($CFG->libdir.'/adminlib.php');
-global $USER;
 
-require_login();
+// Check this is a valid user.
+if (!isloggedin() or isguestuser()) {
+    header('HTTP/1.0 401 Unauthorized', true, 401);
+    exit(1);
+}
 
-// check that rollover is switched on in config and there is a valid $USER logged in.
-if (!connect_isEnabled()) {
+// Check that rollover is switched on in config and there is a valid $USER logged in.
+if (!\local_connect\utils::is_enabled()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }
