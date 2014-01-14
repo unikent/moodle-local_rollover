@@ -49,8 +49,8 @@ $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 
 // Build a list of rollover targets
 $targets = array();
-foreach ($CFG->connect->rollover_targets as $target) {
-    $targets[$target] = $CFG->kent->paths[$target];
+foreach ($CFG->connect->rollover_sources as $source) {
+    $targets[$source] = $CFG->kent->paths[$source];
 }
 
 // Init rollovers
