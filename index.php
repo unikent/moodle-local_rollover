@@ -22,6 +22,10 @@ require_once($CFG->libdir . '/filelib.php');
 $systemcontext = context_system::instance();
 require_login();
 
+if (!\local_connect\utils::is_enabled()) {
+    print_error('connect_disabled', 'local_connect');
+}
+
 if(!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
     throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
@@ -47,18 +51,22 @@ $PAGE->requires->js("/local/rollover/scripts/submit.js");
 $PAGE->requires->string_for_js('requestedmessage', 'local_rollover');
 $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 
-// Build a list of rollover targets
-$targets = array();
-foreach ($CFG->connect->rollover_sources as $source) {
-    $targets[$source] = $CFG->kent->paths[$source];
-}
+// Init rollovers.
+if (\local_connect\utils::enable_new_features()) {
+    // Build a list of rollover targets
+    $targets = array();
+    foreach ($CFG->connect->rollover_sources as $source) {
+        $targets[$source] = $CFG->kent->paths[$source];
+    }
 
-// Init rollovers
-$PAGE->requires->js_init_call('M.local_rollover.init', array(json_encode($targets)), false, array(
-    'name' => 'local_rollover',
-    'fullpath' => '/local/rollover/scripts/js/rollover.js',
-    'requires' => array("node", "io", "dump", "json-parse", "moodle-core-notification")
-));
+    $PAGE->requires->js_init_call('M.local_rollover.init', array(json_encode($targets)), false, array(
+        'name' => 'local_rollover',
+        'fullpath' => '/local/rollover/scripts/js/rollover.js',
+        'requires' => array("node", "io", "dump", "json-parse", "moodle-core-notification")
+    ));
+} else {
+    $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
+}
 
 $PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
 
@@ -211,6 +219,16 @@ if (!empty($courses)) {
 
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
+}
+
+if (!\local_connect\utils::enable_new_features()) {
+    echo '<script type="text/javascript">
+        window.twentyTwelveAutoCompleteUrl = "' . $CFG->kent->paths['2012'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
+        window.archiveAutoCompleteUrl ="' . $CFG->kent->paths['archive'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
+        window.autoCompleteUrl="' . $CFG->kent->paths[LIVE_MOODLE] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
+        window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'";
+        window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";
+    </script>';
 }
 
 echo $OUTPUT->footer();
