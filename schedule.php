@@ -16,7 +16,7 @@ require_once('lib.php');
 require_login();
 
 // check that rollover is switched on in config and there is a valid $USER logged in.
-if (!connect_isEnabled()) {
+if (!\local_connect\utils::is_enabled()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }
