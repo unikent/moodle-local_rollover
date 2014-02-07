@@ -1,5 +1,9 @@
 /**
  * A new file to house the Rollover JS
+ *
+ *
+ * **********ALL DEPRECATED************
+ * 
  */
 /**
  * Calls a proxy script to fix missing enrolments
@@ -11,7 +15,7 @@ M.local_rollover = {
     /**
      * Init :)
      */
-    init : function(Y, urls) {
+    init : function(Y) {
 
         var loadingPanel = new M.core.dialogue({
             headerContent: "Please Wait",
@@ -24,49 +28,18 @@ M.local_rollover = {
         loadingPanel.centerDialogue();
         loadingPanel.show();
 
-        // Grab a list of Moodles
-    	var moodle_urls = Y.JSON.parse(urls);
-
-        // Check auth status on all Moodles
-        for (var moodle in moodle_urls) {
-        	this.grabData(moodle, moodle_urls[moodle], loadingPanel);
-        }
+        this.grabData(loadingPanel);
     },
 
     /**
      * Grab course listings from the target Moodle
      */
-    grabData : function(mdl, url, panel) {
+    grabData : function(loadingPanel) {
     	var self = this;
 
-    	this.checkAuth(url, function(result) {
-    		if (result === true) {
-    			var item = Y.one("#auth-status-" + mdl);
-    			if (item) {
-    				item.remove();
-    			}
-                // TODO - grab the data
-    		} else {
-    			var auth_url = result;
-    			if (panel) {
-					panel.get('contentBox').append("<p id=\"auth-status-" + mdl + "\">Please auth with " + mdl + " (<a href=\"" + url + "\">click here</a>)</p>");
-	    		}
 
-    			// Retry in 5 seconds
-    			setTimeout(function() {
-    				self.grabData(mdl, url, false);
-    			}, 5000);
-    		}
-    	});
-    },
-
-    /**
-     * Check if we are authenticated on the target Moodle
-     */
-    checkAuth : function(url, callback) {
-    	// Are we authed with the target installation?
-        Y.io(url + "local/rollover/ajax/auth.php", {
-            timeout: 1000,
+        Y.io(M.cfg.wwwroot + "/local/connect/ajax/rollover_sources.php", {
+            timeout: 30000,
             method: "GET",
             on: {
                 success : function (x,o) {
@@ -75,19 +48,18 @@ M.local_rollover = {
                         data = Y.JSON.parse(o.responseText);
                     }
                     catch (e) {
-                        // TODO - error
+                        alert("Something went wrong! Please try again later.");
                         return;
                     }
 
-                    if (data.result == true) {
-                        callback(true);
-                    } else {
-                        callback(data.url);
-                    }
+                    console.log(data.targets);
+                    console.log(data.sources);
+
+                    loadingPanel.hide();
                 },
 
                 failure : function (x,o) {
-                    // TODO - error
+                    alert("Something went wrong! Please try again later.");
                 }
             }
         });
