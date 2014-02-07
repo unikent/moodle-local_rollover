@@ -52,7 +52,12 @@ $PAGE->requires->string_for_js('requestedmessage', 'local_rollover');
 $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 
 // Init rollovers.
-if (!\local_connect\utils::enable_new_features()) {
+if (\local_connect\utils::enable_new_features()) {
+    $PAGE->requires->js_init_call('M.local_rollover.init', array(), false, array(
+        'name' => 'local_rollover',
+        'fullpath' => '/local/rollover/scripts/js/rollover.js'
+    ));
+} else {
     $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 }
 
@@ -92,7 +97,7 @@ $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
 $selection_box = "<input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>";
 if (\local_connect\utils::enable_new_features()) {
-    $selection_box = "<select class=\"rollover_crs_input\" src_id=\"%d\">%s</select>";
+    $selection_box = "<select class=\"rollover_crs_input\">%s</select>";
 }
 
 $from_form = <<< HEREDOC
@@ -106,7 +111,7 @@ $from_form = <<< HEREDOC
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
                 <div class='text'>Show advanced options</div>
-                %2\$s
+                %s%s
                 <div style=' clear: both'></div>
                 <div class='arrow_border'></div>
                 <div class='arrow_light'></div>
@@ -115,7 +120,7 @@ $from_form = <<< HEREDOC
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
         <input type="hidden" name="src_from" class="src_from" value=""/>
-        <input type="hidden" name="id_to" class="id_to" value="%3\$d"/>
+        <input type="hidden" name="id_to" class="id_to" value="%d"/>
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </td>
@@ -205,14 +210,15 @@ if (!empty($courses)) {
                 if (\local_connect\utils::enable_new_features()) {
                     // Which possible courses can we match?
                     $possibles = \local_connect\rollover::get_course_list('*', $shortcode);
-                    $possibles_html = '';
+                    $possibles_html = "<option>Select One</option>";
+
                     foreach ($possibles as $possible) {
                         if ($course->id !== $possible->moodle_id) {
                             $possibles_html .= "<option src_from=\"{$possible->moodle_dist}\" src_id=\"{$possible->moodle_id}\">{$possible->shortname}</option>";
                         }
                     }
 
-                    $from_content = sprintf($from_form, $course->id, $possibles_html, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
+                    $from_content = sprintf($from_form, $possibles_html, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
                 } else {
                     $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
                 }

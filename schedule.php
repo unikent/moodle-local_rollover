@@ -43,8 +43,8 @@ try {
     unset($data['id_to']);
 
     //Fix so that we do not rollover Turnitin inboxes from previous years (as we can't)
-    if($data['backup_source'] != "live"){
-        if(isset($data['backup_turnitintool'])){
+    if (isset($data['backup_source']) && $data['backup_source'] != "live") {
+        if (isset($data['backup_turnitintool'])) {
             unset($data['backup_turnitintool']);
         }
     }
@@ -84,7 +84,11 @@ try {
     // archive = the 1.9 archive (probably only used for backup)
     // live = the 2.2 live install (used for restore, and maybe backup with training someday)
     // training = the 2.2 live TRAINING install (used for restore)
-    $record->backup_source = $data['src_from'] == '2' ? 'live' : ($data['src_from'] == 'twentytwelve' ? 'twentytwelve' : 'archive');
+    if (\local_connect\utils::enable_new_features()) {
+        $record->backup_source = $data['src_from'];
+    } else {
+        $record->backup_source = $data['src_from'] == '2' ? 'live' : ($data['src_from'] == 'twentytwelve' ? 'twentytwelve' : 'archive');
+    }
 
     $record->restore_target = $rollover_env;
 

@@ -1,12 +1,5 @@
 /**
  * A new file to house the Rollover JS
- *
- *
- * **********ALL DEPRECATED************
- * 
- */
-/**
- * Calls a proxy script to fix missing enrolments
  */
 M.local_rollover = {
     Y : null,
@@ -16,52 +9,19 @@ M.local_rollover = {
      * Init :)
      */
     init : function(Y) {
+        var selects = Y.all('.rollover_crs_input');
+        selects.each(function(node) {
+            node.on('change', function(e) {
+                var o = e.currentTarget;
+                var frm = o.ancestor();
 
-        var loadingPanel = new M.core.dialogue({
-            headerContent: "Please Wait",
-            bodyContent: "Loading data...",
-            visible: false,
-            lightbox: true,
-            zIndex: 100,
-            closeButtonTitle: "Close"
-        });
-        loadingPanel.centerDialogue();
-        loadingPanel.show();
+                var o_item = o.one("option:checked");
 
-        this.grabData(loadingPanel);
-    },
-
-    /**
-     * Grab course listings from the target Moodle
-     */
-    grabData : function(loadingPanel) {
-    	var self = this;
-
-
-        Y.io(M.cfg.wwwroot + "/local/connect/ajax/rollover_sources.php", {
-            timeout: 30000,
-            method: "GET",
-            on: {
-                success : function (x,o) {
-                    // Process the JSON data returned from the server
-                    try {
-                        data = Y.JSON.parse(o.responseText);
-                    }
-                    catch (e) {
-                        alert("Something went wrong! Please try again later.");
-                        return;
-                    }
-
-                    console.log(data.targets);
-                    console.log(data.sources);
-
-                    loadingPanel.hide();
-                },
-
-                failure : function (x,o) {
-                    alert("Something went wrong! Please try again later.");
+                if (o_item.hasAttribute("src_from") && o_item.hasAttribute("src_id")) {
+                    frm.one("input[name=id_from]").setAttribute("value", o_item.getAttribute("src_id"));
+                    frm.one("input[name=src_from]").setAttribute("value", o_item.getAttribute("src_from"));
                 }
-            }
+            });
         });
     }
 }
