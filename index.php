@@ -151,7 +151,9 @@ if (!empty($courses)) {
     echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
-    echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
+    if (!\local_connect\utils::enable_new_features()) {
+        echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
+    }
 
     $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
 
