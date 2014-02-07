@@ -16,7 +16,8 @@ require_once('lib.php');
 require_login();
 
 if (!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
-    throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
+    header('HTTP/1.0 401 Unauthorized', true, 401);
+    exit(1);
 }
 
 // check that rollover is switched on in config and there is a valid $USER logged in.
