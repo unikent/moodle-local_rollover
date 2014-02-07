@@ -26,7 +26,7 @@ if (!\local_connect\utils::is_enabled()) {
     print_error('connect_disabled', 'local_connect');
 }
 
-if(!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
+if (!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
     throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
 
@@ -139,11 +139,10 @@ echo '<div id="rollover_search">
 $courses = kent_get_empty_courses($search);
 
 if (!empty($courses)) {
-    
-    //Top page content
+    // Top page content
     echo get_string('top_page_help', 'local_rollover');
 
-    //Add in our confirmation dialog box and other error blocks ready
+    // Add in our confirmation dialog box and other error blocks ready
     echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
@@ -152,7 +151,9 @@ if (!empty($courses)) {
     $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
 
     // pagination stuff
-    $baseurl = new moodle_url($PAGE->URL, array('srch'=>$search));
+    $baseurl = new moodle_url($PAGE->URL, array(
+        'srch' => $search
+    ));
     $current_page = optional_param('page', 0, PARAM_INT);
     $per_page = 20;
     $offset = $current_page == 0 ? 0 : $current_page * $per_page;
@@ -162,7 +163,7 @@ if (!empty($courses)) {
     $show_courses = array_slice($courses, $offset, $per_page);
 
     //Show paging if we have more courses than per page allowed.
-    if($total_courses > $per_page){
+    if ($total_courses > $per_page) {
         echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
     }
 
@@ -178,24 +179,28 @@ if (!empty($courses)) {
         $pattern = "([a-zA-Z]{2,4}[0-9]{1,4})";
         preg_match($pattern, $course->shortname, $matches);
         $shortcode = "";
-        if($matches != FALSE){
+        if ($matches != false) {
             $shortcode = $matches[0];
         }
 
         switch (kent_get_current_rollover_status($course->id)) {
             case 'requested':
                 $from_content = $from_requested;
-                break;
+            break;
+
             case 'processing':
                 $from_content = $from_processing;
-                break;
+            break;
+
             case 'completed':
                 //Should not be used as the form should not show complete items
                 $from_content = $from_requested;
-                break;
+            break;
+
             case 'errored':
                 $from_content = $form_error;
-                break;
+            break;
+
             default:
                 if (\local_connect\utils::enable_new_features()) {
                     // Which possible courses can we match?
@@ -211,18 +216,18 @@ if (!empty($courses)) {
                 } else {
                     $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
                 }
+            break;
         }
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
     }
 
     //Show paging if we have more courses than per page allowed.
-    if($total_courses > $per_page){
+    if ($total_courses > $per_page) {
         echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
     }
 
     echo "<div class='paging-spacer'></div>";
-
 } else {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
 }
