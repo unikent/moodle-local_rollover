@@ -52,7 +52,7 @@ $PAGE->requires->string_for_js('requestedmessage', 'local_rollover');
 $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 
 // Init rollovers.
-if (\local_connect\utils::enable_new_features()) {
+if (\local_connect\utils::enable_sharedb()) {
     $PAGE->requires->js_init_call('M.local_rollover.init', array(), false, array(
         'name' => 'local_rollover',
         'fullpath' => '/local/rollover/scripts/js/rollover.js'
@@ -96,7 +96,7 @@ $advanced_options_label = get_string('advanced_options_label', 'local_rollover')
 $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
 $selection_box = "<input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>";
-if (\local_connect\utils::enable_new_features()) {
+if (\local_connect\utils::enable_sharedb()) {
     $selection_box = "<select class=\"rollover_crs_input\">%s</select>";
 }
 
@@ -151,7 +151,7 @@ if (!empty($courses)) {
     echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
-    if (!\local_connect\utils::enable_new_features()) {
+    if (!\local_connect\utils::enable_sharedb()) {
         echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
     }
 
@@ -209,7 +209,7 @@ if (!empty($courses)) {
             break;
 
             default:
-                if (\local_connect\utils::enable_new_features()) {
+                if (\local_connect\utils::enable_sharedb()) {
                     // Which possible courses can we match?
                     $possibles = \local_connect\rollover::get_course_list('*', $shortcode);
                     $possibles_html = "<option>Select One</option>";
@@ -240,7 +240,7 @@ if (!empty($courses)) {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
 }
 
-if (!\local_connect\utils::enable_new_features()) {
+if (!\local_connect\utils::enable_sharedb()) {
     echo '<script type="text/javascript">
         window.twentyTwelveAutoCompleteUrl = "' . $CFG->kent->paths['2012'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
         window.archiveAutoCompleteUrl ="' . $CFG->kent->paths['archive'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
