@@ -21,7 +21,7 @@ if (!kent_has_edit_course_access() && !has_capability('moodle/site:config', $sys
 }
 
 // check that rollover is switched on in config and there is a valid $USER logged in.
-if (!\local_connect\utils::is_enabled()) {
+if (!\local_connect\util\helpers::is_enabled()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }
@@ -89,7 +89,7 @@ try {
     // archive = the 1.9 archive (probably only used for backup)
     // live = the 2.2 live install (used for restore, and maybe backup with training someday)
     // training = the 2.2 live TRAINING install (used for restore)
-    if (\local_connect\utils::enable_new_features()) {
+    if (\local_connect\util\helpers::enable_new_features()) {
         $record->backup_source = $data['src_from'];
     } else {
         $record->backup_source = $data['src_from'] == '2' ? 'live' : ($data['src_from'] == 'twentytwelve' ? 'twentytwelve' : 'archive');
