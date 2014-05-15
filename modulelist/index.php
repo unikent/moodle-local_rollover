@@ -26,7 +26,7 @@ if (!isloggedin() or isguestuser()) {
 }
 
 // Check that rollover is switched on in config and there is a valid $USER logged in.
-if (!\local_connect\utils::is_enabled()) {
+if (!\local_connect\util\helpers::is_enabled()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }
