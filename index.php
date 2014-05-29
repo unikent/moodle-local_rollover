@@ -241,10 +241,18 @@ if (!empty($courses)) {
 }
 
 if (!\local_connect\util\helpers::enable_rollover()) {
+    $urls = array();
+    foreach ($CFG->kent->paths as $name => $path) {
+        if ($name === "connect") {
+            continue;
+        }
+
+        $urls[$name] = $path . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1';
+    }
+    $urls = json_encode($urls);
+
     echo '<script type="text/javascript">
-        window.twentyTwelveAutoCompleteUrl = "' . $CFG->kent->paths['2012'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
-        window.archiveAutoCompleteUrl ="' . $CFG->kent->paths['archive'] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
-        window.autoCompleteUrl="' . $CFG->kent->paths[LIVE_MOODLE] . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1";
+        window.rollover_paths = JSON.parse(\''.$urls.'\');
         window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'";
         window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";
     </script>';
