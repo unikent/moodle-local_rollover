@@ -77,24 +77,11 @@ try {
     $record->options = $options;
     $record->requested_at = date('Y-m-d H:i:s');
 
-    if (isset($CFG->kent_rollover_environment)) {
-        $rollover_env = $CFG->kent_rollover_environment;
-    } else {
-        $rollover_env = 'live';
-    }
+    $rollover_env = $CFG->kent->distribution;
 
     // these are used by the server to determine which CLI scripts to run, so
     // make sure they are set to something appropriate (that exists)
-    // 
-    // archive = the 1.9 archive (probably only used for backup)
-    // live = the 2.2 live install (used for restore, and maybe backup with training someday)
-    // training = the 2.2 live TRAINING install (used for restore)
-    if (\local_connect\util\helpers::enable_new_features()) {
-        $record->backup_source = $data['src_from'];
-    } else {
-        $record->backup_source = $data['src_from'] == '2' ? 'live' : ($data['src_from'] == 'twentytwelve' ? 'twentytwelve' : 'archive');
-    }
-
+    $record->backup_source = $data['src_from'];
     $record->restore_target = $rollover_env;
 
     $id = $DB->insert_record('rollover_events', $record);

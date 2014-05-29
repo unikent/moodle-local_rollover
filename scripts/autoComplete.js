@@ -1,5 +1,7 @@
 jQuery(document).ready(function() {
 
+	// Note - Promises have now arrived natively in JS
+	// we should consider switching.
 	$.whenAll = function( firstParam ) {
 	    var args = arguments,
 	        sliceDeferred = [].slice,
@@ -82,15 +84,19 @@ var getCourseData = function(from) {
 }
 
 var getArchiveCourseData = function() {
-	return getCourseData(window.archiveAutoCompleteUrl);
+	return getCourseData(window.rollover_paths['archive']);
 }
 
 var get2012CourseData = function() {
-	return getCourseData(window.twentyTwelveAutoCompleteUrl);
+	return getCourseData(window.rollover_paths['2012']);
 }
 
-var getCurrentCourseData = function() {
-	return getCourseData(window.autoCompleteUrl);
+var get2013CourseData = function() {
+	return getCourseData(window.rollover_paths['2013']);
+}
+
+var get2014CourseData = function() {
+	return getCourseData(window.rollover_paths['2014']);
 }
 
 var refreshCourseData = function() {
@@ -100,7 +106,7 @@ var refreshCourseData = function() {
 	//on stackoverflow. 
 	//http://stackoverflow.com/questions/5518181/jquery-deferreds-when-and-the-fail-callback-arguments
 
-	jQuery.whenAll(getArchiveCourseData(), getCurrentCourseData(), get2012CourseData()).always(function(aData, cData, tData){
+	jQuery.whenAll(getArchiveCourseData(), get2014CourseData(), get2013CourseData(), get2012CourseData()).always(function(aData, fData, cData, tData){
 
 		var course_data = {
 			courses: [],
@@ -118,12 +124,30 @@ var refreshCourseData = function() {
 				var search = "[archive]: - " + aData.courses[course].shortname + " - " + aData.courses[course].fullname;
 
 				course_data.courses_search.push(search);
-				course_data.courses[search] = [course, '1.9'];
+				course_data.courses[search] = [course, 'archive'];
+			}
+		}
+
+		if(fData[1] === 'error' || fData[0] === null) {
+			errors.push('We were unable to access the 2014/2015 Moodle modules! You will not be able to rollover from 2014/2015 modules');
+		} else {
+			fData = fData[0];
+			for(var course in fData.courses) {
+
+				var search = "[2013/2014]: " + fData.courses[course].shortname + " - " + fData.courses[course].fullname;
+
+				if($.inArray(search, course_data.courses_search) != -1) {
+					course_data.courses_search.push(search + ' [Duplicate]');
+					course_data.courses[search + ' [Duplicate]'] = [course, '2014'];
+				} else {
+					course_data.courses_search.push(search);
+					course_data.courses[search] = [course, '2014'];
+				}	
 			}
 		}
 
 		if(cData[1] === 'error' || cData[0] === null) {
-			errors.push('We were unable to access the Current Moodle modules! You will not be able to rollover from Current modules');
+			errors.push('We were unable to access the 2013/2014 Moodle modules! You will not be able to rollover from 2013/2014 modules');
 		} else {
 			cData = cData[0];
 			for(var course in cData.courses) {
@@ -132,10 +156,10 @@ var refreshCourseData = function() {
 
 				if($.inArray(search, course_data.courses_search) != -1) {
 					course_data.courses_search.push(search + ' [Moodle 2/Duplicate]');
-					course_data.courses[search + ' [Moodle 2/Duplicate]'] = [course, '2'];
+					course_data.courses[search + ' [Moodle 2/Duplicate]'] = [course, '2013'];
 				} else {
 					course_data.courses_search.push(search);
-					course_data.courses[search] = [course, '2'];
+					course_data.courses[search] = [course, '2013'];
 				}	
 			}
 		}
@@ -150,10 +174,10 @@ var refreshCourseData = function() {
 
 				if($.inArray(search, course_data.courses_search) != -1) {
 					course_data.courses_search.push(search + ' [Moodle 2/Duplicate]');
-					course_data.courses[search + ' [Moodle 2/Duplicate]'] = [course, 'twentytwelve'];
+					course_data.courses[search + ' [Moodle 2/Duplicate]'] = [course, '2012'];
 				} else {
 					course_data.courses_search.push(search);
-					course_data.courses[search] = [course, 'twentytwelve'];
+					course_data.courses[search] = [course, '2012'];
 				}	
 			}
 		}
