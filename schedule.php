@@ -78,6 +78,9 @@ try {
     $record->requested_at = date('Y-m-d H:i:s');
 
     $rollover_env = $CFG->kent->distribution;
+    if ($CFG->kent->environment === "demo") {
+        $rollover_env .= '-demo';
+    }
 
     // these are used by the server to determine which CLI scripts to run, so
     // make sure they are set to something appropriate (that exists)
