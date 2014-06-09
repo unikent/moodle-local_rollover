@@ -38,7 +38,16 @@ class Rollover
         $this->id = uniqid('rollover-');
         $this->settings = $settings;
 
-        $this->setup();
+        // Ensure we have the settings we need.
+        if (!isset($this->settings['id'])) {
+            throw new \moodle_exception('Must specify ID to roll into!');
+        }
+
+        if (!isset($this->settings['folder'])) {
+            throw new \moodle_exception('Must specify folder to roll from!');
+        }
+
+        static::setup_folder();
     }
 
     /**
@@ -46,6 +55,8 @@ class Rollover
      */
     public static function backup($settings) {
         global $CFG;
+
+        static::setup_folder();
 
         $controller = new backup\controllers\rollover($settings['id'], $settings);
         $controller->execute_plan();
@@ -56,7 +67,7 @@ class Rollover
         if ($file->get_contenthash()) {
             $packer = get_file_packer('application/vnd.moodle.backup');
 
-            $destination = $CFG->tempdir . '/backup/' . $file->get_contenthash();
+            $destination = $CFG->dataroot . '/rollover/' . $file->get_contenthash();
 
             $file->extract_to_pathname($packer, $destination);
             $file->delete();
@@ -70,23 +81,14 @@ class Rollover
     /**
      * Setup.
      */
-    private function setup() {
+    private static function setup_folder() {
         global $CFG;
 
         // Ensure we have a valid backup directory.
-        if (!file_exists($CFG->tempdir . '/backup')) {
-            if (!mkdir($CFG->tempdir . '/backup')) {
+        if (!file_exists($CFG->dataroot . '/rollover')) {
+            if (!mkdir($CFG->dataroot . '/rollover')) {
                 throw new \moodle_exception('Could not create backup directory!');
             }
-        }
-
-        // Ensure we have the settings we need.
-        if (!isset($this->settings['id'])) {
-            throw new \moodle_exception('Must specify ID to roll into!');
-        }
-
-        if (!isset($this->settings['folder'])) {
-            throw new \moodle_exception('Must specify folder to roll from!');
         }
     }
 
@@ -116,7 +118,7 @@ class Rollover
         global $CFG;
 
         $from = escapeshellcmd($this->settings['folder']);
-        $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->id);
+        $to = escapeshellcmd($CFG->dataroot . '/rollover/' . $this->id);
 
         exec("mv $from $to", $out, $return);
 
@@ -131,7 +133,7 @@ class Rollover
     private function manipulate_data() {
         global $CFG;
 
-        $xml = $CFG->tempdir . '/backup/' . $this->id . '/moodle_backup.xml';
+        $xml = $CFG->dataroot . '/rollover/' . $this->id . '/moodle_backup.xml';
 
         $doc = new \DOMDocument();
         if (!$doc->load($xml)) {
