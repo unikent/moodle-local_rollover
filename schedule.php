@@ -65,7 +65,8 @@ try {
     $record->to_course = $tocourse;
 
     // Check if the to_course exists in here already.
-    if ($SHAREDB->record_exists('rollovers', (array)$record)) {
+    $record = $SHAREDB->get_record('rollovers', (array)$record);
+    if ($record && $record->status < 2) {
         header('HTTP/1.1 500 Server Error');
         exit(0);
     }
