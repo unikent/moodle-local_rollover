@@ -29,6 +29,8 @@ abstract class Cron
     public static function run() {
         global $CFG, $SHAREDB;
 
+        // First, backups.
+
         $localevents = $SHAREDB->get_records('rollovers', array(
             'status' => 0,
             'from_env' => $CFG->kent->environment,
@@ -45,6 +47,35 @@ abstract class Cron
                 $event->status = 1; // Restore.
             } else {
                 $event->status = 3; // Error.
+            }
+
+            $SHAREDB->update_record('rollovers', $event);
+        }
+
+        // Now, imports.
+
+        $localevents = $SHAREDB->get_records('rollovers', array(
+            'status' => 1,
+            'to_env' => $CFG->kent->environment,
+            'to_dist' => $CFG->kent->distribution
+        ));
+
+        // All of these need to be imported.
+        foreach ($localevents as $event) {
+            try {
+                $settings = array(
+                    'id' => $event->id,
+                    'folder' => $event->path
+                );
+
+                $controller = new Rollover($settings);
+                $controller->go();
+
+                $event->status = 2; // Finished.
+
+            } catch (\moodle_exception $e) {
+                $event->status = 3; // Error.
+                echo $e->getMessage();
             }
 
             $SHAREDB->update_record('rollovers', $event);
