@@ -85,9 +85,16 @@ class Rollover
         global $CFG;
 
         // Ensure we have a valid backup directory.
+        if (!file_exists($CFG->tempdir . '/backup')) {
+            if (!mkdir($CFG->tempdir . '/backup')) {
+                throw new \moodle_exception('Could not create backup directory!');
+            }
+        }
+
+        // Ensure we have a valid rollover directory.
         if (!file_exists($CFG->dataroot . '/rollover')) {
             if (!mkdir($CFG->dataroot . '/rollover')) {
-                throw new \moodle_exception('Could not create backup directory!');
+                throw new \moodle_exception('Could not create rollover directory!');
             }
         }
     }
@@ -118,7 +125,7 @@ class Rollover
         global $CFG;
 
         $from = escapeshellcmd($this->settings['folder']);
-        $to = escapeshellcmd($CFG->dataroot . '/rollover/' . $this->id);
+        $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->id);
 
         exec("mv $from $to", $out, $return);
 
@@ -133,7 +140,7 @@ class Rollover
     private function manipulate_data() {
         global $CFG;
 
-        $xml = $CFG->dataroot . '/rollover/' . $this->id . '/moodle_backup.xml';
+        $xml = $CFG->tempdir . '/backup/' . $this->id . '/moodle_backup.xml';
 
         $doc = new \DOMDocument();
         if (!$doc->load($xml)) {
