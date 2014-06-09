@@ -22,6 +22,17 @@ function xmldb_local_rollover_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2012053001, 'local', 'rollover');
     }
 
+    if ($oldversion < 2014060900) {
+        $table = new xmldb_table('rollover_events');
+
+        // Conditionally launch drop table for rollover_events.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2014060900, 'local', 'rollover');
+    }
+
     return true;
 
 }

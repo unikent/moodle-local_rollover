@@ -38,7 +38,16 @@ class Rollover
         $this->id = uniqid('rollover-');
         $this->settings = $settings;
 
-        $this->setup();
+        // Ensure we have the settings we need.
+        if (!isset($this->settings['id'])) {
+            throw new \moodle_exception('Must specify ID to roll into!');
+        }
+
+        if (!isset($this->settings['folder'])) {
+            throw new \moodle_exception('Must specify folder to roll from!');
+        }
+
+        static::setup_folder();
     }
 
     /**
@@ -46,6 +55,8 @@ class Rollover
      */
     public static function backup($settings) {
         global $CFG;
+
+        static::setup_folder();
 
         $controller = new backup\controllers\rollover($settings['id'], $settings);
         $controller->execute_plan();
@@ -56,7 +67,7 @@ class Rollover
         if ($file->get_contenthash()) {
             $packer = get_file_packer('application/vnd.moodle.backup');
 
-            $destination = $CFG->tempdir . '/backup/' . $file->get_contenthash();
+            $destination = $CFG->dataroot . '/rollover/' . $file->get_contenthash();
 
             $file->extract_to_pathname($packer, $destination);
             $file->delete();
@@ -70,7 +81,7 @@ class Rollover
     /**
      * Setup.
      */
-    private function setup() {
+    private static function setup_folder() {
         global $CFG;
 
         // Ensure we have a valid backup directory.
@@ -80,13 +91,11 @@ class Rollover
             }
         }
 
-        // Ensure we have the settings we need.
-        if (!isset($this->settings['id'])) {
-            throw new \moodle_exception('Must specify ID to roll into!');
-        }
-
-        if (!isset($this->settings['folder'])) {
-            throw new \moodle_exception('Must specify folder to roll from!');
+        // Ensure we have a valid rollover directory.
+        if (!file_exists($CFG->dataroot . '/rollover')) {
+            if (!mkdir($CFG->dataroot . '/rollover')) {
+                throw new \moodle_exception('Could not create rollover directory!');
+            }
         }
     }
 
