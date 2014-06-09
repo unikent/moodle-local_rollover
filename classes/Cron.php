@@ -40,9 +40,9 @@ abstract class Cron
         // All of these need to be backed up.
         foreach ($localevents as $event) {
             $settings = json_decode($event->options);
-            $settings['id'] = $event->from_course;
+            $settings->id = $event->from_course;
 
-            $event->path = Rollover::backup($settings);
+            $event->path = Rollover::backup((array)$settings);
             if ($event->path) {
                 $event->status = 1; // Restore.
             } else {
