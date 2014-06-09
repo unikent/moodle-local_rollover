@@ -31,7 +31,6 @@ $site = get_site();
 if(!$site) die();
 
 // set up our paths and bits
-$java_location = $CFG->kent->paths['connect'] . 'rollover/schedule';
 $data = array();
 
 // try and catch any problems (be it with filter_var or anything else)
@@ -89,36 +88,10 @@ try {
 
     $id = $DB->insert_record('rollover_events', $record);
 
-    if (!$id) {
-        header('HTTP/1.1 500 Server Error');
+    if ($id) {
+        header("HTTP/1.1 201 Created");
         exit(0);
     }
-
-    // this is super important, as it tells the backend which environment this
-    // request came from. There are two options right now, 'live' and 'training'
-    $environment = $rollover_env;
-
-    // send a schedule request to the connect server backend
-    $ch = curl_init($java_location);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
-    curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, array('id' => $id, 'environment' => $environment));
-
-    $response = curl_exec($ch);
-    $output = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    curl_close($ch);
-
-    // echo back status code from curl, or just fail with a 500 if it's not good
-    if( $output == 100 || $output == "100" || $output == 201 || $output == "201" ) {
-      header("HTTP/1.1 201 Created");
-    } else {
-      header("HTTP/1.1 500 Server Error");
-    }
-    exit(0);
 
 } catch (Exception $e) {kent_json_errors($e);}
 
