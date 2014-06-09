@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,24 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-
-/**
- * Defines the version of newmodule
- *
- * This code fragment is called by moodle_needs_upgrading() and
- * /admin/index.php
- *
- * @package    mod
- * @subpackage newmodule
- * @copyright  2011 Your Name
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace local_rollover;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015060301;
-$plugin->component = 'local_rollover';
-$plugin->requires = 2010112400;
-$plugin->cron     = 60;
-$plugin->release = '1.0 (Build: 2011101202)';
-$plugin->maturity = MATURITY_STABLE;
+/**
+ * Cron stuff
+ */
+class Cron
+{
+    /**
+     * Static Run
+     */
+    public static function run() {
+        global $DB;
+
+        $cron = new static();
+
+        $localevents = $DB->get_records('rollover_events');
+    }
+}
