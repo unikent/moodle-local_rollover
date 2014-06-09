@@ -78,39 +78,19 @@ function kent_get_own_editable_courses(){
     }
     $list = rtrim($list, ",");
 
-    $where_check = "cse.section is null";
-    $content_check = "LEFT JOIN {course_sections} cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0";
+    $sharedb = $CFG->kent->sharedb['name'];
 
-    
     //Now check and get ones with content only
-    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
+    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.status AS rollover_status
      FROM {course} c
-     LEFT JOIN {rollover_events} rol ON rol.to_course = c.id
-     {$content_check}
+     LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
+     LEFT JOIN {course_sections} cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0
      JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE {$where_check} AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
-
-
-//    $params['userid'] = (int)$USER->id;
-//    $params['capability'] = 'moodle/course:update';
-//
-//
-
-//    $sql = "SELECT DISTINCT
-// c.id,c.fullname, c.shortname, c.fullname, c.summary, c.visible, rol.what AS rollover_status FROM {$CFG->prefix}course c
-//  LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-//  {$content_check}
-//  INNER JOIN {$CFG->prefix}role_assignments ra ON ra.userid = :userid
-//  INNER JOIN {$CFG->prefix}role_capabilities rc ON ra.roleid = rc.roleid AND rc.capability=:capability AND rc.permission=1
-//  INNER JOIN {$CFG->prefix}context con ON
-//    ((con.instanceid = c.id AND con.contextlevel = 50) AND (con.id = ra.contextid))
-//      OR ((con.contextlevel = 40 AND con.id = ra.contextid) AND c.id IN
-//          (SELECT con2.instanceid FROM {$CFG->prefix}context con2 WHERE con2.path LIKE CONCAT('',con.path,'%') AND con2.contextlevel = 50))
-//          WHERE {$where_check} ORDER BY c.shortname asc";
+     WHERE cse.section is null AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
 
     // pull out all module matching
 
-    if ($courses = $DB->get_records_sql($sql)) {
+    if ($courses = $DB->get_records_sql($sql, array($CFG->kent->environment, $CFG->kent->distribution))) {
     //if ($courses = $DB->get_records_sql($sql, $params)) {
 
         foreach ($courses as $course) {
@@ -137,21 +117,17 @@ function kent_get_own_editable_courses(){
 
     }
 
-    //Need to do the same now without the content check to get rollover status for those still running
-    $content_check = "";
-    $where_check = "(rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored')";
-    //Now check and get ones with content only
-    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.what AS rollover_status
-     FROM {$CFG->prefix}course c
-     LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-     {$content_check}
-     JOIN {$CFG->prefix}context ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE {$where_check} AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
+    //Need to do the same now without the content check to get rollover status for those still running.
+    //Now check and get ones with content only.
+    $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.status AS rollover_status
+     FROM {course} c
+     LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
+     JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
+     WHERE (rol.status = 0 OR rol.status = 1 OR rol.status = 3) AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
 
 
     // pull out all module matching
-    if ($courses = $DB->get_records_sql($sql)) {
-//    if ($courses = $DB->get_records_sql($sql, $params)) {
+    if ($courses = $DB->get_records_sql($sql, array($CFG->kent->environment, $CFG->kent->distribution))) {
 
         // loop throught them
         foreach ($courses as $course) {
@@ -177,7 +153,9 @@ function kent_get_all_courses() {
 
     global $USER, $CFG, $DB;
 
-    $params = array();
+    $sharedb = $CFG->kent->sharedb['name'];
+
+    $params = array($CFG->kent->environment, $CFG->kent->distribution);
     $course_list = array();
 
     $context = context_system::instance();
@@ -185,10 +163,10 @@ function kent_get_all_courses() {
     if (has_capability('moodle/site:config', $context)){
 
 
-        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cse.section, rol.what as rollover_status
-                FROM {$CFG->prefix}course c
-                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-                LEFT JOIN {$CFG->prefix}course_sections cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cse.section, rol.status as rollover_status
+                FROM {course} c
+                LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
+                LEFT JOIN {course_sections} cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
                 WHERE cse.section is null AND c.category != 58
                 ORDER BY c.shortname ASC";
 
@@ -222,10 +200,10 @@ function kent_get_all_courses() {
         }
 
         //Pick up any modules which may not be empty, because they are in rollover progress.
-        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.what as rollover_status
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
                 FROM {$CFG->prefix}course c
-                LEFT JOIN {$CFG->prefix}rollover_events rol ON rol.to_course = c.id
-                WHERE rol.what = 'requested' OR rol.what = 'processing' OR rol.what = 'errored'
+                LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
+                WHERE rol.status = 0 OR rol.status = 1 OR rol.status = 3
                 ORDER BY c.shortname ASC";
 
         // pull out all module matching
@@ -371,7 +349,7 @@ function kent_get_formated_module_list() {
  * Quick function to get list of rollover records
  */
 function kent_get_rollover_records($course_id, $just_current=FALSE){
-    global $CFG, $DB;
+    global $CFG, $SHAREDB;
     $results = array();
 
     //See if we just want the top current item
@@ -380,10 +358,10 @@ function kent_get_rollover_records($course_id, $just_current=FALSE){
         $limit = " LIMIT 0,1";
     }
 
-    $sql = "SELECT * FROM {$CFG->prefix}rollover_events WHERE to_course={$course_id} ORDER BY id DESC{$limit}";
+    $sql = "SELECT * FROM rollovers WHERE to_course={$course_id} AND to_env = ? AND to_dist = ? ORDER BY id DESC{$limit}";
 
     //Loop through results and add to array to return
-    if ($records = $DB->get_records_sql($sql)) {
+    if ($records = $SHAREDB->get_records_sql($sql, array($CFG->kent->environment, $CFG->kent->distribution))) {
         foreach($records as $record){
             $results[] = $record;
         }
@@ -533,28 +511,7 @@ function kent_check_mod_types($course_id){
  * Function to set a module to ignore being rolled over - if user is starting a module from scratch
  */
 function kent_set_ignore_rollover($course_id){
-
-        global $USER, $DB;
-
-        $context = context_course::instance($course_id);
-
-        $status = array('status' => false);
-
-        if (has_capability('moodle/course:update', $context)){
-            $msg = 'User: '.$USER->id.' set this module to be ignored.';
-            $date = ''. date("Y-m-d H:m:s");
-            $newrec = array('from_course'=>0, 'to_course'=>$course_id, 'when'=>$date, 'what'=>'ignore', 'message'=>$msg);
-
-            $sql = 'INSERT INTO mdl_rollover_events (`from_course`, `to_course`, `when`, `what`, `message`) VALUES (?,?,?,?,?)';
-            $cmt_id = $DB->execute($sql, $newrec);
-
-            if (!empty($cmt_id)) {
-                $status['status'] = true;
-            }
-        }
-
-        return json_encode($status);
-
+    print_error("No longer supported");
 }
 
 

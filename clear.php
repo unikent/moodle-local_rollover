@@ -32,8 +32,6 @@ foreach ($_POST as $data_key => $data_value){
     $data[$data_key] = $data_value;
 }
 
-global $DB;
-
 // check the moodleness of this page request
 $site = get_site();
 if(!$site) die();
@@ -54,8 +52,8 @@ if($context != FALSE && has_capability('moodle/course:update', $context)) {
 
     //If we successfully removed course contents, lets tidy and remove any entry in the rollover_events table
     if($status){
-        $sql = "DELETE FROM {rollover_events} WHERE to_course = ?";
-        $DB->execute($sql, array($course));
+        $sql = "DELETE FROM {rollovers} WHERE to_course = ? AND to_env = ? AND to_dist = ?";
+        $SHAREDB->execute($sql, array($course, $CFG->kent->environment, $CFG->kent->distribution));
     }
 
 } 
