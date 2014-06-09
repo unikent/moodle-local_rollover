@@ -30,55 +30,51 @@ if (!\local_connect\util\helpers::is_enabled()) {
 $site = get_site();
 if(!$site) die();
 
-// set up our paths and bits
+// Set up our paths and bits.
 $data = array();
 
-// try and catch any problems (be it with filter_var or anything else)
+// Try and catch any problems (be it with filter_var or anything else).
 try {
-    // sanitize our post data
+    // Sanitize our post data.
     $data = kent_filter_post_data();
 
-    // ok, we need to create a new rollover event in the moodle DB for this request
-    $from_course = $data['id_from'];
-    $to_course = $data['id_to'];
+    // Ok, we need to create a new rollover event in the moodle DB for this request.
+    $fromcourse = $data['id_from'];
+    $tocourse = $data['id_to'];
 
-    // remove those from the data so $data just contains the options
+    // Remove those from the data so $data just contains the options.
     unset($data['id_from']);
     unset($data['id_to']);
 
-    //Fix so that we do not rollover Turnitin inboxes from previous years (as we can't)
+    // Fix so that we do not rollover Turnitin inboxes from previous years (as we can't).
     if (isset($data['backup_source']) && $data['backup_source'] != "live") {
         if (isset($data['backup_turnitintool'])) {
             unset($data['backup_turnitintool']);
         }
     }
 
-    // json encode the remaining data (options)
+    // Json encode the remaining data (options).
     $options = json_encode($data);
 
-    // check if the to_course exists in here already
-    $row = $DB->get_record('rollover_events', array(
-        'from_course' => $from_course,
-        'to_course' => $to_course
-    ));
+    $record = new stdClass();
+    $record->from_env = $CFG->kent->environment; // Todo - fix this.
+    $record->from_dist = $data['src_from'];
+    $record->from_course = $fromcourse;
+    $record->to_env = $CFG->kent->environment;
+    $record->to_dist = $CFG->kent->distribution;
+    $record->to_course = $tocourse;
 
-    if ($row) {
-        // it exists, so let's cancel this request (don't want to rollover > 1 time)
+    // Check if the to_course exists in here already.
+    if ($SHAREDB->record_exists('rollovers', (array)$record)) {
         header('HTTP/1.1 500 Server Error');
         exit(0);
     }
 
-    // now insert this into the DB
-    $record = new stdClass();
+    // Now insert this into the DB.
     $record->created = date('Y-m-d H:i:s');
     $record->updated = date('Y-m-d H:i:s');
     $record->status = 0;
-    $record->from_env = $CFG->kent->environment; // Todo - fix this.
-    $record->from_dist = $data['src_from'];
-    $record->from_course = $from_course;
-    $record->to_env = $CFG->kent->environment;
-    $record->to_dist = $CFG->kent->distribution;
-    $record->to_course = $to_course;
+    $record->options = $options;
 
     $id = $SHAREDB->insert_record('rollovers', $record);
 
