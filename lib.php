@@ -656,5 +656,7 @@ function connect_isEnabled() {
  * Rollover Cron
  */
 function local_rollover_cron() {
-    \local_rollover\Cron::run();
+    if (\local_kent\util\sharedb::available()) {
+        \local_rollover\Cron::run();
+    }
 }
