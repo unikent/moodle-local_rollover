@@ -21,16 +21,33 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Cron stuff
  */
-class Cron
+abstract class Cron
 {
     /**
      * Static Run
      */
     public static function run() {
-        global $DB;
+        global $CFG, $SHAREDB;
 
-        $cron = new static();
+        $localevents = $SHAREDB->get_records('rollovers', array(
+            'status' => 0,
+            'from_env' => $CFG->kent->environment,
+            'from_dist' => $CFG->kent->distribution
+        ));
 
-        $localevents = $DB->get_records('rollover_events');
+        // All of these need to be backed up.
+        foreach ($localevents as $event) {
+            $settings = json_decode($event->options);
+            $settings['id'] = $event->from_course;
+
+            $event->path = Rollover::backup($settings);
+            if ($event->path) {
+                $event->status = 1; // Restore.
+            } else {
+                $event->status = 3; // Error.
+            }
+
+            $SHAREDB->update_record('rollovers', $event);
+        }
     }
 }

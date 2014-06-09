@@ -25,24 +25,10 @@ function xmldb_local_rollover_upgrade($oldversion) {
     if ($oldversion < 2014060900) {
         $table = new xmldb_table('rollover_events');
 
-        // Define field status to be added to rollover_events.
-        $field = new xmldb_field('status', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'restore_target');
-
-        // Conditionally launch add field status.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
+        // Conditionally launch drop table for rollover_events.
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
         }
-
-        // Define index i_status (not unique) to be added to rollover_events.
-        $index = new xmldb_index('i_status', XMLDB_INDEX_NOTUNIQUE, array('status'));
-
-        // Conditionally launch add index i_status.
-        if (!$dbman->index_exists($table, $index)) {
-            $dbman->add_index($table, $index);
-        }
-
-        // Also change all the statuses.
-        $DB->set_field('rollover_events', 'status', '1');
 
         upgrade_plugin_savepoint(true, 2014060900, 'local', 'rollover');
     }

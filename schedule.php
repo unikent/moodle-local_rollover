@@ -70,30 +70,26 @@ try {
 
     // now insert this into the DB
     $record = new stdClass();
+    $record->created = date('Y-m-d H:i:s');
+    $record->updated = date('Y-m-d H:i:s');
+    $record->status = 0;
+    $record->from_env = $CFG->kent->environment; // Todo - fix this.
+    $record->from_dist = $data['src_from'];
     $record->from_course = $from_course;
+    $record->to_env = $CFG->kent->environment;
+    $record->to_dist = $CFG->kent->distribution;
     $record->to_course = $to_course;
-    $record->what = 'requested';
-    $record->options = $options;
-    $record->requested_at = date('Y-m-d H:i:s');
 
-    $rollover_env = $CFG->kent->distribution;
-    if ($CFG->kent->environment === "demo") {
-        $rollover_env .= '-demo';
-    }
-
-    // these are used by the server to determine which CLI scripts to run, so
-    // make sure they are set to something appropriate (that exists)
-    $record->backup_source = $data['src_from'];
-    $record->restore_target = $rollover_env;
-
-    $id = $DB->insert_record('rollover_events', $record);
+    $id = $SHAREDB->insert_record('rollovers', $record);
 
     if ($id) {
         header("HTTP/1.1 201 Created");
         exit(0);
     }
 
-} catch (Exception $e) {kent_json_errors($e);}
+} catch (Exception $e) {
+    kent_json_errors($e);
+}
 
 header("HTTP/1.1 500 Server Error");
 exit(1);
