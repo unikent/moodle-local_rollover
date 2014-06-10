@@ -42,6 +42,9 @@ abstract class Cron
             $settings = json_decode($event->options);
             $settings->id = $event->from_course;
 
+            $event->status = 4; // In Progress.
+            $SHAREDB->update_record('rollovers', $event);
+
             $event->path = Rollover::backup((array)$settings);
             if ($event->path) {
                 $event->status = 1; // Restore.
@@ -67,6 +70,9 @@ abstract class Cron
                     'id' => $event->id,
                     'folder' => $event->path
                 );
+
+                $event->status = 4; // In Progress.
+                $SHAREDB->update_record('rollovers', $event);
 
                 $controller = new Rollover($settings);
                 $controller->go();
