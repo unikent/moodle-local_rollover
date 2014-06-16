@@ -121,6 +121,7 @@ $from_form = <<< HEREDOC
         <input type="hidden" name="id_from" class="id_from" value=""/>
         <input type="hidden" name="src_from" class="src_from" value=""/>
         <input type="hidden" name="id_to" class="id_to" value="%d"/>
+        <input type="hidden" name="src_to" class="src_to" value="%s"/>
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </td>
@@ -220,9 +221,9 @@ if (!empty($courses)) {
                         }
                     }
 
-                    $from_content = sprintf($from_form, $possibles_html, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
+                    $from_content = sprintf($from_form, $possibles_html, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
                 } else {
-                    $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id);
+                    $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
                 }
             break;
         }
