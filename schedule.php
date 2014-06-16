@@ -35,6 +35,7 @@ $data = array();
 
 // Try and catch any problems (be it with filter_var or anything else).
 try {
+    
     // Sanitize our post data.
     $data = kent_filter_post_data();
 
@@ -76,6 +77,7 @@ try {
     $record->updated = date('Y-m-d H:i:s');
     $record->status = 0;
     $record->options = $options;
+    $record->requester = $USER->username;
 
     $id = $SHAREDB->insert_record('rollovers', $record);
 
