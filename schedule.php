@@ -1,4 +1,19 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * This script provides a web service which will accept a post of scheduling data for a rollover
  *
@@ -9,7 +24,7 @@
  *
  * _POST -- Post data from schedule form.
  */
-//Now some library includes
+
 require_once('../../config.php');
 require_once('lib.php');
 
@@ -20,15 +35,17 @@ if (!kent_has_edit_course_access() && !has_capability('moodle/site:config', \con
     exit(1);
 }
 
-// check that rollover is switched on in config and there is a valid $USER logged in.
+// Check that rollover is switched on in config and there is a valid $USER logged in.
 if (!\local_connect\util\helpers::is_enabled()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }
 
-// check the moodleness of this page request
+// Check the moodleness of this page request.
 $site = get_site();
-if(!$site) die();
+if (!$site) {
+    die();
+}
 
 // Set up our paths and bits.
 $data = array();
@@ -41,6 +58,13 @@ try {
     // Ok, we need to create a new rollover event in the moodle DB for this request.
     $fromcourse = $data['id_from'];
     $tocourse = $data['id_to'];
+
+    // Grab a course context.
+    $context = \context_course::instance($tocourse);
+    if (!has_capability('moodle/course:update', $context)) {
+        header('HTTP/1.0 401 Unauthorized', true, 401);
+        exit(1);
+    }
 
     // Remove those from the data so $data just contains the options.
     unset($data['id_from']);
@@ -76,6 +100,7 @@ try {
     $record->updated = date('Y-m-d H:i:s');
     $record->status = 0;
     $record->options = $options;
+    $record->requester = $USER->username;
 
     $id = $SHAREDB->insert_record('rollovers', $record);
 
