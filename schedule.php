@@ -59,6 +59,13 @@ try {
     $fromcourse = $data['id_from'];
     $tocourse = $data['id_to'];
 
+    // Grab a course context.
+    $context = \context_course::instance($tocourse);
+    if (!has_capability('moodle/course:update', $context)) {
+        header('HTTP/1.0 401 Unauthorized', true, 401);
+        exit(1);
+    }
+
     // Remove those from the data so $data just contains the options.
     unset($data['id_from']);
     unset($data['id_to']);
