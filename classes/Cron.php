@@ -39,6 +39,8 @@ abstract class Cron
 
         // All of these need to be backed up.
         foreach ($localevents as $event) {
+            $event->updated = date('Y-m-d H:i:s');
+
             $settings = json_decode($event->options);
             $settings->id = $event->from_course;
 
@@ -77,16 +79,16 @@ abstract class Cron
 
         // All of these need to be imported.
         foreach ($localevents as $event) {
-            try {
-                $settings = array(
-                    'id' => $event->id,
-                    'folder' => $event->path
-                );
+            $event->updated = date('Y-m-d H:i:s');
 
+            try {
                 $event->status = 4; // In Progress.
                 $SHAREDB->update_record('rollovers', $event);
 
-                $controller = new Rollover($settings);
+                $controller = new Rollover(array(
+                    'id' => $event->to_course,
+                    'folder' => $event->path
+                ));
                 $controller->go();
 
                 $event->status = 2; // Finished.
