@@ -47,9 +47,6 @@ if (!$site) {
     die();
 }
 
-// Set up our paths and bits.
-$data = array();
-
 // Try and catch any problems (be it with filter_var or anything else).
 try {
     // Sanitize our post data.
@@ -89,8 +86,8 @@ try {
     $record->to_course = $tocourse;
 
     // Check if the to_course exists in here already.
-    $record = $SHAREDB->get_record('rollovers', (array)$record);
-    if ($record && $record->status < 2) {
+    $prod = $SHAREDB->get_record('rollovers', (array)$record);
+    if ($prod && $prod->status < 2) {
         header('HTTP/1.1 500 Server Error');
         exit(0);
     }
