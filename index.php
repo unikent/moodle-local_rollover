@@ -52,14 +52,7 @@ $PAGE->requires->string_for_js('requestedmessage', 'local_rollover');
 $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 
 // Init rollovers.
-if (\local_connect\util\helpers::enable_rollover()) {
-    $PAGE->requires->js_init_call('M.local_rollover.init', array(), false, array(
-        'name' => 'local_rollover',
-        'fullpath' => '/local/rollover/scripts/js/rollover.js'
-    ));
-} else {
-    $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
-}
+$PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 
 $PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
 
@@ -96,9 +89,6 @@ $advanced_options_label = get_string('advanced_options_label', 'local_rollover')
 $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
 $selection_box = "<input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>";
-if (\local_connect\util\helpers::enable_rollover()) {
-    $selection_box = "<select class=\"rollover_crs_input\">%s</select>";
-}
 
 $from_form = <<< HEREDOC
 <td class='rollover_crs_from'>
@@ -152,9 +142,7 @@ if (!empty($courses)) {
     echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
     echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
-    if (!\local_connect\util\helpers::enable_rollover()) {
-        echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
-    }
+    echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
 
     $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
 
@@ -210,21 +198,7 @@ if (!empty($courses)) {
             break;
 
             default:
-                if (\local_connect\util\helpers::enable_rollover()) {
-                    // Which possible courses can we match?
-                    $possibles = \local_connect\rollover::get_course_list('*', $shortcode);
-                    $possibles_html = "<option>Select One</option>";
-
-                    foreach ($possibles as $possible) {
-                        if ($course->id !== $possible->moodle_id) {
-                            $possibles_html .= "<option src_from=\"{$possible->moodle_dist}\" src_id=\"{$possible->moodle_id}\">{$possible->shortname}</option>";
-                        }
-                    }
-
-                    $from_content = sprintf($from_form, $possibles_html, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
-                } else {
-                    $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
-                }
+                $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
             break;
         }
 
@@ -241,22 +215,16 @@ if (!empty($courses)) {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
 }
 
-if (!\local_connect\util\helpers::enable_rollover()) {
-    $urls = array();
-    foreach ($CFG->kent->paths as $name => $path) {
-        if ($name === "connect") {
-            continue;
-        }
 
-        $urls[$name] = $path . 'local/rollover/modulelist/index.php?action=allmodlist&orderbyrole=1';
-    }
-    $urls = json_encode($urls);
+$urls = $CFG->kent->paths;
+unset($urls['connect']);
+$urls = array_keys($urls);
+$urls = json_encode($urls);
 
-    echo '<script type="text/javascript">
-        window.rollover_paths = JSON.parse(\''.$urls.'\');
-        window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'";
-        window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";
-    </script>';
-}
+echo '<script type="text/javascript">
+    window.rollover_paths = JSON.parse(\''.$urls.'\');
+    window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'";
+    window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";
+</script>';
 
 echo $OUTPUT->footer();
