@@ -150,16 +150,25 @@ class Rollover
         $xpath = new \DOMXPath($doc);
 
         // Remove all turnitintool activities.
-        $query = "/moodle_backup/information/contents/activities/activity[modulename/text()='turnitintool']";
-        $this->remove_nodes($xpath, $query);
-
-        // Remove all turnitintool settings.
-        $query = "/moodle_backup/information/settings/setting[activity/text()[contains(.,'turnitintool')]]";
-        $this->remove_nodes($xpath, $query);
+        $this->remove_module($xpath, 'turnitintool');
+        $this->remove_module($xpath, 'turnitintooltwo');
 
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
+    }
+
+    /**
+     * Remove a specified modules from this rollover.
+     */
+    private function remove_module($xpath, $name) {
+        // Remove all $name activities.
+        $query = "/moodle_backup/information/contents/activities/activity[modulename/text()='$name']";
+        $this->remove_nodes($xpath, $query);
+
+        // Remove all $name settings.
+        $query = "/moodle_backup/information/settings/setting[activity/text()[contains(.,'$name')]]";
+        $this->remove_nodes($xpath, $query);
     }
 
     /**
