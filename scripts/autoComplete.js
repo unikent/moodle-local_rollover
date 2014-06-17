@@ -66,8 +66,8 @@ var getCourseData = function(from) {
 		'<div class="blockui_loading">Please wait, loading module lists.</div>' });
 
 	return jQuery.ajax({
-		url: from,
-		dataType: 'jsonp',
+		url: M.cfg.wwwroot + '/local/rollover/ajax/sources.php?dist=' + from,
+		dataType: 'json',
 		success: function(data){
 			jQuery.unblockUI();
 		},
@@ -88,7 +88,7 @@ var refreshCourseData = function() {
 	var paths = [];
 
 	$.each(window.rollover_paths, function (k, v) {
-		path_names.push(k);
+		path_names.push(v);
 		paths.push(getCourseData(v));
 	});
 
@@ -105,21 +105,18 @@ var refreshCourseData = function() {
 			var name = path_names[i];
 			var data = arguments[i];
 
-
-			if (data[1] === 'error' || data[0] === null) {
-				errors.push('We were unable to access the ' + name + ' Moodle modules! You will not be able to rollover from ' + name + ' modules');
-			} else {
+			if (data[1] !== 'error' && data[0] !== null) {
 				data = data[0];
-				for(var course in data.courses) {
 
-					var search = '[' + name + ']: ' + data.courses[course].shortname + ' - ' + data.courses[course].fullname;
+				for (var course in data) {
+					var search = '[' + name + ']: ' + data[course].shortname + ' - ' + data[course].fullname;
 
 					if (name != 'archive' && $.inArray(search, course_data.courses_search) != -1) {
 						course_data.courses_search.push(search + ' [Duplicate]');
-						course_data.courses[search + ' [Duplicate]'] = [course, '2014'];
+						course_data.courses[search + ' [Duplicate]'] = [data[course].moodle_id, '2014'];
 					} else {
 						course_data.courses_search.push(search);
-						course_data.courses[search] = [course, name];
+						course_data.courses[search] = [data[course].moodle_id, name];
 					}	
 				}
 			}
