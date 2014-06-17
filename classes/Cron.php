@@ -27,7 +27,7 @@ abstract class Cron
      * Static Run
      */
     public static function run() {
-        global $CFG, $SHAREDB;
+        global $CFG, $DB, $SHAREDB;
 
         // First, backups.
 
@@ -39,8 +39,22 @@ abstract class Cron
 
         // All of these need to be backed up.
         foreach ($localevents as $event) {
+            $event->updated = date('Y-m-d H:i:s');
+
             $settings = json_decode($event->options);
             $settings->id = $event->from_course;
+
+            $context = \context_course::instance($event->from_course);
+            $user = $DB->get_record('user', array(
+                'username' => $event->requester
+            ));
+
+            // Did this user have access to this course?
+            if (!$user || !has_capability('moodle/course:update', $context, $user)) {
+                $event->status = 3; // Error.
+                $SHAREDB->update_record('rollovers', $event);
+                continue;
+            }
 
             $event->status = 4; // In Progress.
             $SHAREDB->update_record('rollovers', $event);
@@ -65,16 +79,16 @@ abstract class Cron
 
         // All of these need to be imported.
         foreach ($localevents as $event) {
-            try {
-                $settings = array(
-                    'id' => $event->id,
-                    'folder' => $event->path
-                );
+            $event->updated = date('Y-m-d H:i:s');
 
+            try {
                 $event->status = 4; // In Progress.
                 $SHAREDB->update_record('rollovers', $event);
 
-                $controller = new Rollover($settings);
+                $controller = new Rollover(array(
+                    'id' => $event->to_course,
+                    'folder' => $event->path
+                ));
                 $controller->go();
 
                 $event->status = 2; // Finished.
