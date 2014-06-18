@@ -22,7 +22,7 @@ require_once($CFG->libdir . '/filelib.php');
 $systemcontext = context_system::instance();
 require_login();
 
-if (!\local_connect\util\helpers::is_enabled()) {
+if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::available()) {
     print_error('connect_disabled', 'local_connect');
 }
 
