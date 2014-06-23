@@ -87,6 +87,7 @@ abstract class Cron
 
                 $controller = new Rollover(array(
                     'id' => $event->to_course,
+                    'rollover_id' => $event->id,
                     'folder' => $event->path
                 ));
                 $controller->go();

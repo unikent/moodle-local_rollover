@@ -19,6 +19,8 @@ namespace local_rollover;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+// required for post_import of cla
+require_once($CFG->dirroot . '/mod/cla/lib.php');
 
 /**
  * Rollover stuff
@@ -111,6 +113,7 @@ class Rollover
             $this->migrate_data();
             $this->manipulate_data();
             $this->import();
+            $this->post_import();
         } catch (\moodle_exception $e) {
             $DB->rollback_delegated_transaction($transaction, $e);
         }
@@ -204,4 +207,12 @@ class Rollover
 
         $controller->execute_plan();
     }
+
+    /**
+     * Run stuff after import is complete.
+     */
+    private function post_import() {
+        cla_rollover_notification($this->settings);
+    }
+
 }
