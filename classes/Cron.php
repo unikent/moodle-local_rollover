@@ -86,7 +86,8 @@ abstract class Cron
                 $SHAREDB->update_record('rollovers', $event);
 
                 $controller = new Rollover(array(
-                    'id' => $event->to_course,
+                    'id' => $event->id,
+                    'tocourse' => $event->to_course,
                     'folder' => $event->path
                 ));
                 $controller->go();

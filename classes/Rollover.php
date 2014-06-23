@@ -19,12 +19,16 @@ namespace local_rollover;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
+require_once($CFG->dirroot . '/mod/cla/lib.php');
 
 /**
  * Rollover stuff
  */
 class Rollover
 {
+    /** Rollover UUID */
+    private $uuid;
+
     /** Rollover ID */
     private $id;
 
@@ -35,11 +39,12 @@ class Rollover
      * Begin a rollover.
      */
     public function __construct($settings) {
-        $this->id = uniqid('rollover-');
+        $this->uuid = uniqid('rollover-');
         $this->settings = $settings;
+        $this->id = $this->settings['id'];
 
         // Ensure we have the settings we need.
-        if (!isset($this->settings['id'])) {
+        if (!isset($this->settings['tocourse'])) {
             throw new \moodle_exception('Must specify ID to roll into!');
         }
 
@@ -111,6 +116,7 @@ class Rollover
             $this->migrate_data();
             $this->manipulate_data();
             $this->import();
+            $this->post_import();
         } catch (\moodle_exception $e) {
             $DB->rollback_delegated_transaction($transaction, $e);
         }
@@ -125,7 +131,7 @@ class Rollover
         global $CFG;
 
         $from = escapeshellcmd($this->settings['folder']);
-        $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->id);
+        $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->uuid);
 
         exec("mv $from $to", $out, $return);
 
@@ -140,7 +146,7 @@ class Rollover
     private function manipulate_data() {
         global $CFG;
 
-        $xml = $CFG->tempdir . '/backup/' . $this->id . '/moodle_backup.xml';
+        $xml = $CFG->tempdir . '/backup/' . $this->uuid . '/moodle_backup.xml';
 
         $doc = new \DOMDocument();
         if (!$doc->load($xml)) {
@@ -190,8 +196,8 @@ class Rollover
         global $CFG;
 
         $controller = new \restore_controller(
-            $this->id,
-            $this->settings['id'],
+            $this->uuid,
+            $this->settings['tocourse'],
             \backup::INTERACTIVE_NO,
             \backup::MODE_GENERAL,
             2,
@@ -203,5 +209,12 @@ class Rollover
         }
 
         $controller->execute_plan();
+    }
+
+    /**
+     * Run stuff after import is complete.
+     */
+    private function post_import() {
+        cla_rollover_notification($this->id);
     }
 }
