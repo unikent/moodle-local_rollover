@@ -180,20 +180,20 @@ if (!empty($courses)) {
         }
 
         switch (kent_get_current_rollover_status($course->id)) {
-            case 'requested':
+            case 0:
                 $from_content = $from_requested;
             break;
 
-            case 'processing':
+            case 1:
                 $from_content = $from_processing;
             break;
 
-            case 'completed':
+            case 2:
                 //Should not be used as the form should not show complete items
                 $from_content = $from_requested;
             break;
 
-            case 'errored':
+            case 3:
                 $from_content = $form_error;
             break;
 
