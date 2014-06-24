@@ -388,10 +388,10 @@ function kent_get_current_rollover($course_id){
  */
 function kent_get_current_rollover_status($course_id){
     $record = kent_get_current_rollover($course_id);
-    $status = "none";
+    $status = -1;
 
-    if(!empty($record) && isset($record->what)){
-        $status = trim(strtolower($record->what));
+    if(!empty($record) && isset($record->status)){
+        $status = (int)$record->status;
     }
 
     return $status;
