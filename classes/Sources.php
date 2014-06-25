@@ -57,9 +57,9 @@ class Sources {
             $params['username'] = $USER->username;
         }
 
-        $sql .= ' WHERE moodle_env = :current_env';
+        $sql .= ' WHERE sc.moodle_env = :current_env';
         if ($dist !== '*') {
-            $sql .= empty($dist) ? ' AND moodle_dist <> :current_dist' : ' AND moodle_dist = :current_dist';
+            $sql .= empty($dist) ? ' AND sc.moodle_dist <> :current_dist' : ' AND sc.moodle_dist = :current_dist';
         }
 
         return $SHAREDB->get_records_sql($sql, $params);
