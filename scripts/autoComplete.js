@@ -179,21 +179,17 @@ var populateCourseAutoComplete = function(course_data) {
 
 			var shrt_cd = $(this).closest('.rollover_layout').find('.rollover_sc_num').text() + ' ';
 
-			if (results[0].split('-')[0] === shrt_cd) {
-				results.shift();
-			}
-
 			if (results.length > 0) {
+
+				if (results[0].split('-')[0] === shrt_cd) {
+					results.shift();
+				}
 
 				var id_from = course_data.courses[results[0]][0];
 				var src_from = course_data.courses[results[0]][1];
 
 				// Dont allow rollover into self.
 				if (id_to != id_from && src_to != src_from) {
-					if (src_from === 'archive') {
-						$(this).parent().find('.m1 input').attr('disabled', 'disabled').removeAttr('checked');
-					}
-
 					$(this).val(results[0]);
 					$(this).closest('.rollover_crs_from').find('.id_from').val(id_from);
 					$(this).closest('.rollover_crs_from').find('.src_from').val(src_from);
