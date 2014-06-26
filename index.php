@@ -219,6 +219,7 @@ if (!empty($courses)) {
 $urls = $CFG->kent->paths;
 unset($urls['connect']);
 $urls = array_keys($urls);
+$urls = array_reverse($urls);
 $urls = json_encode($urls);
 
 echo '<script type="text/javascript">
