@@ -63,6 +63,16 @@ abstract class Cron
             if ($event->path) {
                 $event->status = 1; // Restore.
             } else {
+                $error = \local_rollover\event\rollover_error::create(array(
+                    'objectid' => $event->id,
+                    'courseid' => $event->from_course,
+                    'context' => \context_course::instance($event->from_course),
+                    'other' => array(
+                        'message' => 'The backup failed.'
+                    )
+                ));
+                $error->trigger();
+
                 $event->status = 3; // Error.
             }
 
@@ -93,13 +103,21 @@ abstract class Cron
                 $controller->go();
 
                 $event->status = 2; // Finished.
-
+                $SHAREDB->update_record('rollovers', $event);
             } catch (\moodle_exception $e) {
                 $event->status = 3; // Error.
-                echo $e->getMessage();
-            }
+                $SHAREDB->update_record('rollovers', $event);
 
-            $SHAREDB->update_record('rollovers', $event);
+                $error = \local_rollover\event\rollover_error::create(array(
+                    'objectid' => $event->id,
+                    'courseid' => $event->to_course,
+                    'context' => \context_course::instance($event->to_course),
+                    'other' => array(
+                        'message' => $e->getMessage()
+                    )
+                ));
+                $error->trigger();
+            }
         }
     }
 }
