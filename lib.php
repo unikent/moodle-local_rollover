@@ -651,12 +651,3 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
 function connect_isEnabled() {
     return $CFG->kent->environment == "dev" || ($CFG->kent->environment == "live" && $CFG->kent->distribution == LIVE_MOODLE);
 }
-
-/**
- * Rollover Cron
- */
-function local_rollover_cron() {
-    if (\local_kent\util\sharedb::available()) {
-        \local_rollover\Cron::run();
-    }
-}
