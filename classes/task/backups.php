@@ -14,22 +14,31 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace local_rollover;
+/**
+ * Local stuff for Moodle Rollover
+ *
+ * @package    local_connect
+ * @copyright  2014 Skylar Kelty <S.Kelty@kent.ac.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_rollover\task;
 
 /**
- * Cron stuff
+ * Rollover backups
  */
-abstract class Cron
+class backups extends \core\task\scheduled_task
 {
-    /**
-     * Static Run
-     */
-    public static function run() {
+    public function get_name() {
+        return "Rollover Backups";
+    }
+
+    public function execute() {
         global $CFG, $DB, $SHAREDB;
 
-        // First, backups.
+        if (!\local_kent\util\sharedb::available()) {
+            return;
+        }
 
         $localevents = $SHAREDB->get_records('rollovers', array(
             'status' => 0,
@@ -78,46 +87,5 @@ abstract class Cron
 
             $SHAREDB->update_record('rollovers', $event);
         }
-
-        // Now, imports.
-
-        $localevents = $SHAREDB->get_records('rollovers', array(
-            'status' => 1,
-            'to_env' => $CFG->kent->environment,
-            'to_dist' => $CFG->kent->distribution
-        ));
-
-        // All of these need to be imported.
-        foreach ($localevents as $event) {
-            $event->updated = date('Y-m-d H:i:s');
-
-            try {
-                $event->status = 4; // In Progress.
-                $SHAREDB->update_record('rollovers', $event);
-
-                $controller = new Rollover(array(
-                    'id' => $event->id,
-                    'tocourse' => $event->to_course,
-                    'folder' => $event->path
-                ));
-                $controller->go();
-
-                $event->status = 2; // Finished.
-                $SHAREDB->update_record('rollovers', $event);
-            } catch (\moodle_exception $e) {
-                $event->status = 3; // Error.
-                $SHAREDB->update_record('rollovers', $event);
-
-                $error = \local_rollover\event\rollover_error::create(array(
-                    'objectid' => $event->id,
-                    'courseid' => $event->to_course,
-                    'context' => \context_course::instance($event->to_course),
-                    'other' => array(
-                        'message' => $e->getMessage()
-                    )
-                ));
-                $error->trigger();
-            }
-        }
     }
-}
+} 
