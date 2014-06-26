@@ -140,7 +140,12 @@ var populateCourseAutoComplete = function(course_data) {
 	jQuery('.rollover_crs_input').autocomplete({
 		minLength: 1,
 		source: function(request, response) {
-			var results = jQuery.ui.autocomplete.filter(course_data.courses_search, request.term);
+			var term = request.term;
+			term = term.substring(term.indexOf(':') + 1);
+
+			var results = jQuery.ui.autocomplete.filter(course_data.courses_search, term);
+			results.reverse();
+
 			response(results.slice(0, 30));
 		},
 		delay: 0,
