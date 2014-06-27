@@ -21,7 +21,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Provides an interface between a Moodle course and the rollover system.
  */
-class Module
+class Course
 {
     /** Course ID. */
     private $courseid;
