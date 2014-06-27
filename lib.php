@@ -401,6 +401,8 @@ function kent_get_current_rollover_status($course_id){
 /*
  * Can we set a rollover? actually, this is more accurately defined as
  * 'should we show the rollover box?'
+ *
+ * @deprecated See local_rollover/Course::can_rollover
  */
 function kent_rollover_ability($course_id, $status=""){
     //If status isn't passed, get it from course id
@@ -650,13 +652,4 @@ function kent_rollover_enrol_get_my_courses($fields = NULL, $sort = 'sortorder A
  */
 function connect_isEnabled() {
     return $CFG->kent->environment == "dev" || ($CFG->kent->environment == "live" && $CFG->kent->distribution == LIVE_MOODLE);
-}
-
-/**
- * Rollover Cron
- */
-function local_rollover_cron() {
-    if (\local_kent\util\sharedb::available()) {
-        \local_rollover\Cron::run();
-    }
 }
