@@ -41,7 +41,7 @@ class backups extends \core\task\scheduled_task
         }
 
         $localevents = $SHAREDB->get_records('rollovers', array(
-            'status' => 0,
+            'status' => \local_rollover\Rollover::STATUS_SCHEDULED,
             'from_env' => $CFG->kent->environment,
             'from_dist' => $CFG->kent->distribution
         ));
@@ -60,17 +60,17 @@ class backups extends \core\task\scheduled_task
 
             // Did this user have access to this course?
             if (!$user || !has_capability('moodle/course:update', $context, $user)) {
-                $event->status = 3; // Error.
+                $event->status = \local_rollover\Rollover::STATUS_ERROR;
                 $SHAREDB->update_record('rollovers', $event);
                 continue;
             }
 
-            $event->status = 4; // In Progress.
+            $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
             $SHAREDB->update_record('rollovers', $event);
 
             $event->path = Rollover::backup((array)$settings);
             if ($event->path) {
-                $event->status = 1; // Restore.
+                $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
             } else {
                 $error = \local_rollover\event\rollover_error::create(array(
                     'objectid' => $event->id,
@@ -82,7 +82,7 @@ class backups extends \core\task\scheduled_task
                 ));
                 $error->trigger();
 
-                $event->status = 3; // Error.
+                $event->status = \local_rollover\Rollover::STATUS_ERROR;
             }
 
             $SHAREDB->update_record('rollovers', $event);
