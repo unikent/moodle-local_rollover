@@ -26,6 +26,14 @@ require_once($CFG->dirroot . '/mod/cla/lib.php');
  */
 class Rollover
 {
+    /** Various Status Codes */
+    const STATUS_NONE = -1;
+    const STATUS_SCHEDULED = 0;
+    const STATUS_BACKED_UP = 1;
+    const STATUS_COMPLETE = 2;
+    const STATUS_ERROR = 3;
+    const STATUS_IN_PROGRESS = 4;
+
     /** Rollover UUID */
     private $uuid;
 
