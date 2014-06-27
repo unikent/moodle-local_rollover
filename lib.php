@@ -401,6 +401,8 @@ function kent_get_current_rollover_status($course_id){
 /*
  * Can we set a rollover? actually, this is more accurately defined as
  * 'should we show the rollover box?'
+ *
+ * @deprecated See local_rollover/Course::can_rollover
  */
 function kent_rollover_ability($course_id, $status=""){
     //If status isn't passed, get it from course id

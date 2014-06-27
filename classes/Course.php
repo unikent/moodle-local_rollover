@@ -64,7 +64,7 @@ class Course
         }
 
         // Get the most recent rollover object.
-        $rollover = array_pop($this->rollovers);
+        $rollover = end($this->rollovers);
         return $rollover->status;
     }
 
@@ -72,6 +72,51 @@ class Course
      * Is this module empty?
      */
     public function is_empty() {
-        return false;
+        global $DB;
+
+        // Count number of non-empty summaries as our first check.
+        $sql = "
+            SELECT COUNT(id)
+            FROM {course_sections}
+            WHERE course = :course
+                AND section != 0
+                AND summary IS NOT NULL
+                AND summary != ''
+        ";
+
+        $count = $DB->count_records_sql($sql, array(
+            'course' => $this->courseid
+        ));
+
+        // If there are any non-empty summaries return false as it has content.
+        if ($count > 0) {
+            return true;
+        }
+
+        // If not, then secondly count number of mods in this module.
+        $count = $DB->count_records('course_modules', array(
+            'course' => $this->courseid
+        ));
+
+        // If there are any modules return false as it has content.
+        // We have two here because there are two default modules.
+        if ($count > 2) {
+            return true;
+        }
+
+        // Must be empty, return true.
+        return true;
+    }
+
+    /**
+     * Can we rollover into this course?
+     */
+    public function can_rollover() {
+        $context = \context_course::instance($this->courseid);
+        if (!has_capability('moodle/course:update', $context)) {
+            return false;
+        }
+
+        return $this->get_status() == Rollover::STATUS_NONE && $this->is_empty();
     }
 }
