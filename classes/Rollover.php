@@ -138,10 +138,19 @@ class Rollover
     private function migrate_data() {
         global $CFG;
 
-        $from = escapeshellcmd($this->settings['folder']);
         $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->uuid);
 
-        exec("mv $from $to", $out, $return);
+        // Work out the from location.
+        $from = $this->settings['folder'];
+        if (strpos($from, '/data/moodledata') === 0) {
+            $from = str_replace('/data/moodledata/', '/mnt/doodle/archivedata/', $from);
+        }
+        $from = escapeshellcmd($from);
+
+        // We can only copy from archive.
+        $func = strpos($from, 'archivedata') === false ? 'mv' : 'cp -R';
+
+        exec("$func $from $to", $out, $return);
 
         if ($return != 0) {
             throw new \moodle_exception('Could not move backup folder!');
