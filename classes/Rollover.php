@@ -64,6 +64,45 @@ class Rollover
     }
 
     /**
+     * Schedule a rollover.
+     */
+    public static function schedule($fromdist, $fromid, $toid, $options = null) {
+        global $CFG, $USER, $SHAREDB;
+
+        if (empty($options)) {
+            $options = new \stdClass();
+        }
+
+        $context = \context_course::instance($toid);
+        if (!has_capability('moodle/course:update', $context)) {
+            throw new \moodle_exception('You cannot rollover into that course!');
+        }
+
+        $obj = new \stdClass();
+        $obj->from_env = $CFG->kent->environment;
+        $obj->from_dist = $fromdist;
+        $obj->from_course = $fromid;
+        $obj->to_env = $CFG->kent->environment;
+        $obj->to_dist = $CFG->kent->distribution;
+        $obj->to_course = $toid;
+
+        // Check if the to_course exists in here already.
+        $prod = $SHAREDB->get_record('rollovers', (array)$obj);
+        if ($prod && $prod->status != 3) {
+            throw new \moodle_exception('A rollover is already scheduled for that course!');
+        }
+
+        // Now insert this into the DB.
+        $obj->created = date('Y-m-d H:i:s');
+        $obj->updated = date('Y-m-d H:i:s');
+        $obj->status = self::STATUS_SCHEDULED;
+        $obj->options = json_encode($options);
+        $obj->requester = $USER->username;
+
+        return $SHAREDB->insert_record('rollovers', $obj);
+    }
+
+    /**
      * Static backup method.
      */
     public static function backup($settings) {
@@ -186,14 +225,15 @@ class Rollover
         }
 
         if ($lowest < 9999999) {
-            $query = "/moodle_backup/information/contents/activities/activity[sectionid={$lowest} and (modulename='forum' or modulename='aspirelists')]/moduleid";
+            $query = "/moodle_backup/information/contents/activities/activity[sectionid={$lowest}";
+            $query .= " and (modulename='forum' or modulename='aspirelists')]/moduleid";
             $nodes = $xpath->query($query);
 
             $activities = array();
             foreach ($nodes as $node) {
                 $activities[] = $node->nodeValue;
             }
-            
+
             // Get the first two activities, assume lowest id was created earliest.
             sort($activities);
             $remove = array_slice($activities, 0, 2);

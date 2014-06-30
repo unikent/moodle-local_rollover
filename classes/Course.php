@@ -26,9 +26,6 @@ class Course
     /** Course ID. */
     private $courseid;
 
-    /** Cache of rollover objects related to the course. */
-    private $rollovers;
-
     /**
      * Constructor
      */
@@ -37,34 +34,23 @@ class Course
     }
 
     /**
-     * Setup.
+     * What is the current rollover status of this module.
      */
-    private function setup() {
+    public function get_status() {
         global $CFG, $SHAREDB;
 
-        if (isset($this->rollovers)) {
-            return;
-        }
-
-        $this->rollovers = $SHAREDB->get_records('rollovers', array(
+        $rollovers = $SHAREDB->get_records('rollovers', array(
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution,
             'to_course' => $this->courseid
         ));
-    }
 
-    /**
-     * What is the current rollover status of this module.
-     */
-    public function get_status() {
-        $this->setup();
-
-        if (empty($this->rollovers)) {
+        if (empty($rollovers)) {
             return Rollover::STATUS_NONE;
         }
 
         // Get the most recent rollover object.
-        $rollover = end($this->rollovers);
+        $rollover = end($rollovers);
         return $rollover->status;
     }
 
