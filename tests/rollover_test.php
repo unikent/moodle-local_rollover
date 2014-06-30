@@ -22,6 +22,16 @@ defined('MOODLE_INTERNAL') || die();
 class local_rollover_tests extends \local_connect\tests\connect_testcase
 {
     /**
+     * Run all rollovers.
+     */
+    private function rollover() {
+        $task = new \local_rollover\task\backups();
+        $task->execute();
+        $task = new \local_rollover\task\imports();
+        $task->execute();
+    }
+
+    /**
      * Test we can schedule a rollover.
      */
     public function test_schedule() {
@@ -91,6 +101,60 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(3, $DB->count_records('course_modules', array(
             'course' => $course2->id
         )));
+    }
+
+    /**
+     * Test the rollover re-processes CLA.
+     */
+    public function test_cla_rollover() {
+        global $CFG, $DB, $SHAREDB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+        $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+        $course2 = $this->getDataGenerator()->create_course();
+
+        // Sanity checks.
+        $this->assertEquals(1, $DB->count_records('cla', array(
+            'course' => $course1->id
+        )));
+
+        $this->assertEquals(1, $DB->count_records('cla_note'));
+
+        $this->assertEquals(0, $DB->get_field('cla', 'rolled_over', array(
+            'course' => $course1->id
+        )));
+
+        $this->assertEquals(0, $DB->get_field('cla', 'rolled_over_inactive', array(
+            'course' => $course1->id
+        )));
+
+        // Do the rollover.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        $this->rollover();
+
+        // The test!
+        $this->assertEquals(1, $DB->count_records('course_modules', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals(1, $DB->count_records('cla', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals(1, $DB->get_field('cla', 'rolled_over', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals(1, $DB->get_field('cla', 'rolled_over_inactive', array(
+            'course' => $course2->id
+        )));
+
+        // Also, it should have added a note, as well as rolling over the previous note.
+        $this->assertEquals(3, $DB->count_records('cla_note'));
     }
 
     /**
