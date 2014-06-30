@@ -57,7 +57,8 @@ class imports extends \core\task\scheduled_task
                 $controller = new \local_rollover\Rollover(array(
                     'id' => $event->id,
                     'tocourse' => $event->to_course,
-                    'folder' => $event->path
+                    'folder' => $event->path,
+                    'event' => $event
                 ));
                 $controller->go();
 
