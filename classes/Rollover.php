@@ -215,6 +215,13 @@ class Rollover
         $this->remove_module($xpath, 'turnitintool');
         $this->remove_module($xpath, 'turnitintooltwo');
 
+        // Set CLA objects to 'rolledover' state.
+        $this->manipulate_fields($xpath, 'cla', 'rolled_over', 1);
+        $this->manipulate_fields($xpath, 'cla', 'rolled_over_inactive', 1);
+
+        // Add CLA notes.
+        $this->add_cla_notes($xpath);
+
         // Strip out the default aspirelist and forum activities.
         $query = "/moodle_backup/information/contents/sections/section/sectionid";
         $nodes = $xpath->query($query);
@@ -275,6 +282,93 @@ class Rollover
     }
 
     /**
+     * Go through every module, of a given name and call a
+     * function with the xpath of the module's XML.
+     */
+    private function manipulate_module($xpath, $module, $callback) {
+        global $CFG;
+
+        $query = "/moodle_backup/information/contents/activities/activity[modulename/text()='$module']/moduleid";
+        $nodes = $xpath->query($query);
+        foreach ($nodes as $node) {
+            $id = $node->nodeValue;
+
+            $xml = "{$CFG->tempdir}/backup/{$this->uuid}/activities/{$module}_{$id}/{$module}.xml";
+
+            $doc = new \DOMDocument();
+            if (!$doc->load($xml)) {
+                throw new \moodle_exception('Could not load module file <' . $xml . '>');
+            }
+
+            $mxpath = new \DOMXPath($doc);
+
+            $callback($doc, $mxpath, $id);
+
+            if ($doc->save($xml) === false) {
+                throw new \moodle_exception('Could not overwrite module file <' . $xml . '>');
+            }
+        }
+    }
+
+    /**
+     * Modules have their own special tables which are stored as XML files in rollover.
+     * This function lets you manipulate a particular field.
+     */
+    private function manipulate_fields($xpath, $module, $field, $value) {
+        $this->manipulate_module($xpath, $module, function($doc, $mxpath, $moduleid) use ($module, $field, $value) {
+            $query = "/activity/{$module}/{$field}";
+            $nodes = $mxpath->query($query);
+            foreach ($nodes as $node) {
+                $node->nodeValue = $value;
+            }
+        });
+    }
+
+    /**
+     * Add notes to CLA items.
+     */
+    private function add_cla_notes($xpath) {
+        $event = $this->settings['event'];
+        $this->manipulate_module($xpath, 'cla', function($doc, $mxpath, $moduleid) use ($event) {
+            global $CFG;
+
+            // Grab an ID.
+            $maxid = 0;
+            $notes = $mxpath->query('/activity/cla/notes/note');
+            foreach ($notes as $note) {
+                $id = $note->attributes->getNamedItem('id');
+                $maxid = max($maxid, $id->nodeValue);
+            }
+
+            $fromdist = $event->from_dist;
+            $urlbase = $CFG->kent->paths[$fromdist];
+            $url = $urlbase . '/mod/cla/admin.php?claid=' . $moduleid . '&page=search';
+
+            $notetext = 'This request has been rolled over from a Moodle ' . $fromdist . ' resource: ';
+            $notetext .= \html_writer::tag('a', 'Moodle ' . $fromdist, array(
+                'href' => $url
+            ));
+
+            // Add to the notes list.
+            $maxid++;
+            $notes = $mxpath->query('/activity/cla/notes');
+            foreach ($notes as $notepath) {
+                $userid = $doc->createElement('userid', 2);
+                $text = $doc->createElement('text', $notetext);
+                $timestamp = $doc->createElement('timestamp', time());
+
+                $note = $doc->createElement('note');
+                $note->appendChild($userid);
+                $note->appendChild($text);
+                $note->appendChild($timestamp);
+
+                $child = $notepath->appendChild($note);
+                $child->setAttribute("id", $maxid);
+            }
+        });
+    }
+
+    /**
      * Manipulate a DOM Document - remove a path.
      */
     private function remove_nodes($xpath, $query) {
@@ -312,6 +406,6 @@ class Rollover
      * Run stuff after import is complete.
      */
     private function post_import() {
-        cla_rollover_notification($this->id);
+        cla_post_rollover($this->id);
     }
 }
