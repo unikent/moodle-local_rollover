@@ -54,7 +54,7 @@ class imports extends \core\task\scheduled_task
                 $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
                 $SHAREDB->update_record('rollovers', $event);
 
-                $controller = new Rollover(array(
+                $controller = new \local_rollover\Rollover(array(
                     'id' => $event->id,
                     'tocourse' => $event->to_course,
                     'folder' => $event->path

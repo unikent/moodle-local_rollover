@@ -68,7 +68,7 @@ class backups extends \core\task\scheduled_task
             $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
             $SHAREDB->update_record('rollovers', $event);
 
-            $event->path = Rollover::backup((array)$settings);
+            $event->path = \local_rollover\Rollover::backup((array)$settings);
             if ($event->path) {
                 $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
             } else {

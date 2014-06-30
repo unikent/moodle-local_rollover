@@ -66,8 +66,12 @@ class Rollover
     /**
      * Schedule a rollover.
      */
-    public static function schedule($fromdist, $fromid, $toid, $options = array()) {
+    public static function schedule($fromdist, $fromid, $toid, $options = null) {
         global $CFG, $USER, $SHAREDB;
+
+        if (empty($options)) {
+            $options = new \stdClass();
+        }
 
         $context = \context_course::instance($toid);
         if (!has_capability('moodle/course:update', $context)) {
@@ -91,7 +95,7 @@ class Rollover
         // Now insert this into the DB.
         $obj->created = date('Y-m-d H:i:s');
         $obj->updated = date('Y-m-d H:i:s');
-        $obj->status = 0;
+        $obj->status = self::STATUS_SCHEDULED;
         $obj->options = json_encode($options);
         $obj->requester = $USER->username;
 
