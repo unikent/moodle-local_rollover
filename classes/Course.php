@@ -90,7 +90,7 @@ class Course
 
         // If there are any non-empty summaries return false as it has content.
         if ($count > 0) {
-            return true;
+            return false;
         }
 
         // If not, then secondly count number of mods in this module.
@@ -101,7 +101,7 @@ class Course
         // If there are any modules return false as it has content.
         // We have two here because there are two default modules.
         if ($count > 2) {
-            return true;
+            return false;
         }
 
         // Must be empty, return true.
