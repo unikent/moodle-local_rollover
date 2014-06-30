@@ -163,11 +163,12 @@ function kent_get_all_courses() {
     if (has_capability('moodle/site:config', $context)){
 
 
-        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, cse.section, rol.status as rollover_status
+        $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
                 FROM {course} c
                 LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
                 LEFT JOIN {course_sections} cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
                 WHERE cse.section is null AND c.category != 58
+                GROUP BY c.id
                 ORDER BY c.shortname ASC";
 
 
@@ -201,7 +202,7 @@ function kent_get_all_courses() {
 
         //Pick up any modules which may not be empty, because they are in rollover progress.
         $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
-                FROM {$CFG->prefix}course c
+                FROM {course} c
                 LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
                 WHERE rol.status = 0 OR rol.status = 1 OR rol.status = 3
                 ORDER BY c.shortname ASC";
