@@ -23,7 +23,7 @@ define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) . '/../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
 
-raise_memory_limit(MEMORY_HUGE);
+raise_memory_limit(MEMORY_UNLIMITED);
 
 $settings = \local_rollover\util\cli::std_in_to_array();
 
