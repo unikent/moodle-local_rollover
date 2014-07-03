@@ -50,8 +50,10 @@ class backups extends \core\task\scheduled_task
         foreach ($localevents as $event) {
             $event->updated = date('Y-m-d H:i:s');
 
-            $settings = json_decode($event->options);
-            $settings->id = $event->from_course;
+            $settings = (array)json_decode($event->options);
+            $settings['backup_turnitintool'] = 0;
+            $settings['backup_turnitintooltwo'] = 0;
+            $settings['id'] = $event->from_course;
 
             $context = \context_course::instance($event->from_course);
             $user = $DB->get_record('user', array(
@@ -68,7 +70,7 @@ class backups extends \core\task\scheduled_task
             $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
             $SHAREDB->update_record('rollovers', $event);
 
-            $event->path = \local_rollover\Rollover::backup((array)$settings);
+            $event->path = \local_rollover\Rollover::backup($settings);
             if ($event->path) {
                 $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
             } else {
