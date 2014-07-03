@@ -34,7 +34,7 @@ class backups extends \core\task\scheduled_task
     }
 
     public function execute() {
-        global $CFG, $DB, $SHAREDB;
+        global $CFG, $SHAREDB;
 
         if (!\local_kent\util\sharedb::available()) {
             return;
@@ -48,46 +48,55 @@ class backups extends \core\task\scheduled_task
 
         // All of these need to be backed up.
         foreach ($localevents as $event) {
-            $event->updated = date('Y-m-d H:i:s');
-
-            $settings = (array)json_decode($event->options);
-            $settings['backup_turnitintool'] = 0;
-            $settings['backup_turnitintooltwo'] = 0;
-            $settings['id'] = $event->from_course;
-
-            $context = \context_course::instance($event->from_course);
-            $user = $DB->get_record('user', array(
-                'username' => $event->requester
-            ));
-
-            // Did this user have access to this course?
-            if (!$user || !has_capability('moodle/course:update', $context, $user)) {
-                $event->status = \local_rollover\Rollover::STATUS_ERROR;
-                $SHAREDB->update_record('rollovers', $event);
-                continue;
-            }
-
-            $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-            $SHAREDB->update_record('rollovers', $event);
-
-            $event->path = \local_rollover\Rollover::backup($settings);
-            if ($event->path) {
-                $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
-            } else {
-                $error = \local_rollover\event\rollover_error::create(array(
-                    'objectid' => $event->id,
-                    'courseid' => $event->from_course,
-                    'context' => \context_course::instance($event->from_course),
-                    'other' => array(
-                        'message' => 'The backup failed.'
-                    )
-                ));
-                $error->trigger();
-
-                $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            }
-
-            $SHAREDB->update_record('rollovers', $event);
+            $this->backup($event);
         }
+    }
+
+    /**
+     * Rollover a course.
+     */
+    public function backup($event) {
+        global $DB, $SHAREDB;
+
+        $event->updated = date('Y-m-d H:i:s');
+
+        $settings = (array)json_decode($event->options);
+        $settings['backup_turnitintool'] = 0;
+        $settings['backup_turnitintooltwo'] = 0;
+        $settings['id'] = $event->from_course;
+
+        $context = \context_course::instance($event->from_course);
+        $user = $DB->get_record('user', array(
+            'username' => $event->requester
+        ));
+
+        // Did this user have access to this course?
+        if (!$user || !has_capability('moodle/course:update', $context, $user)) {
+            $event->status = \local_rollover\Rollover::STATUS_ERROR;
+            $SHAREDB->update_record('rollovers', $event);
+            continue;
+        }
+
+        $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
+        $SHAREDB->update_record('rollovers', $event);
+
+        $event->path = \local_rollover\Rollover::backup($settings);
+        if ($event->path) {
+            $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
+        } else {
+            $error = \local_rollover\event\rollover_error::create(array(
+                'objectid' => $event->id,
+                'courseid' => $event->from_course,
+                'context' => \context_course::instance($event->from_course),
+                'other' => array(
+                    'message' => 'The backup failed.'
+                )
+            ));
+            $error->trigger();
+
+            $event->status = \local_rollover\Rollover::STATUS_ERROR;
+        }
+
+        $SHAREDB->update_record('rollovers', $event);
     }
 } 

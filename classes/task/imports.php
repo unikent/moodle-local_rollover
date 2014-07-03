@@ -48,36 +48,45 @@ class imports extends \core\task\scheduled_task
 
         // All of these need to be imported.
         foreach ($localevents as $event) {
-            $event->updated = date('Y-m-d H:i:s');
+            $this->import($event);
+        }
+    }
 
-            try {
-                $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-                $SHAREDB->update_record('rollovers', $event);
+    /**
+     * Rollover a course.
+     */
+    public function import($event) {
+        global $SHAREDB;
 
-                $controller = new \local_rollover\Rollover(array(
-                    'id' => $event->id,
-                    'tocourse' => $event->to_course,
-                    'folder' => $event->path,
-                    'event' => $event
-                ));
-                $controller->go();
+        $event->updated = date('Y-m-d H:i:s');
 
-                $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-                $SHAREDB->update_record('rollovers', $event);
-            } catch (\moodle_exception $e) {
-                $event->status = \local_rollover\Rollover::STATUS_ERROR;
-                $SHAREDB->update_record('rollovers', $event);
+        try {
+            $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
+            $SHAREDB->update_record('rollovers', $event);
 
-                $error = \local_rollover\event\rollover_error::create(array(
-                    'objectid' => $event->id,
-                    'courseid' => $event->to_course,
-                    'context' => \context_course::instance($event->to_course),
-                    'other' => array(
-                        'message' => $e->getMessage()
-                    )
-                ));
-                $error->trigger();
-            }
+            $controller = new \local_rollover\Rollover(array(
+                'id' => $event->id,
+                'tocourse' => $event->to_course,
+                'folder' => $event->path,
+                'event' => $event
+            ));
+            $controller->go();
+
+            $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
+            $SHAREDB->update_record('rollovers', $event);
+        } catch (\moodle_exception $e) {
+            $event->status = \local_rollover\Rollover::STATUS_ERROR;
+            $SHAREDB->update_record('rollovers', $event);
+
+            $error = \local_rollover\event\rollover_error::create(array(
+                'objectid' => $event->id,
+                'courseid' => $event->to_course,
+                'context' => \context_course::instance($event->to_course),
+                'other' => array(
+                    'message' => $e->getMessage()
+                )
+            ));
+            $error->trigger();
         }
     }
 } 
