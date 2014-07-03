@@ -23,13 +23,39 @@ define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) . '/../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
 
+list($options, $unrecognized) = cli_get_params(
+    array(
+        // The ID of the course to import into.
+        'course' => false,
+        // The path of the course to get data from.
+        'path' => false,
+        // Where was this from?
+        'from_dist' => false
+    )
+);
+
+if (!$options['course']) {
+    cli_error("Must specify course with --course=id!");
+}
+
+if (!$options['path']) {
+    cli_error("Must specify path with --path=/path/!");
+}
+
+if (!$options['from_dist']) {
+    cli_error("Must specify from_dist with --from_dist=2013!");
+}
+
 raise_memory_limit(MEMORY_UNLIMITED);
 
-$settings = \local_rollover\util\cli::std_in_to_array();
-
-if (empty($settings)) {
-    cli_error("No prefs detected!");
-}
+$settings = array(
+    'id' => uniqid(),
+    'tocourse' => $options['course'],
+    'folder' => $options['path'],
+    'event' => (object)array(
+        'from_dist' => $options['from_dist']
+    )
+);
 
 try {
     $controller = new \local_rollover\Rollover($settings);

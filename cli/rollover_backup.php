@@ -23,15 +23,51 @@ define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) . '/../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
 
+list($options, $unrecognized) = cli_get_params(
+    array(
+        // The ID of the course to export.
+        'course' => false,
+    )
+);
+
 raise_memory_limit(MEMORY_UNLIMITED);
 
-$settings = \local_rollover\util\cli::std_in_to_array();
+$prefs = array (
+    'id' => $options['course'],
+    'backup_aspirelists' => 1,
+    'backup_assign' => 1,
+    'backup_book' => 1,
+    'backup_chat' => 1,
+    'backup_choice' => 1,
+    'backup_choicegroup' => 1,
+    'backup_cla' => 1,
+    'backup_data' => 1,
+    'backup_facetoface' => 1,
+    'backup_folder' => 1,
+    'backup_forum' => 1,
+    'backup_glossary' => 1,
+    'backup_hotpot' => 1,
+    'backup_imscp' => 1,
+    'backup_label' => 1,
+    'backup_lesson' => 1,
+    'backup_lti' => 1,
+    'backup_ouwiki' => 1,
+    'backup_page' => 1,
+    'backup_questionnaire' => 1,
+    'backup_quiz' => 1,
+    'backup_resource' => 1,
+    'backup_scorm' => 1,
+    'backup_streamingvideo' => 1,
+    'backup_survey' => 1,
+    'backup_thesis' => 1,
+    'backup_url' => 1,
+    'backup_wiki' => 1,
+    'backup_workshop' => 1,
+    'backup_turnitintool' => 0,
+    'backup_turnitintooltwo' => 1
+);
 
-if (empty($settings)) {
-    cli_error("No prefs detected!");
-}
-
-$destination = \local_rollover\Rollover::backup($settings);
+$destination = \local_rollover\Rollover::backup($prefs);
 if ($destination === null) {
     exit(1);
 }
