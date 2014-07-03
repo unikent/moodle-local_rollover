@@ -158,6 +158,51 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     }
 
     /**
+     * Test the rollover processes removes section0 news and aspirelist modules.
+     */
+    public function test_skeleton_rollover() {
+        global $CFG, $DB, $SHAREDB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+
+        // Order is important here as lowest id is used for module removal.
+        $module1 = $this->getDataGenerator()->create_module('forum', array('course' => $course1));
+        $module3 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course1));
+        $module2 = $this->getDataGenerator()->create_module('forum', array('course' => $course1));
+        $course2 = $this->getDataGenerator()->create_course();
+
+        // Sanity checks.
+        $this->assertEquals(2, $DB->count_records('forum', array(
+            'course' => $course1->id
+        )));
+
+        $this->assertEquals(3, $DB->count_records('course_modules', array(
+            'course' => $course1->id
+        )));
+
+        // Do the rollover.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        $this->rollover();
+
+        // The tests.
+        $this->assertEquals(1, $DB->count_records('course_modules', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals(1, $DB->count_records('forum', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals(0, $DB->count_records('aspirelists', array(
+            'course' => $course2->id
+        )));
+    }
+
+    /**
      * Test course::is_empty
      */
     public function test_course_is_empty() {
