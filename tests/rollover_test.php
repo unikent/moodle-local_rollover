@@ -35,7 +35,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test we can schedule a rollover.
      */
     public function test_schedule() {
-        global $CFG, $DB, $SHAREDB;
+        global $SHAREDB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -52,7 +52,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover process.
      */
     public function test_rollover() {
-        global $CFG, $DB, $SHAREDB;
+        global $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -107,7 +107,59 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover re-processes CLA.
      */
     public function test_cla_rollover() {
-        global $CFG, $DB, $SHAREDB;
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+        $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
+        $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
+        $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+        $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
+        $module2 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+        $module3 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+        $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
+        $module4 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+
+        // Create another course.
+        $course2 = $this->getDataGenerator()->create_course();
+        $module5 = $this->getDataGenerator()->create_module('cla', array('course' => $course2));
+        $module6 = $this->getDataGenerator()->create_module('cla', array('course' => $course2));
+
+        // Create rollover skeletons.
+        $course3 = $this->getDataGenerator()->create_course();
+        $course4 = $this->getDataGenerator()->create_course();
+
+        // Do the rollover.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
+        \local_rollover\Rollover::schedule("testing", $course2->id, $course4->id);
+        $this->rollover();
+
+        // The test!
+        $this->assertEquals(8, $DB->count_records('course_modules', array(
+            'course' => $course3->id
+        )));
+
+        $this->assertEquals(4, $DB->count_records('cla', array(
+            'course' => $course3->id
+        )));
+
+        $this->assertEquals(2, $DB->count_records('course_modules', array(
+            'course' => $course4->id
+        )));
+
+        $this->assertEquals(2, $DB->count_records('cla', array(
+            'course' => $course4->id
+        )));
+    }
+
+    /**
+     * Test the rollover re-processes CLA.
+     */
+    public function test_cla_rollover_pre_process() {
+        global $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -158,10 +210,112 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     }
 
     /**
+     * Test rollover re-processes CLA files.
+     */
+    public function test_cla_files_rollover() {
+        global $CFG, $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+        $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+
+        // Create directory.
+        $dir = $CFG->dataroot . '/cla/';
+        check_dir_exists($dir);
+
+        // Add a file.
+        $filename = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz.txt';
+        file_put_contents($dir . $filename, 'Hey There!');
+
+        $module1->reference = $filename;
+        $DB->update_record('cla', $module1);
+
+        // Create rollover skeleton.
+        $course2 = $this->getDataGenerator()->create_course();
+
+        // Do the rollover.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+
+        $task = new \local_rollover\task\backups();
+        $task->execute();
+
+        unlink($dir . $filename);
+
+        $task = new \local_rollover\task\imports();
+        $task->execute();
+
+        $this->assertTrue(file_exists($dir . $filename));
+
+        $this->assertEquals(1, $DB->count_records('cla', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals($filename, $DB->get_field('cla', 'reference', array(
+            'course' => $course2->id
+        )));
+
+        unlink($dir . $filename);
+    }
+
+    /**
+     * Test rollover re-processes CLA multi-level files.
+     */
+    public function test_cla_multi_level_files_rollover() {
+        global $CFG, $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+        $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+
+        // Create directory.
+        $dir = $CFG->dataroot . '/cla/a/b/';
+        check_dir_exists($dir);
+
+        // Add a file.
+        $filename = 'a.txt';
+        file_put_contents($dir . $filename, 'Hey There!');
+
+        $module1->reference = $filename;
+        $DB->update_record('cla', $module1);
+
+        // Create rollover skeleton.
+        $course2 = $this->getDataGenerator()->create_course();
+
+        // Do the rollover.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+
+        $task = new \local_rollover\task\backups();
+        $task->execute();
+
+        unlink($dir . $filename);
+
+        $task = new \local_rollover\task\imports();
+        $task->execute();
+
+        $this->assertTrue(file_exists($dir . $filename));
+
+        $this->assertEquals(1, $DB->count_records('cla', array(
+            'course' => $course2->id
+        )));
+
+        $this->assertEquals($filename, $DB->get_field('cla', 'reference', array(
+            'course' => $course2->id
+        )));
+
+        unlink($dir . $filename);
+    }
+
+    /**
      * Test the rollover processes removes section0 news and aspirelist modules.
      */
     public function test_skeleton_rollover() {
-        global $CFG, $DB, $SHAREDB;
+        global $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -203,11 +357,24 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     }
 
     /**
+     * Test turnitin doesnt rollover
+     */
+    public function test_turnitin_doesnt_rollover() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+
+        // TODO.
+    }
+
+    /**
      * Test course::is_empty
      */
     public function test_course_is_empty() {
-        global $CFG, $DB, $SHAREDB;
-
         $this->resetAfterTest();
         $this->setAdminUser();
 
