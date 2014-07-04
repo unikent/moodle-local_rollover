@@ -276,9 +276,10 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Create directory.
         $dir = $CFG->dataroot . '/cla/a/b/';
         check_dir_exists($dir);
+        $dir = $CFG->dataroot . '/cla/';
 
         // Add a file.
-        $filename = 'a.txt';
+        $filename = 'a/b/a.txt';
         file_put_contents($dir . $filename, 'Hey There!');
 
         $module1->reference = $filename;
@@ -354,21 +355,6 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(0, $DB->count_records('aspirelists', array(
             'course' => $course2->id
         )));
-    }
-
-    /**
-     * Test turnitin doesnt rollover
-     */
-    public function test_turnitin_doesnt_rollover() {
-        global $DB;
-
-        $this->resetAfterTest();
-        $this->setAdminUser();
-
-        // Create a course.
-        $course1 = $this->getDataGenerator()->create_course();
-
-        // TODO.
     }
 
     /**
