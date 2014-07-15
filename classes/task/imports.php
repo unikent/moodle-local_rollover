@@ -67,7 +67,7 @@ class imports extends \core\task\scheduled_task
                 'id' => $event->id,
                 'tocourse' => $event->to_course,
                 'folder' => $event->path,
-                'from_dist' => $event->from_dist
+                'fromcourse' => $event->from_dist
             ));
             $controller->go();
         } catch (\moodle_exception $e) {
