@@ -287,7 +287,7 @@ class Rollover
      * Add notes to CLA items.
      */
     private function add_cla_notes($xpath) {
-        $fromdist = $this->settings['from_dist'];
+        $fromdist = $this->settings['fromcourse'];
         $this->manipulate_module($xpath, 'cla', function($doc, $mxpath, $moduleid) use ($fromdist) {
             global $CFG;
 
