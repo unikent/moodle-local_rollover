@@ -241,19 +241,6 @@ class Rollover
     }
 
     /**
-     * Remove a specified activity by moduleid from this rollover.
-     */
-    private function remove_activity_byid($xpath, $id) {
-        // Remove all $id activities.
-        $query = "/moodle_backup/information/contents/activities/activity[moduleid/text()='{$id}']";
-        $this->remove_nodes($xpath, $query);
-
-        // Remove all $id settings.
-        $query = "/moodle_backup/information/settings/setting[level = 'activity' and activity/text()[contains(.,'_{$id}')]]";
-        $this->remove_nodes($xpath, $query);
-    }
-
-    /**
      * Go through every module, of a given name and call a
      * function with the xpath of the module's XML.
      */
