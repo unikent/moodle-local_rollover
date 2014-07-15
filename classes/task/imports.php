@@ -59,11 +59,10 @@ class imports extends \core\task\scheduled_task
         global $SHAREDB;
 
         $event->updated = date('Y-m-d H:i:s');
+        $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
+        $SHAREDB->update_record('rollovers', $event);
 
         try {
-            $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-            $SHAREDB->update_record('rollovers', $event);
-
             $controller = new \local_rollover\Rollover(array(
                 'id' => $event->id,
                 'tocourse' => $event->to_course,
@@ -71,9 +70,6 @@ class imports extends \core\task\scheduled_task
                 'from_dist' => $event->from_dist
             ));
             $controller->go();
-
-            $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-            $SHAREDB->update_record('rollovers', $event);
         } catch (\moodle_exception $e) {
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
             $SHAREDB->update_record('rollovers', $event);
@@ -90,6 +86,13 @@ class imports extends \core\task\scheduled_task
                 )
             ));
             $error->trigger();
+
+            return false;
         }
+
+        $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
+        $SHAREDB->update_record('rollovers', $event);
+
+        return true;
     }
 } 
