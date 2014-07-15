@@ -31,6 +31,16 @@ list($options, $unrecognized) = cli_get_params(
     )
 );
 
+$username = exec('logname');
+$user = $DB->get_record('user', array(
+    'username' => $username
+));
+
+if ($user) {
+    \core\session\manager::set_user($user);
+    echo "Hello {$user->firstname}.\n";
+}
+
 raise_memory_limit(MEMORY_UNLIMITED);
 
 // Is this a backup?
