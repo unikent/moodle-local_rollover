@@ -31,6 +31,16 @@ list($options, $unrecognized) = cli_get_params(
     )
 );
 
+$username = exec('logname');
+$user = $DB->get_record('user', array(
+    'username' => $username
+));
+
+if ($user) {
+    \core\session\manager::set_user($user);
+    echo "Hello {$user->firstname}.\n";
+}
+
 raise_memory_limit(MEMORY_UNLIMITED);
 
 // Is this a backup?
@@ -59,9 +69,6 @@ $event = $SHAREDB->get_record('rollovers', array(
 if (!$event) {
     cli_error('Are you sure you picked the right distribution?');
 }
-
-// Clear out the existing course.
-remove_course_contents($event->to_course);
 
 // Import.
 $task = new \local_rollover\task\imports();

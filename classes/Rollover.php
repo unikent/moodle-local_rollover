@@ -222,34 +222,6 @@ class Rollover
         // Add CLA notes.
         $this->add_cla_notes($xpath);
 
-        // Strip out the default aspirelist and forum activities.
-        $query = "/moodle_backup/information/contents/sections/section/sectionid";
-        $nodes = $xpath->query($query);
-
-        $lowest = 9999999;
-        foreach ($nodes as $node) {
-            $lowest = ($node->nodeValue < $lowest) ? $node->nodeValue : $lowest;
-        }
-
-        if ($lowest < 9999999) {
-            $query = "/moodle_backup/information/contents/activities/activity[sectionid={$lowest}";
-            $query .= " and (modulename='forum' or modulename='aspirelists')]/moduleid";
-            $nodes = $xpath->query($query);
-
-            $activities = array();
-            foreach ($nodes as $node) {
-                $activities[] = $node->nodeValue;
-            }
-
-            // Get the first two activities, assume lowest id was created earliest.
-            sort($activities);
-            $remove = array_slice($activities, 0, 2);
-
-            foreach ($remove as $r) {
-                $this->remove_activity_byid($xpath, $r);
-            }
-        }
-
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
@@ -265,19 +237,6 @@ class Rollover
 
         // Remove all $name settings.
         $query = "/moodle_backup/information/settings/setting[activity/text()[contains(.,'$name')]]";
-        $this->remove_nodes($xpath, $query);
-    }
-
-    /**
-     * Remove a specified activity by moduleid from this rollover.
-     */
-    private function remove_activity_byid($xpath, $id) {
-        // Remove all $id activities.
-        $query = "/moodle_backup/information/contents/activities/activity[moduleid/text()='{$id}']";
-        $this->remove_nodes($xpath, $query);
-
-        // Remove all $id settings.
-        $query = "/moodle_backup/information/settings/setting[level = 'activity' and activity/text()[contains(.,'_{$id}')]]";
         $this->remove_nodes($xpath, $query);
     }
 
@@ -384,7 +343,8 @@ class Rollover
      * Run the import.
      */
     private function import() {
-        global $CFG;
+        // Clear out the existing course.
+        remove_course_contents($this->settings['tocourse']);
 
         $controller = new \restore_controller(
             $this->uuid,
