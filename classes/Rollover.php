@@ -211,6 +211,10 @@ class Rollover
 
         $xpath = new \DOMXPath($doc);
 
+        // Remove all turnitintool activities.
+        $this->remove_module($xpath, 'turnitintool');
+        $this->remove_module($xpath, 'turnitintooltwo');
+
         // Set CLA objects to 'rolledover' state.
         $this->manipulate_fields($xpath, 'cla', 'rolled_over', 1);
         $this->manipulate_fields($xpath, 'cla', 'rolled_over_inactive', 1);
@@ -221,6 +225,32 @@ class Rollover
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
+    }
+
+    /**
+     * Remove a specified modules from this rollover.
+     */
+    private function remove_module($xpath, $name) {
+        // Remove all $name activities.
+        $query = "/moodle_backup/information/contents/activities/activity[modulename/text()='$name']";
+        $this->remove_nodes($xpath, $query);
+
+        // Remove all $name settings.
+        $query = "/moodle_backup/information/settings/setting[activity/text()[contains(.,'$name')]]";
+        $this->remove_nodes($xpath, $query);
+    }
+
+    /**
+     * Remove a specified activity by moduleid from this rollover.
+     */
+    private function remove_activity_byid($xpath, $id) {
+        // Remove all $id activities.
+        $query = "/moodle_backup/information/contents/activities/activity[moduleid/text()='{$id}']";
+        $this->remove_nodes($xpath, $query);
+
+        // Remove all $id settings.
+        $query = "/moodle_backup/information/settings/setting[level = 'activity' and activity/text()[contains(.,'_{$id}')]]";
+        $this->remove_nodes($xpath, $query);
     }
 
     /**
