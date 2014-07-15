@@ -287,8 +287,8 @@ class Rollover
      * Add notes to CLA items.
      */
     private function add_cla_notes($xpath) {
-        $event = $this->settings['event'];
-        $this->manipulate_module($xpath, 'cla', function($doc, $mxpath, $moduleid) use ($event) {
+        $fromdist = $this->settings['from_dist'];
+        $this->manipulate_module($xpath, 'cla', function($doc, $mxpath, $moduleid) use ($fromdist) {
             global $CFG;
 
             // Grab an ID.
@@ -299,7 +299,6 @@ class Rollover
                 $maxid = max($maxid, $id->nodeValue);
             }
 
-            $fromdist = $event->from_dist;
             $urlbase = $CFG->kent->paths[$fromdist];
             $url = $urlbase . '/mod/cla/admin.php?claid=' . $moduleid . '&page=search';
 
