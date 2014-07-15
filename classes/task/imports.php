@@ -78,6 +78,9 @@ class imports extends \core\task\scheduled_task
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
             $SHAREDB->update_record('rollovers', $event);
 
+            // Also, wipe the course.
+            remove_course_contents($event->to_course);
+
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,
                 'courseid' => $event->to_course,
