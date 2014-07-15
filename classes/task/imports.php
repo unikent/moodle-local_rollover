@@ -68,7 +68,7 @@ class imports extends \core\task\scheduled_task
                 'id' => $event->id,
                 'tocourse' => $event->to_course,
                 'folder' => $event->path,
-                'fromcourse' => $event->from_dist
+                'from_dist' => $event->from_dist
             ));
             $controller->go();
 
