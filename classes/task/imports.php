@@ -58,12 +58,14 @@ class imports extends \core\task\scheduled_task
     public function import($event) {
         global $SHAREDB;
 
-        $event->updated = date('Y-m-d H:i:s');
+        $newevent = new \stdClass();
+        $newevent->id = $event->id;
+        $newevent->updated = date('Y-m-d H:i:s');
+        $newevent->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
+
+        $SHAREDB->update_record_raw('rollovers', $newevent);
 
         try {
-            $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-            $SHAREDB->update_record_raw('rollovers', $event);
-
             $controller = new \local_rollover\Rollover(array(
                 'id' => $event->id,
                 'tocourse' => $event->to_course,
@@ -72,11 +74,11 @@ class imports extends \core\task\scheduled_task
             ));
             $controller->go();
 
-            $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-            $SHAREDB->update_record_raw('rollovers', $event);
+            $newevent->status = \local_rollover\Rollover::STATUS_COMPLETE;
+            $SHAREDB->update_record_raw('rollovers', $newevent);
         } catch (\moodle_exception $e) {
-            $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record_raw('rollovers', $event);
+            $newevent->status = \local_rollover\Rollover::STATUS_ERROR;
+            $SHAREDB->update_record_raw('rollovers', $newevent);
 
             // Also, wipe the course.
             remove_course_contents($event->to_course);
