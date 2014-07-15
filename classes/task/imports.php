@@ -62,7 +62,7 @@ class imports extends \core\task\scheduled_task
 
         try {
             $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-            $SHAREDB->update_record('rollovers', $event);
+            $SHAREDB->update_record_raw('rollovers', $event);
 
             $controller = new \local_rollover\Rollover(array(
                 'id' => $event->id,
@@ -73,10 +73,10 @@ class imports extends \core\task\scheduled_task
             $controller->go();
 
             $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-            $SHAREDB->update_record('rollovers', $event);
+            $SHAREDB->update_record_raw('rollovers', $event);
         } catch (\moodle_exception $e) {
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('rollovers', $event);
+            $SHAREDB->update_record_raw('rollovers', $event);
 
             // Also, wipe the course.
             remove_course_contents($event->to_course);
