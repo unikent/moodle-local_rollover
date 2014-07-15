@@ -24,6 +24,8 @@
 
 namespace local_rollover\task;
 
+require_once($CFG->libdir . '/moodlelib.php');
+
 /**
  * Rollover imports
  */
@@ -77,6 +79,9 @@ class imports extends \core\task\scheduled_task
         } catch (\moodle_exception $e) {
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
             $SHAREDB->update_record('rollovers', $event);
+
+            // Also, wipe the course.
+            remove_course_contents($event->to_course);
 
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,
