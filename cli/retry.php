@@ -60,9 +60,6 @@ if (!$event) {
     cli_error('Are you sure you picked the right distribution?');
 }
 
-// Clear out the existing course.
-remove_course_contents($event->to_course);
-
 // Import.
 $task = new \local_rollover\task\imports();
 $task->import($event);
