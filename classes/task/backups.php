@@ -74,7 +74,8 @@ class backups extends \core\task\scheduled_task
         if (!$user || !has_capability('moodle/course:update', $context, $user)) {
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
             $SHAREDB->update_record('rollovers', $event);
-            continue;
+
+            throw new \moodle_exception("User does not have access to backup that course!");
         }
 
         $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
