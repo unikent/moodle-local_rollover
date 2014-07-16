@@ -25,10 +25,12 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Run all rollovers.
      */
     private function rollover() {
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        return ob_get_clean();
     }
 
     /**
@@ -82,15 +84,19 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(\local_rollover\Rollover::STATUS_SCHEDULED, $rollover->get_status());
 
         // Now run a backup.
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
+        ob_get_clean();
 
         $this->assertEquals(\local_rollover\Rollover::STATUS_BACKED_UP, $rollover->get_status());
         $this->assertTrue($rollover->is_empty());
 
         // Now run a restore.
+        ob_start();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        ob_get_clean();
 
         // Check things worked.
         $this->assertEquals(\local_rollover\Rollover::STATUS_COMPLETE, $rollover->get_status());
@@ -239,13 +245,17 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
+        ob_get_clean();
 
         unlink($dir . $filename);
 
+        ob_start();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        ob_get_clean();
 
         $this->assertTrue(file_exists($dir . $filename));
 
@@ -291,13 +301,17 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
+        ob_get_clean();
 
         unlink($dir . $filename);
 
+        ob_start();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        ob_get_clean();
 
         $this->assertTrue(file_exists($dir . $filename));
 
@@ -313,7 +327,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     }
 
     /**
-     * Test the rollover processes removes section0 news and aspirelist modules.
+     * Test the rollover processes removes existing modules.
      */
     public function test_skeleton_rollover() {
         global $DB;
@@ -329,6 +343,8 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $module3 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course1));
         $module2 = $this->getDataGenerator()->create_module('forum', array('course' => $course1));
         $course2 = $this->getDataGenerator()->create_course();
+        $module4 = $this->getDataGenerator()->create_module('forum', array('course' => $course2));
+        $module5 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course2));
 
         // Sanity checks.
         $this->assertEquals(2, $DB->count_records('forum', array(
@@ -344,15 +360,15 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->rollover();
 
         // The tests.
-        $this->assertEquals(1, $DB->count_records('course_modules', array(
+        $this->assertEquals(3, $DB->count_records('course_modules', array(
             'course' => $course2->id
         )));
 
-        $this->assertEquals(1, $DB->count_records('forum', array(
+        $this->assertEquals(2, $DB->count_records('forum', array(
             'course' => $course2->id
         )));
 
-        $this->assertEquals(0, $DB->count_records('aspirelists', array(
+        $this->assertEquals(1, $DB->count_records('aspirelists', array(
             'course' => $course2->id
         )));
     }
