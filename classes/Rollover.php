@@ -155,20 +155,10 @@ class Rollover
      * Do the rollover.
      */
     public function go() {
-        global $DB;
-
-        $transaction = $DB->start_delegated_transaction();
-
-        try {
-            $this->migrate_data();
-            $this->manipulate_data();
-            $this->import();
-            $this->post_import();
-        } catch (\moodle_exception $e) {
-            $DB->rollback_delegated_transaction($transaction, $e);
-        }
-
-        $transaction->allow_commit();
+        $this->migrate_data();
+        $this->manipulate_data();
+        $this->import();
+        $this->post_import();
     }
 
     /**
