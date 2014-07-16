@@ -327,7 +327,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     }
 
     /**
-     * Test the rollover processes removes section0 news and aspirelist modules.
+     * Test the rollover processes removes existing modules.
      */
     public function test_skeleton_rollover() {
         global $DB;
@@ -343,6 +343,8 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $module3 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course1));
         $module2 = $this->getDataGenerator()->create_module('forum', array('course' => $course1));
         $course2 = $this->getDataGenerator()->create_course();
+        $module4 = $this->getDataGenerator()->create_module('forum', array('course' => $course2));
+        $module5 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course2));
 
         // Sanity checks.
         $this->assertEquals(2, $DB->count_records('forum', array(
@@ -358,15 +360,15 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->rollover();
 
         // The tests.
-        $this->assertEquals(1, $DB->count_records('course_modules', array(
+        $this->assertEquals(3, $DB->count_records('course_modules', array(
             'course' => $course2->id
         )));
 
-        $this->assertEquals(1, $DB->count_records('forum', array(
+        $this->assertEquals(2, $DB->count_records('forum', array(
             'course' => $course2->id
         )));
 
-        $this->assertEquals(0, $DB->count_records('aspirelists', array(
+        $this->assertEquals(1, $DB->count_records('aspirelists', array(
             'course' => $course2->id
         )));
     }
