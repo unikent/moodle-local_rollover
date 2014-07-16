@@ -162,7 +162,7 @@ class Rollover
         $this->import();
 
         // SHAREDB may no longer be connected, reconnect just in case.
-        $SHAREDB->dispose();
+        \local_kent\util\sharedb::dispose();
         $SHAREDB = new \local_kent\util\sharedb();
 
         $this->post_import();
