@@ -392,4 +392,44 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $module3 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
         $this->assertFalse($rollover->is_empty());
     }
+
+    /**
+     * Test rollover output is empty
+     */
+    public function test_output_is_empty() {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+
+        $module1 = $this->getDataGenerator()->create_module('forum', array('course' => $course1));
+        $module2 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course1));
+        $module3 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
+
+        // Do the rollover.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+
+        ob_start();
+        $task = new \local_rollover\task\backups();
+        $task->execute();
+        $backup = ob_get_clean();
+
+        $this->assertEquals('', $backup);
+
+        ob_start();
+        $task = new \local_rollover\task\imports();
+        $task->execute();
+        $restore = ob_get_clean();
+
+        // Clear out the Deleted crap.
+        $lines = explode("\n", $restore);
+        $lines = array_filter($lines, function($a) {
+            return strpos($a, '++') != 0;
+        });
+        $restore = implode("\n", $lines);
+
+        $this->assertEquals('', $restore);
+    }
 }
