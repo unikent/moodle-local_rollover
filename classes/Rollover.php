@@ -155,9 +155,16 @@ class Rollover
      * Do the rollover.
      */
     public function go() {
+        global $SHAREDB;
+
         $this->migrate_data();
         $this->manipulate_data();
         $this->import();
+
+        // SHAREDB may no longer be connected, reconnect just in case.
+        $SHAREDB->dispose();
+        $SHAREDB = new \local_kent\util\sharedb();
+
         $this->post_import();
     }
 
