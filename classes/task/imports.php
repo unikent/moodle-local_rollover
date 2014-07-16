@@ -71,9 +71,6 @@ class imports extends \core\task\scheduled_task
             ));
             $controller->go();
         } catch (\moodle_exception $e) {
-            $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('rollovers', $event);
-
             // Also, wipe the course.
             remove_course_contents($event->to_course);
 
@@ -86,6 +83,9 @@ class imports extends \core\task\scheduled_task
                 )
             ));
             $error->trigger();
+
+            $event->status = \local_rollover\Rollover::STATUS_ERROR;
+            $SHAREDB->update_record('rollovers', $event);
 
             return false;
         }
