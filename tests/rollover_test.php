@@ -25,10 +25,12 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Run all rollovers.
      */
     private function rollover() {
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        return ob_get_clean();
     }
 
     /**
@@ -82,15 +84,19 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(\local_rollover\Rollover::STATUS_SCHEDULED, $rollover->get_status());
 
         // Now run a backup.
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
+        ob_get_clean();
 
         $this->assertEquals(\local_rollover\Rollover::STATUS_BACKED_UP, $rollover->get_status());
         $this->assertTrue($rollover->is_empty());
 
         // Now run a restore.
+        ob_start();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        ob_get_clean();
 
         // Check things worked.
         $this->assertEquals(\local_rollover\Rollover::STATUS_COMPLETE, $rollover->get_status());
@@ -239,13 +245,17 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
+        ob_get_clean();
 
         unlink($dir . $filename);
 
+        ob_start();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        ob_get_clean();
 
         $this->assertTrue(file_exists($dir . $filename));
 
@@ -291,13 +301,17 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
+        ob_start();
         $task = new \local_rollover\task\backups();
         $task->execute();
+        ob_get_clean();
 
         unlink($dir . $filename);
 
+        ob_start();
         $task = new \local_rollover\task\imports();
         $task->execute();
+        ob_get_clean();
 
         $this->assertTrue(file_exists($dir . $filename));
 
