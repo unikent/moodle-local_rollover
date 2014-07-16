@@ -155,20 +155,17 @@ class Rollover
      * Do the rollover.
      */
     public function go() {
-        global $DB;
+        global $SHAREDB;
 
-        $transaction = $DB->start_delegated_transaction();
+        $this->migrate_data();
+        $this->manipulate_data();
+        $this->import();
 
-        try {
-            $this->migrate_data();
-            $this->manipulate_data();
-            $this->import();
-            $this->post_import();
-        } catch (\moodle_exception $e) {
-            $DB->rollback_delegated_transaction($transaction, $e);
-        }
+        // SHAREDB may no longer be connected, reconnect just in case.
+        $SHAREDB->dispose();
+        $SHAREDB = new \local_kent\util\sharedb();
 
-        $transaction->allow_commit();
+        $this->post_import();
     }
 
     /**
