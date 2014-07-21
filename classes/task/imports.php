@@ -87,12 +87,10 @@ class imports extends \core\task\scheduled_task
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
             $SHAREDB->update_record('rollovers', $event);
 
-            return false;
+            throw $e;
         }
 
         $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
         $SHAREDB->update_record('rollovers', $event);
-
-        return true;
     }
 } 
