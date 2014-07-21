@@ -49,6 +49,8 @@ class backups extends \core\task\scheduled_task
         // All of these need to be backed up.
         foreach ($localevents as $event) {
             $this->backup($event);
+            // Only do one per run (hack whilst we work on adhoc tasks).
+            return;
         }
     }
 

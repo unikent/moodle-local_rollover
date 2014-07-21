@@ -339,8 +339,12 @@ class Rollover
      * Run the import.
      */
     private function import() {
+        echo "\nClearing course...\n";
+
         // Clear out the existing course.
         remove_course_contents($this->settings['tocourse']);
+
+        echo "\nRunning import...\n";
 
         $controller = new \restore_controller(
             $this->uuid,
@@ -352,7 +356,16 @@ class Rollover
         );
 
         if (!$controller->execute_precheck()) {
-            throw new \moodle_exception("Plan pre-check failed. " . var_dump($controller->get_precheck_results()));
+            echo "Warning - Precheck failed\n";
+            $results = $controller->get_precheck_results();
+
+            if (isset($results['errors'])) {
+                throw new \moodle_exception("Plan pre-check failed. " . var_dump($results));
+            }
+
+            if (isset($results['warnings'])) {
+                echo var_dump($results['warnings']) . "\n";
+            }
         }
 
         $controller->execute_plan();
