@@ -49,6 +49,8 @@ class imports extends \core\task\scheduled_task
         // All of these need to be imported.
         foreach ($localevents as $event) {
             $this->import($event);
+            // Only do one per run (hack whilst we work on adhoc tasks).
+            return;
         }
     }
 
