@@ -42,37 +42,29 @@ $action = optional_param('action', null, PARAM_ALPHA);
 
 $notification = '';
 
-$rollover = null;
 if (!empty($id)) {
     $rollover = $SHAREDB->get_record('rollovers', array(
         'id' => $id
     ));
+
+    if ($rollover) {
+        $rollover->updated = date('Y-m-d H:i:s');
+
+        if ($action === 'retry') {
+            // Schedule a new rollover.
+            $rollover->status = \local_rollover\Rollover::STATUS_SCHEDULED;
+            $notification = 'Successfully rescheduled as ' . $id;
+        }
+
+        if ($action === 'fail') {
+            // Schedule a new rollover.
+            $rollover->status = \local_rollover\Rollover::STATUS_ERROR;
+            $notification = 'Forced failure of ' . $rollover->id;
+        }
+
+        $SHAREDB->update_record('rollovers', $rollover);
+    }
 }
-
-if ($action === 'retry' && $rollover) {
-    // Schedule a new rollover.
-    unset($rollover->id);
-    $rollover->created = date('Y-m-d H:i:s');
-    $rollover->updated = date('Y-m-d H:i:s');
-    $rollover->status = \local_rollover\Rollover::STATUS_SCHEDULED;
-    $rollover->requester = $USER->username;
-
-    $id = $SHAREDB->insert_record('rollovers', $rollover);
-
-    $notification = 'Successfully rescheduled as ' . $id;
-}
-
-if ($action === 'fail' && $rollover) {
-    // Schedule a new rollover.
-    $rollover->updated = date('Y-m-d H:i:s');
-    $rollover->status = \local_rollover\Rollover::STATUS_ERROR;
-
-    $SHAREDB->update_record('rollovers', $rollover);
-
-    $notification = 'Forced failure of ' . $rollover->id;
-}
-
-unset($rollover);
 
 // Output.
 
