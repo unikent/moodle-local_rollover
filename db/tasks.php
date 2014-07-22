@@ -24,16 +24,7 @@
 
 $tasks = array(
     array(
-        'classname' => 'local_rollover\task\backups',
-        'blocking' => 0,
-        'minute' => '*',
-        'hour' => '*',
-        'day' => '*',
-        'dayofweek' => '*',
-        'month' => '*'
-    ),
-    array(
-        'classname' => 'local_rollover\task\imports',
+        'classname' => 'local_rollover\task\generator',
         'blocking' => 0,
         'minute' => '*',
         'hour' => '*',
