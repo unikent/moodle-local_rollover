@@ -59,5 +59,9 @@ if ($inprogress > $threshold) {
     $messages[] = $inprogress . ' in progress rollovers.';
 }
 
+if (empty($messages)) {
+    $messages[] = "OK";
+}
+
 echo implode(' ', $messages);
 exit($status);
