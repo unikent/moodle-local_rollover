@@ -33,9 +33,9 @@ class restore extends \core\task\adhoc_task
         global $SHAREDB;
 
         $params = $this->get_custom_data();
-        $event = $SHAREDB->get_record('rollovers', $params, '*', MUST_EXIST);
+        $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
 
-        if ($event->status !== \local_rollover\Rollover::STATUS_BACKED_UP) {
+        if ((int)$event->status !== \local_rollover\Rollover::STATUS_BACKED_UP) {
             throw new \moodle_exception("Error - Event not in backed up state for restore.");
         }
 
