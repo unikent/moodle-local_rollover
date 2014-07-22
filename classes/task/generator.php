@@ -47,7 +47,7 @@ class generator extends \core\task\scheduled_task
     /**
      * Schedule all backup tasks.
      */
-    private function schedule_backups() {
+    public function schedule_backups() {
         global $CFG, $SHAREDB;
 
         $localevents = $SHAREDB->get_records('rollovers', array(
@@ -70,7 +70,7 @@ class generator extends \core\task\scheduled_task
     /**
      * Schedule all restore tasks.
      */
-    private function schedule_restores() {
+    public function schedule_restores() {
         global $CFG, $SHAREDB;
 
         $localevents = $SHAREDB->get_records('rollovers', array(
