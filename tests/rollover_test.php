@@ -109,6 +109,39 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     }
 
     /**
+     * Test we can generate a list of tasks.
+     */
+    public function test_generator() {
+        global $SHAREDB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course1 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+
+        $this->run_all_tasks(0);
+
+        $task = new \local_rollover\task\generator();
+        $task->execute();
+
+        $this->run_all_tasks(1);
+        $this->run_all_tasks(0);
+
+        $task = new \local_rollover\task\generator();
+        $task->execute();
+
+        $this->run_all_tasks(1);
+        $this->run_all_tasks(0);
+
+        $task = new \local_rollover\task\generator();
+        $task->execute();
+
+        $this->run_all_tasks(0);
+    }
+
+    /**
      * Test the rollover process.
      */
     public function test_rollover() {
