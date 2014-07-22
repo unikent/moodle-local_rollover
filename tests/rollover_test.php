@@ -22,14 +22,72 @@ defined('MOODLE_INTERNAL') || die();
 class local_rollover_tests extends \local_connect\tests\connect_testcase
 {
     /**
+     * Run all backups.
+     */
+    private function run_all_tasks($expected) {
+        ob_start();
+
+        $time = time();
+
+        // Run through all scheduled tasks.
+        $count = 0;
+        while (($task = \core\task\manager::get_next_adhoc_task($time)) !== null) {
+            try {
+                $task->execute();
+                $count++;
+            } catch (Exception $e) {
+                echo $e->getMessage();
+            }
+
+            \core\task\manager::adhoc_task_complete($task);
+        }
+
+        $this->assertEquals($expected, $count);
+
+        return ob_get_clean();
+    }
+
+    /**
+     * Run all backups.
+     */
+    private function run_backups($expected) {
+        ob_start();
+
+        $this->run_all_tasks(0);
+
+        $task = new \local_rollover\task\generator();
+        $task->schedule_backups();
+
+        echo $this->run_all_tasks($expected);
+
+        return ob_get_clean();
+    }
+
+    /**
+     * Run all imports.
+     */
+    private function run_imports($expected) {
+        ob_start();
+
+        $this->run_all_tasks(0);
+
+        $task = new \local_rollover\task\generator();
+        $task->schedule_restores();
+
+        echo $this->run_all_tasks($expected);
+
+        return ob_get_clean();
+    }
+
+    /**
      * Run all rollovers.
      */
-    private function rollover() {
+    private function rollover($expected) {
         ob_start();
-        $task = new \local_rollover\task\backups();
-        $task->execute();
-        $task = new \local_rollover\task\imports();
-        $task->execute();
+
+        echo $this->run_backups($expected);
+        echo $this->run_imports($expected);
+
         return ob_get_clean();
     }
 
@@ -84,19 +142,13 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(\local_rollover\Rollover::STATUS_SCHEDULED, $rollover->get_status());
 
         // Now run a backup.
-        ob_start();
-        $task = new \local_rollover\task\backups();
-        $task->execute();
-        ob_get_clean();
+        $this->run_backups(1);
 
         $this->assertEquals(\local_rollover\Rollover::STATUS_BACKED_UP, $rollover->get_status());
         $this->assertTrue($rollover->is_empty());
 
         // Now run a restore.
-        ob_start();
-        $task = new \local_rollover\task\imports();
-        $task->execute();
-        ob_get_clean();
+        $this->run_imports(1);
 
         // Check things worked.
         $this->assertEquals(\local_rollover\Rollover::STATUS_COMPLETE, $rollover->get_status());
@@ -140,9 +192,8 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
-        $this->rollover();
         \local_rollover\Rollover::schedule("testing", $course2->id, $course4->id);
-        $this->rollover();
+        $this->rollover(2);
 
         // The test!
         $this->assertEquals(8, $DB->count_records('course_modules', array(
@@ -193,7 +244,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
-        $this->rollover();
+        $this->rollover(1);
 
         // The test!
         $this->assertEquals(1, $DB->count_records('course_modules', array(
@@ -246,17 +297,11 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
-        ob_start();
-        $task = new \local_rollover\task\backups();
-        $task->execute();
-        ob_get_clean();
+        $this->run_backups(1);
 
         unlink($dir . $filename);
 
-        ob_start();
-        $task = new \local_rollover\task\imports();
-        $task->execute();
-        ob_get_clean();
+        $this->run_imports(1);
 
         $this->assertTrue(file_exists($dir . $filename));
 
@@ -302,17 +347,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
-        ob_start();
-        $task = new \local_rollover\task\backups();
-        $task->execute();
-        ob_get_clean();
-
+        $this->run_backups(1);
         unlink($dir . $filename);
-
-        ob_start();
-        $task = new \local_rollover\task\imports();
-        $task->execute();
-        ob_get_clean();
+        $this->run_imports(1);
 
         $this->assertTrue(file_exists($dir . $filename));
 
@@ -358,7 +395,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
-        $this->rollover();
+        $this->rollover(1);
 
         // The tests.
         $this->assertEquals(3, $DB->count_records('course_modules', array(
@@ -412,17 +449,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
-        ob_start();
-        $task = new \local_rollover\task\backups();
-        $task->execute();
-        $backup = ob_get_clean();
-
+        $backup = $this->run_backups(1);
         $this->assertEquals('', $backup);
-
-        ob_start();
-        $task = new \local_rollover\task\imports();
-        $task->execute();
-        $restore = ob_get_clean();
+        $this->run_imports(1);
 
         // Clear out the Deleted crap.
         $lines = explode("\n", $restore);
