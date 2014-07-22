@@ -140,6 +140,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
+        $this->rollover();
         \local_rollover\Rollover::schedule("testing", $course2->id, $course4->id);
         $this->rollover();
 
