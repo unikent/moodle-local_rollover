@@ -27,7 +27,7 @@ namespace local_rollover\task;
 /**
  * Rollover Rollover Task generator
  */
-class backups extends \core\task\scheduled_task
+class generator extends \core\task\scheduled_task
 {
     public function get_name() {
         return "Rollover Task generator";
