@@ -484,7 +484,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         $backup = $this->run_backups(1);
         $this->assertEquals('', $backup);
-        $this->run_imports(1);
+        $restore = $this->run_imports(1);
 
         // Clear out the Deleted crap.
         $lines = explode("\n", $restore);
