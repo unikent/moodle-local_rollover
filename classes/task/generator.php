@@ -49,7 +49,7 @@ class generator extends \core\task\scheduled_task
         global $CFG, $SHAREDB;
 
         $events = $SHAREDB->get_records('rollovers', array(
-            'status' => \local_rollover\Rollover::STATUS_SCHEDULED,
+            'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE,
             'from_env' => $CFG->kent->environment,
             'from_dist' => $CFG->kent->distribution
         ));
@@ -62,6 +62,9 @@ class generator extends \core\task\scheduled_task
             ));
 
             \core\task\manager::queue_adhoc_task($task);
+
+            $event->status = self::STATUS_SCHEDULED;
+            $SHAREDB->update_record('rollovers', $event);
         }
     }
 

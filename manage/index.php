@@ -100,6 +100,10 @@ foreach ($rollovers as $rollover) {
 
     $status = '';
     switch ($rollover->status) {
+        case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
+            $status = 'Awaiting Scheduling';
+        break;
+
         case \local_rollover\Rollover::STATUS_SCHEDULED:
             $status = 'Scheduled';
         break;
