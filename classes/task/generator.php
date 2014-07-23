@@ -34,8 +34,6 @@ class generator extends \core\task\scheduled_task
     }
 
     public function execute() {
-        global $CFG, $SHAREDB;
-
         if (!\local_kent\util\sharedb::available()) {
             return;
         }
@@ -50,14 +48,14 @@ class generator extends \core\task\scheduled_task
     public function schedule_backups() {
         global $CFG, $SHAREDB;
 
-        $localevents = $SHAREDB->get_records('rollovers', array(
+        $events = $SHAREDB->get_records('rollovers', array(
             'status' => \local_rollover\Rollover::STATUS_SCHEDULED,
             'from_env' => $CFG->kent->environment,
             'from_dist' => $CFG->kent->distribution
         ));
 
         // All of these need to be backed up.
-        foreach ($localevents as $event) {
+        foreach ($events as $event) {
             $task = new \local_rollover\task\backup();
             $task->set_custom_data(array(
                 'id' => $event->id
@@ -73,15 +71,15 @@ class generator extends \core\task\scheduled_task
     public function schedule_restores() {
         global $CFG, $SHAREDB;
 
-        $localevents = $SHAREDB->get_records('rollovers', array(
+        $events = $SHAREDB->get_records('rollovers', array(
             'status' => \local_rollover\Rollover::STATUS_BACKED_UP,
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution
         ));
 
         // All of these need to be imported.
-        foreach ($localevents as $event) {
-            $task = new \local_rollover\task\restore();
+        foreach ($events as $event) {
+            $task = new \local_rollover\task\import();
             $task->set_custom_data(array(
                 'id' => $event->id
             ));
