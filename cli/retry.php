@@ -52,8 +52,11 @@ $event = $SHAREDB->get_record('rollovers', array(
 ));
 
 if ($event) {
-    $task = new \local_rollover\task\backups();
-    $task->backup($event);
+    $task = new \local_rollover\task\backup();
+    $task->set_custom_data(array(
+        "id" => $event->id
+    ));
+    $task->execute();
 
     die;
 }
@@ -71,5 +74,8 @@ if (!$event) {
 }
 
 // Import.
-$task = new \local_rollover\task\imports();
-$task->import($event);
+$task = new \local_rollover\task\import();
+$task->set_custom_data(array(
+    "id" => $event->id
+));
+$task->execute();

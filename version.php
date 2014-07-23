@@ -17,22 +17,18 @@
 
 
 /**
- * Defines the version of newmodule
+ * Defines the version.
  *
- * This code fragment is called by moodle_needs_upgrading() and
- * /admin/index.php
- *
- * @package    mod
- * @subpackage newmodule
- * @copyright  2011 Your Name
+ * @package    local_rollover
+ * @copyright  2014 Skylar Kelty <S.Kelty@kent.ac.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014070300;
+$plugin->version   = 2014072200;
 $plugin->component = 'local_rollover';
 $plugin->requires = 2014051200;
 $plugin->cron     = 0;
-$plugin->release = '2.1 (Build: 2014070300)';
+$plugin->release = '2.1 (Build: 2014072200)';
 $plugin->maturity = MATURITY_STABLE;

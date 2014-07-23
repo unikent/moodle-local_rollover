@@ -27,38 +27,17 @@ namespace local_rollover\task;
 /**
  * Rollover backups
  */
-class backups extends \core\task\scheduled_task
+class backup extends \core\task\adhoc_task
 {
-    public function get_name() {
-        return "Rollover Backups";
-    }
-
     public function execute() {
-        global $CFG, $SHAREDB;
-
-        if (!\local_kent\util\sharedb::available()) {
-            return;
-        }
-
-        $localevents = $SHAREDB->get_records('rollovers', array(
-            'status' => \local_rollover\Rollover::STATUS_SCHEDULED,
-            'from_env' => $CFG->kent->environment,
-            'from_dist' => $CFG->kent->distribution
-        ));
-
-        // All of these need to be backed up.
-        foreach ($localevents as $event) {
-            $this->backup($event);
-            // Only do one per run (hack whilst we work on adhoc tasks).
-            return;
-        }
-    }
-
-    /**
-     * Rollover a course.
-     */
-    public function backup($event) {
         global $DB, $SHAREDB;
+
+        $params = $this->get_custom_data();
+        $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
+
+        if ((int)$event->status !== \local_rollover\Rollover::STATUS_SCHEDULED) {
+            throw new \moodle_exception("Error - Event not in scheduled state for backup.");
+        }
 
         $event->updated = date('Y-m-d H:i:s');
 
@@ -102,4 +81,16 @@ class backups extends \core\task\scheduled_task
 
         $SHAREDB->update_record('rollovers', $event);
     }
-} 
+
+    /**
+     * Setter for $customdata.
+     * @param mixed $customdata (anything that can be handled by json_encode)
+     */
+    public function set_custom_data($customdata) {
+        if (empty($customdata['id'])) {
+            throw new \moodle_exception("Event ID cannot be empty!");
+        }
+
+        return parent::set_custom_data($customdata);
+    }
+}
