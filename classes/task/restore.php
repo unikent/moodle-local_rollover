@@ -27,38 +27,17 @@ namespace local_rollover\task;
 /**
  * Rollover imports
  */
-class imports extends \core\task\scheduled_task
+class restore extends \core\task\adhoc_task
 {
-    public function get_name() {
-        return "Rollover Imports";
-    }
-
     public function execute() {
-        global $CFG, $SHAREDB;
-
-        if (!\local_kent\util\sharedb::available()) {
-            return;
-        }
-
-        $localevents = $SHAREDB->get_records('rollovers', array(
-            'status' => \local_rollover\Rollover::STATUS_BACKED_UP,
-            'to_env' => $CFG->kent->environment,
-            'to_dist' => $CFG->kent->distribution
-        ));
-
-        // All of these need to be imported.
-        foreach ($localevents as $event) {
-            $this->import($event);
-            // Only do one per run (hack whilst we work on adhoc tasks).
-            return;
-        }
-    }
-
-    /**
-     * Rollover a course.
-     */
-    public function import($event) {
         global $SHAREDB;
+
+        $params = $this->get_custom_data();
+        $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
+
+        if ((int)$event->status !== \local_rollover\Rollover::STATUS_BACKED_UP) {
+            throw new \moodle_exception("Error - Event not in backed up state for restore.");
+        }
 
         $event->updated = date('Y-m-d H:i:s');
         $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
@@ -95,4 +74,16 @@ class imports extends \core\task\scheduled_task
         $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
         $SHAREDB->update_record('rollovers', $event);
     }
-} 
+
+    /**
+     * Setter for $customdata.
+     * @param mixed $customdata (anything that can be handled by json_encode)
+     */
+    public function set_custom_data($customdata) {
+        if (empty($customdata['id'])) {
+            throw new \moodle_exception("Event ID cannot be empty!");
+        }
+
+        return parent::set_custom_data($customdata);
+    }
+}
