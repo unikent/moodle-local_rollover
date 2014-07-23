@@ -27,7 +27,7 @@ namespace local_rollover\task;
 /**
  * Rollover imports
  */
-class restore extends \core\task\adhoc_task
+class import extends \core\task\adhoc_task
 {
     public function execute() {
         global $SHAREDB;

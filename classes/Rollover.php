@@ -33,6 +33,7 @@ class Rollover
     const STATUS_COMPLETE = 2;
     const STATUS_ERROR = 3;
     const STATUS_IN_PROGRESS = 4;
+    const STATUS_WAITING_SCHEDULE = 5;
 
     /** Rollover UUID */
     private $uuid;
@@ -95,7 +96,7 @@ class Rollover
         // Now insert this into the DB.
         $obj->created = date('Y-m-d H:i:s');
         $obj->updated = date('Y-m-d H:i:s');
-        $obj->status = self::STATUS_SCHEDULED;
+        $obj->status = self::STATUS_WAITING_SCHEDULE;
         $obj->options = json_encode($options);
         $obj->requester = $USER->username;
 
