@@ -63,11 +63,11 @@ class generator extends \core\task\scheduled_task
                 'id' => $event->id
             ));
 
-            \core\task\manager::queue_adhoc_task($task, $time);
-            $time += 300;
-
             $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
             $SHAREDB->update_record('rollovers', $event);
+
+            \core\task\manager::queue_adhoc_task($task, $time);
+            $time += 300;
         }
     }
 
