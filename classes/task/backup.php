@@ -36,7 +36,8 @@ class backup extends \core\task\adhoc_task
         $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
 
         if ((int)$event->status != \local_rollover\Rollover::STATUS_SCHEDULED) {
-            throw new \moodle_exception("Error! Event not in scheduled state for backup:  {$event->status}");
+            echo "Warning! Event not in scheduled state for backup:  {$event->status}\n";
+            return;
         }
 
         $event->updated = date('Y-m-d H:i:s');
