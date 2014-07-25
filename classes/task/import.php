@@ -35,8 +35,8 @@ class import extends \core\task\adhoc_task
         $params = $this->get_custom_data();
         $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
 
-        if ((int)$event->status !== \local_rollover\Rollover::STATUS_BACKED_UP) {
-            throw new \moodle_exception("Error - Event not in backed up state for restore.");
+        if ((int)$event->status != \local_rollover\Rollover::STATUS_BACKED_UP) {
+            throw new \moodle_exception("Error! Event not in backed up state for restore: {$event->status}.");
         }
 
         $event->updated = date('Y-m-d H:i:s');
