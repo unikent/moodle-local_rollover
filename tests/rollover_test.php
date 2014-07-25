@@ -144,6 +144,32 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     /**
      * Test the rollover process.
      */
+    public function test_rollover_statuses() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = $this->getDataGenerator()->create_course();
+        $course2 = $this->getDataGenerator()->create_course();
+
+        // Get the rollover object.
+        $rollover = new \local_rollover\Course($course2->id);
+
+        $result = \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+
+        $this->assertEquals(\local_rollover\Rollover::STATUS_WAITING_SCHEDULE, $rollover->get_status());
+
+        $task = new \local_rollover\task\generator();
+        $task->schedule_backups();
+
+        $this->assertEquals(\local_rollover\Rollover::STATUS_SCHEDULED, $rollover->get_status());
+    }
+
+    /**
+     * Test the rollover process.
+     */
     public function test_rollover() {
         global $DB;
 
@@ -172,7 +198,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         $result = \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
-        $this->assertEquals(\local_rollover\Rollover::STATUS_SCHEDULED, $rollover->get_status());
+        $this->assertEquals(\local_rollover\Rollover::STATUS_WAITING_SCHEDULE, $rollover->get_status());
 
         // Now run a backup.
         $this->run_backups(1);
