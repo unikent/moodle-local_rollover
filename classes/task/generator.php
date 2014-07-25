@@ -54,6 +54,8 @@ class generator extends \core\task\scheduled_task
             'from_dist' => $CFG->kent->distribution
         ));
 
+        $time = time();
+
         // All of these need to be backed up.
         foreach ($events as $event) {
             $task = new \local_rollover\task\backup();
@@ -61,7 +63,8 @@ class generator extends \core\task\scheduled_task
                 'id' => $event->id
             ));
 
-            \core\task\manager::queue_adhoc_task($task);
+            \core\task\manager::queue_adhoc_task($task, $time);
+            $time += 300;
 
             $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
             $SHAREDB->update_record('rollovers', $event);

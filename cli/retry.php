@@ -52,6 +52,9 @@ $event = $SHAREDB->get_record('rollovers', array(
 ));
 
 if ($event) {
+    $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
+    $SHAREDB->update_record('rollovers', $event);
+
     $task = new \local_rollover\task\backup();
     $task->set_custom_data(array(
         "id" => $event->id
