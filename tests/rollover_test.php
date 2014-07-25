@@ -27,7 +27,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     private function run_all_tasks($expected) {
         ob_start();
 
-        $time = time();
+        $time = time() + 9000;
 
         // Run through all scheduled tasks.
         $count = 0;
