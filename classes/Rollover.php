@@ -215,7 +215,7 @@ class Rollover
 
         // Set CLA objects to 'rolledover' state.
         $this->manipulate_fields($xpath, 'cla', 'rolled_over', 1);
-        $this->manipulate_fields($xpath, 'cla', 'rolled_over_inactive', 1);
+        $this->manipulate_fields($xpath, 'cla', 'rolled_over_inactive', 2);
 
         // Add CLA notes.
         $this->add_cla_notes($xpath);
