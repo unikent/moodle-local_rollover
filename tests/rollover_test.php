@@ -318,7 +318,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
             'course' => $course2->id
         )));
 
-        $this->assertEquals(1, $DB->get_field('cla', 'rolled_over_inactive', array(
+        $this->assertEquals(2, $DB->get_field('cla', 'rolled_over_inactive', array(
             'course' => $course2->id
         )));
 
