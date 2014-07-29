@@ -29,6 +29,10 @@ namespace local_rollover\task;
  */
 class backup extends \core\task\adhoc_task
 {
+    public function get_component() {
+        return 'local_rollover';
+    }
+
     public function execute() {
         global $DB, $SHAREDB;
 

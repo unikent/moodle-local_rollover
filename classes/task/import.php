@@ -29,6 +29,10 @@ namespace local_rollover\task;
  */
 class import extends \core\task\adhoc_task
 {
+    public function get_component() {
+        return 'local_rollover';
+    }
+
     public function execute() {
         global $SHAREDB;
 
