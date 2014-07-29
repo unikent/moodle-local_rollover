@@ -95,7 +95,7 @@ try {
     // Now insert this into the DB.
     $record->created = date('Y-m-d H:i:s');
     $record->updated = date('Y-m-d H:i:s');
-    $record->status = 0;
+    $record->status = \local_rollover\Rollover::STATUS_WAITING_SCHEDULE;
     $record->options = $options;
     $record->requester = $USER->username;
 
