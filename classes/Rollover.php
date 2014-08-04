@@ -343,7 +343,10 @@ class Rollover
         echo "\nClearing course...\n";
 
         // Clear out the existing course.
-        remove_course_contents($this->settings['tocourse']);
+        remove_course_contents($this->settings['tocourse'], false, array(
+            'keep_roles_and_enrolments' => true,
+            'keep_groups_and_groupings' => true
+        ));
 
         echo "\nRunning import...\n";
 
