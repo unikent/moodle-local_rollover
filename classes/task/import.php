@@ -58,7 +58,10 @@ class import extends \core\task\adhoc_task
             $controller->go();
         } catch (\moodle_exception $e) {
             // Also, wipe the course.
-            remove_course_contents($event->to_course);
+            remove_course_contents($event->to_course, false, array(
+                'keep_roles_and_enrolments' => true,
+                'keep_groups_and_groupings' => true
+            ));
 
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,

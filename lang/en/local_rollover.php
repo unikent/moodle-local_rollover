@@ -30,7 +30,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Kent rollover';
+$string['pluginname'] = 'Kent Rollover';
 $string['no_permissions'] = 'Sorry, but you do not currently have permissions to access this page';
 $string['no_courses'] = 'There are currently no modules which you have access to which require content rollover.  Please contact an administrator if you require any assistance.';
 $string['processingmessage'] = '<h3>Scheduled for rollover</h3><p>Your request will be completed in the next 24 hours.</p>';

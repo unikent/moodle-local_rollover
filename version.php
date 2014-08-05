@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014080100;
+$plugin->version   = 2014080400;
 $plugin->component = 'local_rollover';
 $plugin->requires = 2014051200;
 $plugin->cron     = 0;
