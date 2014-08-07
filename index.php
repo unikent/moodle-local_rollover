@@ -187,12 +187,8 @@ if (!empty($courses)) {
             break;
 
             case 1:
+            case 5:
                 $from_content = $from_processing;
-            break;
-
-            case 2:
-                //Should not be used as the form should not show complete items
-                $from_content = $from_requested;
             break;
 
             case 3:
