@@ -79,4 +79,30 @@ SQL;
 
         return $mycourses;
     }
+
+    /**
+     * Filter a target list by given terms.
+     * Returns all matching courses.
+     */
+    public static function filter_target_list($list, $terms) {
+        $terms = strip_tags(strtolower($terms));
+
+        $list = array_filter($list, function($course) use ($terms) {
+            if (strpos(strtolower($course->shortname), $terms) !== false) {
+                return true;
+            }
+
+            if (strpos(strtolower($course->fullname), $terms) !== false) {
+                return true;
+            }
+
+            if (strpos(strtolower($course->summary), $terms) !== false) {
+                return true;
+            }
+
+            return false;
+        });
+
+        return $list;
+    }
 }

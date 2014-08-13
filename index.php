@@ -125,7 +125,7 @@ $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></di
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
-$search = optional_param('srch', null, PARAM_TEXT);
+$search = trim(optional_param('srch', '', PARAM_TEXT));
 
 echo '<div id="rollover_search">
         <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="get">
@@ -134,7 +134,10 @@ echo '<div id="rollover_search">
         </form>
         </div>';
 
-$courses = kent_get_empty_courses($search);
+$courses = \local_rollover\Utils::get_target_list();
+if (!empty($search)) {
+    $courses = \local_rollover\Utils::filter_target_list($courses, $search);
+}
 
 if (!empty($courses)) {
     // Top page content
