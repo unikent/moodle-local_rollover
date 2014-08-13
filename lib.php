@@ -63,9 +63,10 @@ function kent_get_empty_courses($srch = ''){
 /**
  * Returns all modules that are empty and user with update module permissions can see
  */
-function kent_get_own_editable_courses(){
-
+function kent_get_own_editable_courses() {
     global $CFG, $USER, $DB;
+
+    $category = \local_catman\core::get_category();
 
     $course_list = array();
 
@@ -86,7 +87,7 @@ function kent_get_own_editable_courses(){
      LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
      LEFT JOIN {course_sections} cse ON cse.course = c.id AND cse.summary != '' AND cse.section != 0
      JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE cse.section is null AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
+     WHERE cse.section is null AND c.category != 0 AND c.category != {$category->id} AND c.id IN ($list)";
 
     // pull out all module matching
 
@@ -123,7 +124,7 @@ function kent_get_own_editable_courses(){
      FROM {course} c
      LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
      JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
-     WHERE (rol.status = 0 OR rol.status = 1 OR rol.status = 3) AND c.category != 0 AND c.category != 58 AND c.id IN ($list)";
+     WHERE (rol.status = 0 OR rol.status = 1 OR rol.status = 3) AND c.category != 0 AND c.category != {$category->id} AND c.id IN ($list)";
 
 
     // pull out all module matching
@@ -150,8 +151,9 @@ function kent_get_own_editable_courses(){
  * Returns all empty courses of courses, for whole site, or category.  For admin use only!
  */
 function kent_get_all_courses() {
-
     global $USER, $CFG, $DB;
+
+    $category = \local_catman\core::get_category();
 
     $sharedb = $CFG->kent->sharedb['name'];
 
@@ -167,7 +169,7 @@ function kent_get_all_courses() {
                 FROM {course} c
                 LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
                 LEFT JOIN {course_sections} cse ON cse.course = c.id AND length(cse.summary)>0 AND cse.section != 0
-                WHERE cse.section is null AND c.category != 58
+                WHERE cse.section is null AND c.category != {$category->id}
                 GROUP BY c.id
                 ORDER BY c.shortname ASC";
 
