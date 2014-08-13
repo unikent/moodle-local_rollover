@@ -19,34 +19,6 @@ function kent_filter_post_data(){
 
 }
 
-/**
- * Returns TRUE or FALSE depending on if a user has any edit course access at all.
- */
-function kent_has_edit_course_access(){
-
-    global $CFG, $USER, $DB;
-
-    $params['userid'] = (int)$USER->id;
-    $params['capability'] = 'moodle/course:update';
-
-    $sql = "SELECT COUNT(ra.id) as assignments
-            FROM {$CFG->prefix}role_assignments ra
-            WHERE userid=:userid
-            AND ra.roleid IN (SELECT DISTINCT roleid FROM {$CFG->prefix}role_capabilities rc WHERE rc.capability=:capability AND rc.permission=1 ORDER BY rc.roleid ASC)";
-
-    //Pull out an amount of assignments a user has of module update in total.  Acts as a check to see if a user should ever hit the rollover list page.
-    if ($courses = $DB->get_record_sql($sql, $params)) {
-        $assignments = (int)$courses->assignments;
-        if($assignments > 0){
-            return true;
-        }
-
-    }
-
-    return false;
-
-}
-
 
 /**
  * Check if a specified module has any content based on modules and summaries

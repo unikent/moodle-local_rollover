@@ -30,7 +30,7 @@ require_once('lib.php');
 
 require_login();
 
-if (!kent_has_edit_course_access() && !has_capability('moodle/site:config', \context_system::instance())) {
+if (!\local_rollover\User::has_course_update_role()) {
     header('HTTP/1.0 401 Unauthorized', true, 401);
     exit(1);
 }

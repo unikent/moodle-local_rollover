@@ -125,14 +125,4 @@ SQL;
             }
         }
     }
-
-    /**
-     * Returns true if a use has any access to edit any course.
-     */
-    public static function can_user_edit_a_course() {
-
-        if (has_capability('moodle/site:config', \context_system::instance())) {
-            return true;
-        }
-    }
 }
