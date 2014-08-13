@@ -164,7 +164,7 @@ function kent_get_all_courses() {
     //Only return everything if an admin...
     if (has_capability('moodle/site:config', $context)){
 
-
+        // Select everything that has less than than 3 course modules.
         $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
                 FROM {course} c
                 LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
@@ -206,7 +206,7 @@ function kent_get_all_courses() {
         $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
                 FROM {course} c
                 LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
-                WHERE rol.status = 0 OR rol.status = 1 OR rol.status = 3
+                WHERE rol.status <> 2
                 ORDER BY c.shortname ASC";
 
         // pull out all module matching
