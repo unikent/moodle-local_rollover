@@ -68,20 +68,19 @@ function kent_get_own_editable_courses() {
 
     $category = \local_catman\core::get_category();
 
-    $course_list = array();
+    $courselist = array();
 
-
-    $content_courses = kent_rollover_enrol_get_my_courses('id, shortname, summary, visible', 'shortname ASC', 0, 999999);
+    $contentcourses = kent_rollover_enrol_get_my_courses('id, shortname, summary, visible', 'shortname ASC', 0, 999999);
 
     $list = "";
-    foreach($content_courses["courses"] as $tmp_course){
-         $list .= $tmp_course->id . ",";
+    foreach ($contentcourses["courses"] as $tmpcourse) {
+         $list .= $tmpcourse->id . ",";
     }
     $list = rtrim($list, ",");
 
     $sharedb = $CFG->kent->sharedb['name'];
 
-    //Now check and get ones with content only
+    // Now check and get ones with content only.
     $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.status AS rollover_status
      FROM {course} c
      LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
@@ -89,63 +88,60 @@ function kent_get_own_editable_courses() {
      JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
      WHERE cse.section is null AND c.category != 0 AND c.category != {$category->id} AND c.id IN ($list)";
 
-    // pull out all module matching
+    // Pull out all module matching.
 
     if ($courses = $DB->get_records_sql($sql, array($CFG->kent->environment, $CFG->kent->distribution))) {
-    //if ($courses = $DB->get_records_sql($sql, $params)) {
-
         foreach ($courses as $course) {
-            if ($course->id == 1) continue;
-
-            // count number of mods in this module
-            $no_modules = intval($DB->count_records('course_modules',array('course' => $course->id)));
-
-            if($no_modules <= 2){
-                $no_modules_found = kent_check_mod_types($course->id);
-                if (is_int($no_modules_found) && $no_modules_found > 0){
-                    continue; 
-                }
-            } elseif($no_modules > 2) {
-                continue; //Skip if we have more than two modules
+            if ($course->id == 1) {
+                continue;
             }
 
-            //If we had no rollover status, then set to none
-            if($course->rollover_status === NULL){
+            // Count number of mods in this module.
+            $nomodules = intval($DB->count_records('course_modules', array(
+                'course' => $course->id
+            )));
+
+            if ($nomodules <= 2) {
+                $nomodulesfound = kent_check_mod_types($course->id);
+                if (is_int($nomodulesfound) && $nomodulesfound > 0) {
+                    continue;
+                }
+            } else if ($nomodules > 2) {
+                // Skip if we have more than two modules.
+                continue;
+            }
+
+            // If we had no rollover status, then set to none.
+            if ($course->rollover_status === null) {
                 $course->rollover_status = "none";
             }
-            $course_list[$course->id] = $course;
+
+            $courselist[$course->id] = $course;
         }
 
     }
 
-    //Need to do the same now without the content check to get rollover status for those still running.
-    //Now check and get ones with content only.
+    // Need to do the same now without the content check to get rollover status for those still running.
+    // Now check and get ones with content only.
     $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.category, c.summary, c.visible, ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel, rol.status AS rollover_status
      FROM {course} c
      LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
      JOIN {context} ctx ON (c.id = ctx.instanceid AND ctx.contextlevel=".CONTEXT_COURSE.")
      WHERE (rol.status = 0 OR rol.status = 1 OR rol.status = 3) AND c.category != 0 AND c.category != {$category->id} AND c.id IN ($list)";
 
-
-    // pull out all module matching
     if ($courses = $DB->get_records_sql($sql, array($CFG->kent->environment, $CFG->kent->distribution))) {
-
-        // loop throught them
         foreach ($courses as $course) {
-            if ($course->id == 1) continue;
+            if ($course->id == 1) {
+                continue;
+            }
 
-            //Add or override on our central list.
-            $course_list[$course->id] = $course;
+            $courselist[$course->id] = $course;
         }
     }
 
-    return $course_list;
+    return $courselist;
 
 }
-
-
-
-
 
 /**
  * Returns all empty courses of courses, for whole site, or category.  For admin use only!
@@ -158,11 +154,11 @@ function kent_get_all_courses() {
     $sharedb = $CFG->kent->sharedb['name'];
 
     $params = array($CFG->kent->environment, $CFG->kent->distribution);
-    $course_list = array();
+    $courselist = array();
 
     $context = context_system::instance();
-    //Only return everything if an admin...
-    if (has_capability('moodle/site:config', $context)){
+    // Only return everything if an admin...
+    if (has_capability('moodle/site:config', $context)) {
 
         // Select everything that has less than than 3 course modules.
         $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
@@ -173,54 +169,56 @@ function kent_get_all_courses() {
                 GROUP BY c.id
                 ORDER BY c.shortname ASC";
 
-
-        // pull out all module matching
         if ($courses = $DB->get_records_sql($sql, $params)) {
-
-            // loop throught them
             foreach ($courses as $course) {
-                if ($course->id == 1) continue;
-                //If we had no rollover status, then set to none
-
-                // count number of modules in this module
-                $no_modules = intval($DB->count_records('course_modules',array('course' => $course->id)));
-
-                if($no_modules <=2){
-                    $no_modules_found = kent_check_mod_types($course->id);
-                    if (is_int($no_modules_found) && $no_modules_found > 0){
-                        continue;
-                    }
-                } elseif($no_modules > 2) {
-                    continue; //Skip if we have more than one module
+                if ($course->id == 1) {
+                    continue;
                 }
 
-                if($course->rollover_status === NULL){
+                // Count number of modules in this module.
+                $nomodules = intval($DB->count_records('course_modules', array(
+                    'course' => $course->id
+                )));
+
+                if ($nomodules <= 2) {
+                    $nomodulesfound = kent_check_mod_types($course->id);
+                    if (is_int($nomodulesfound) && $nomodulesfound > 0) {
+                        continue;
+                    }
+                } else if ($nomodules > 2) {
+                    // Skip if we have more than one module.
+                    continue;
+                }
+
+                if ($course->rollover_status === null) {
                     $course->rollover_status = "none";
                 }
 
-                $course_list[$course->id] = $course;
+                $courselist[$course->id] = $course;
             }
         }
 
-        //Pick up any modules which may not be empty, because they are in rollover progress.
+        // Pick up any modules which may not be empty, because they are in rollover progress.
         $sql = "SELECT DISTINCT c.id, c.shortname, c.fullname, c.summary, c.visible, rol.status as rollover_status
                 FROM {course} c
                 LEFT JOIN `$sharedb`.`rollovers` rol ON rol.to_course = c.id AND rol.to_env = ? AND rol.to_dist = ?
                 WHERE rol.status <> 2
                 ORDER BY c.shortname ASC";
 
-        // pull out all module matching
+        // Pull out all module matching.
         if ($courses = $DB->get_records_sql($sql, $params)) {
-            // loop throught them
             foreach ($courses as $course) {
-                if ($course->id == 1) continue;
-                $course_list[$course->id] = $course;
+                if ($course->id == 1) {
+                    continue;
+                }
+
+                $courselist[$course->id] = $course;
             }
         }
 
     }
 
-    return $course_list;
+    return $courselist;
 }
 
 
@@ -478,14 +476,14 @@ function kent_course_has_content($course_id){
     if ($no_summaries > 0) return true;
 
     // If not, then secondly count number of mods in this module
-    $no_modules = intval($DB->count_records('course_modules',array('course' => $course_id)));
+    $nomodules = intval($DB->count_records('course_modules',array('course' => $course_id)));
 
-    if($no_modules <= 2){
-        $no_modules = kent_check_mod_types($course_id);
-        if (is_int($no_modules) && $no_modules > 0){
+    if($nomodules <= 2){
+        $nomodules = kent_check_mod_types($course_id);
+        if (is_int($nomodules) && $nomodules > 0){
             return true; 
         }
-    } elseif ($no_modules > 2) {
+    } elseif ($nomodules > 2) {
 		return true; //For certain has content if more than two modules
 	}
 
@@ -505,9 +503,9 @@ function kent_check_mod_types($course_id){
     $sql = "SELECT COUNT(id) FROM {$CFG->prefix}course_modules AS cm WHERE course={$course_id}
                 AND cm.module IN (SELECT id FROM {$CFG->prefix}modules AS m
                                   WHERE m.name != 'forum' AND m.name != 'aspirelists')";
-    $no_modules = (int) $DB->count_records_sql($sql);
+    $nomodules = (int) $DB->count_records_sql($sql);
 
-    return $no_modules;
+    return $nomodules;
 
 }
 
