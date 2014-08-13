@@ -105,4 +105,24 @@ SQL;
 
         return $list;
     }
+
+    /**
+     * Grab a list of modules that can rollover.
+     */
+    public static function get_rollover_course_modules() {
+        global $CFG, $DB;
+
+        $modules = $DB->get_records("modules", array(
+            'visible' => 1
+        ));
+
+        foreach ($modules as $mod) {
+            $name = $mod->name;
+            $path = $CFG->dirroot . "/mod/" . $name;
+            $filename = "/backup/moodle2/backup_{$name}_activity_task.class.php";
+            if (file_exists($path . $filename)) {
+                yield $mod;
+            }
+        }
+    }
 }

@@ -61,7 +61,16 @@ $PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$module_list = kent_get_formated_module_list();
+$moduleoptions = "";
+$modules = \local_rollover\Utils::get_rollover_course_modules();
+foreach ($modules as $module) {
+    $shortname = strtolower($module->name);
+    $longname = ucfirst(get_string('modulename', $shortname));
+
+    $moduleoptions .= '<li class="rollover_option_item m2">';
+    $moduleoptions .= "<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}";
+    $moduleoptions .= '</li>';
+}
 
 //TODO - move this to function and pass in shortcode and embed into the form name.
 //TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
@@ -98,7 +107,7 @@ $from_form = <<< HEREDOC
     <div class='from_form'>
         $selection_box
         <ul class='rollover_advanced_options'>
-            $module_list
+            $moduleoptions
         </ul>
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
