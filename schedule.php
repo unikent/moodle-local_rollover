@@ -107,7 +107,12 @@ try {
     }
 
 } catch (Exception $e) {
-    kent_json_errors($e);
+    header("HTTP/1.1 500 Server Error");
+    header('Content-type: application/json');
+    die(json_encode(array(
+        'status' => false,
+        'errors' => htmlentities(print_r($e, true))
+    )));
 }
 
 header("HTTP/1.1 500 Server Error");
