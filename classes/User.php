@@ -81,7 +81,7 @@ SQL;
     }
 
     /**
-     * Returns true if a use has any access to edit any course.
+     * Returns true if a user has any access to edit any course.
      */
     public static function has_course_update_role() {
         global $DB, $USER;
