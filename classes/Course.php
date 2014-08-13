@@ -60,6 +60,8 @@ class Course
     public function is_empty() {
         global $DB;
 
+        // $DB->count_records('course_modules', array('course' => $COURSE->id)) > 2
+
         // Count number of non-empty summaries as our first check.
         $sql = "
             SELECT COUNT(id)
