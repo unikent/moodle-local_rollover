@@ -27,18 +27,7 @@ function kent_list_rollover_courses(){
  * Returns list of modules for user
  */
 function kent_get_empty_courses($srch = ''){
-    global $USER, $DB;
-
-    $context = context_system::instance();
-
-    //If we are an admin, then we need to see all modules
-    if (has_capability('moodle/site:config', $context)){
-        $courses = kent_get_all_courses();
-    } else {
-        $courses = kent_get_own_editable_courses();
-    }
-
-
+    $courses = \local_rollover\Utils::get_target_list();
 
     if($srch != '') {
         $srch = strip_tags(strtolower($srch));
