@@ -193,7 +193,7 @@ if (!empty($courses)) {
             $shortcode = $matches[0];
         }
 
-        switch (kent_get_current_rollover_status($course->id)) {
+        switch ($course->rollover_status) {
             case 0:
                 $from_content = $from_requested;
             break;
