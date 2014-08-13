@@ -37,7 +37,7 @@ class Utils
                 c.id, c.shortname, c.fullname, c.category, c.summary, c.visible,
                 ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel,
                 COUNT(cm.id) as module_count,
-                COALESCE(r.status, 'none') AS rollover_status
+                COALESCE(r.status, '-1') AS rollover_status
             FROM {course} c
             INNER JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel=:ctxlevel
             LEFT OUTER JOIN `$sharedb`.`rollovers` r
@@ -48,7 +48,7 @@ class Utils
                 ON cm.course = c.id
             WHERE c.id > 1
             GROUP BY c.id
-            HAVING module_count <= 2 OR rollover_status != 'none'
+            HAVING module_count <= 2 OR rollover_status != '-1'
 SQL;
 
         $params = array(
