@@ -143,7 +143,7 @@ echo '<div id="rollover_search">
         </form>
         </div>';
 
-$courses = \local_rollover\Utils::get_target_list();
+$courses = \local_rollover\User::get_target_list();
 if (!empty($search)) {
     $courses = \local_rollover\Utils::filter_target_list($courses, $search);
 }
