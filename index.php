@@ -28,7 +28,7 @@ if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::ava
     print_error('connect_disabled', 'local_connect');
 }
 
-if (!kent_has_edit_course_access() && !has_capability('moodle/site:config', $systemcontext)) {
+if (!\local_rollover\User::has_course_update_role()) {
     throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
 
@@ -61,7 +61,16 @@ $PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
-$module_list = kent_get_formated_module_list();
+$moduleoptions = "";
+$modules = \local_rollover\Utils::get_rollover_course_modules();
+foreach ($modules as $module) {
+    $shortname = strtolower($module->name);
+    $longname = ucfirst(get_string('modulename', $shortname));
+
+    $moduleoptions .= '<li class="rollover_option_item m2">';
+    $moduleoptions .= "<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}";
+    $moduleoptions .= '</li>';
+}
 
 //TODO - move this to function and pass in shortcode and embed into the form name.
 //TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
@@ -98,7 +107,7 @@ $from_form = <<< HEREDOC
     <div class='from_form'>
         $selection_box
         <ul class='rollover_advanced_options'>
-            $module_list
+            $moduleoptions
         </ul>
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
@@ -125,7 +134,7 @@ $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></di
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
-$search = optional_param('srch', null, PARAM_TEXT);
+$search = trim(optional_param('srch', '', PARAM_TEXT));
 
 echo '<div id="rollover_search">
         <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="get">
@@ -134,7 +143,10 @@ echo '<div id="rollover_search">
         </form>
         </div>';
 
-$courses = kent_get_empty_courses($search);
+$courses = \local_rollover\User::get_target_list();
+if (!empty($search)) {
+    $courses = \local_rollover\Utils::filter_target_list($courses, $search);
+}
 
 if (!empty($courses)) {
     // Top page content
@@ -181,7 +193,7 @@ if (!empty($courses)) {
             $shortcode = $matches[0];
         }
 
-        switch (kent_get_current_rollover_status($course->id)) {
+        switch ($course->rollover_status) {
             case 0:
                 $from_content = $from_requested;
             break;
