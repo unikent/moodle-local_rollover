@@ -27,9 +27,33 @@ class User
      * Returns all courses we can rollover into.
      */
     public static function get_target_list() {
-        global $CFG, $DB;
+        global $CFG, $DB, $USER;
 
         $sharedb = $CFG->kent->sharedb['name'];
+
+        $params = array(
+            'env' => $CFG->kent->environment,
+            'dist' => $CFG->kent->distribution,
+            'ctxlevel' => CONTEXT_COURSE
+        );
+
+        // If we are not admin, then we need a magic join to only grab courses
+        // we have permissions too.
+        $join = "";
+        if (!has_capability('moodle/site:config', \context_system::instance())) {
+            $join = <<<SQL
+            INNER JOIN {role_assignments} ra
+                ON ra.contextid = ctx.id AND ra.userid = :userid AND ra.roleid IN (
+                    SELECT rc.roleid
+                    FROM {role_capabilities} rc
+                    WHERE rc.capability = :capability
+                        AND rc.permission = 1
+                    GROUP BY rc.roleid
+                )
+SQL;
+            $params['userid'] = $USER->id;
+            $params['capability'] = 'moodle/course:update';
+        }
 
         // We want to get all empty courses that don't have a rollover associated with them.
         $sql = <<<SQL
@@ -39,7 +63,8 @@ class User
                 COUNT(cm.id) as module_count,
                 COALESCE(r.status, '-1') AS rollover_status
             FROM {course} c
-            INNER JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel=:ctxlevel
+            INNER JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = :ctxlevel
+            $join
             LEFT OUTER JOIN `$sharedb`.`rollovers` r
                 ON r.to_course = c.id
                 AND r.to_env = :env
@@ -51,33 +76,7 @@ class User
             HAVING module_count <= 2 OR rollover_status != '-1'
 SQL;
 
-        $params = array(
-            'env' => $CFG->kent->environment,
-            'dist' => $CFG->kent->distribution,
-            'ctxlevel' => CONTEXT_COURSE
-        );
-
-        $courses = $DB->get_records_sql($sql, $params);
-
-        // If we are admin, great! Return here.
-        if (has_capability('moodle/site:config', \context_system::instance())) {
-            return $courses;
-        }
-
-        // Get our courses.
-        $mycourses = enrol_get_my_courses('id');
-
-        // Filter out those we cannot edit.
-        foreach ($mycourses as $id => $course) {
-            if (!has_capability('moodle/course:update', \context_course::instance($id)) || !isset($courses[$id])) {
-                unset($mycourses[$id]);
-                continue;
-            }
-
-            $mycourses[$id] = $courses[$id];
-        }
-
-        return $mycourses;
+        return $DB->get_records_sql($sql, $params);
     }
 
     /**
