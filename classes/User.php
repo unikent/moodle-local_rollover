@@ -29,11 +29,13 @@ class User
     public static function get_target_list() {
         global $CFG, $DB, $USER;
 
+        $category = \local_catman\core::get_category();
         $sharedb = $CFG->kent->sharedb['name'];
 
         $params = array(
             'env' => $CFG->kent->environment,
             'dist' => $CFG->kent->distribution,
+            'rmcatid' => $category->id,
             'ctxlevel' => CONTEXT_COURSE
         );
 
@@ -71,7 +73,7 @@ SQL;
                 AND r.to_dist = :dist
             LEFT OUTER JOIN {course_modules} cm
                 ON cm.course = c.id
-            WHERE c.id > 1
+            WHERE c.id > 1 AND c.category <> :rmcatid
             GROUP BY c.id
             HAVING module_count <= 2 OR rollover_status != '-1'
 SQL;
