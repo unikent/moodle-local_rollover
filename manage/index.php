@@ -52,7 +52,7 @@ if (!empty($id)) {
 
         if ($action === 'retry') {
             // Schedule a new rollover.
-            $rollover->status = \local_rollover\Rollover::STATUS_SCHEDULED;
+            $rollover->status = \local_rollover\Rollover::STATUS_WAITING_SCHEDULE;
             $notification = 'Successfully rescheduled as ' . $id;
         }
 
