@@ -44,14 +44,19 @@ class User
         $join = "";
         if (!has_capability('moodle/site:config', \context_system::instance())) {
             $join = <<<SQL
-            INNER JOIN {role_assignments} ra
-                ON ra.contextid = ctx.id AND ra.userid = :userid AND ra.roleid IN (
+            INNER JOIN (
+                SELECT ira.contextid
+                FROM {role_assignments} ira
+                WHERE ira.userid = :userid AND ira.roleid IN (
                     SELECT rc.roleid
                     FROM {role_capabilities} rc
                     WHERE rc.capability = :capability
                         AND rc.permission = 1
                     GROUP BY rc.roleid
                 )
+                GROUP BY ira.contextid
+            ) ra
+            ON ra.contextid = ctx.id
 SQL;
             $params['userid'] = $USER->id;
             $params['capability'] = 'moodle/course:update';
