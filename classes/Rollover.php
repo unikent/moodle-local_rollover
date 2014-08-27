@@ -180,7 +180,7 @@ class Rollover
         // Work out the from location.
         $from = $this->settings['folder'];
         if (strpos($from, '/data/moodledata') === 0) {
-            $from = str_replace('/data/moodledata/', '/mnt/doodle/archivedata/', $from);
+            $from = str_replace('/data/moodledata/', '/mnt/stollen/archivedata/', $from);
         }
         $from = escapeshellcmd($from);
 
