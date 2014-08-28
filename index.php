@@ -186,7 +186,7 @@ if (!empty($courses)) {
         //Extract the shortname without year - only grabs the first
         $pattern = "([a-zA-Z]{2,4}[0-9]{1,4})";
         preg_match($pattern, $course->shortname, $matches);
-        $shortcode = "";
+        $shortcode = $course->shortname;
         if ($matches != false) {
             $shortcode = $matches[0];
         }
