@@ -137,45 +137,53 @@ var refreshCourseData = function() {
 
 var populateCourseAutoComplete = function(course_data) {
 
-	jQuery('.rollover_crs_input').autocomplete({
-		minLength: 1,
-		source: function(request, response) {
-			var term = request.term;
-			term = term.substring(term.indexOf(':') + 1);
+	jQuery('.rollover_crs_input').each(function(i, el) {
+        el = jQuery(el)
+        el.autocomplete({
+    		minLength: 1,
+    		source: function(request, response) {
+    			var term = request.term;
+    			term = term.substring(term.indexOf(':') + 1);
 
-			var results = jQuery.ui.autocomplete.filter(course_data.courses_search, term);
-			results.reverse();
+    			var results = jQuery.ui.autocomplete.filter(course_data.courses_search, term);
+    			results.reverse();
 
-			response(results.slice(0, 30));
-		},
-		delay: 0,
-		select: function(event, ui) {
-			jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[ui.item.label][0]);
-			jQuery(this).closest('.rollover_crs_from').find('.src_from').val(course_data.courses[ui.item.label][1]);
-			if(course_data.courses[ui.item.label][1] === 'archive') {
-				jQuery(this).parent().find('.m1 input').attr('disabled', 'disabled').removeAttr('checked');
-			} else {
-				jQuery(this).parent().find('.m1 input').attr('checked', 'checked').removeAttr('disabled');
-			}
-		},
-		change: function(event, ui){
-			var change_results = jQuery.ui.autocomplete.filter(course_data.courses_search, jQuery(this).val().trim());
-			if(change_results.length === 0 || jQuery(this).val() === ''){
-				jQuery(this).closest('.rollover_crs_from').find('.id_from').val('');
-				jQuery(this).closest('.rollover_crs_from').find('.src_from').val('');
-			} else {
-				jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[change_results[0]][0]);
-				jQuery(this).closest('.rollover_crs_from').find('.src_from').val(course_data.courses[change_results[0]][1]);
-			}
-		}
-	}).focus(function() {
-		$(this).autocomplete("search");
-	});
+                var toid = el.closest('.rollover_crs_from').find('.id_to').val();
+                var todist = el.closest('.rollover_crs_from').find('.src_to').val();
+
+                // Dont allow rollover into self.
+                var newresults = []
+                for (var result in results) {
+                    search = course_data.courses_search[result]
+                    data = course_data.courses[search]
+                    if (data[0] != toid || data[1] != todist) {
+                        newresults.push(search)
+                    }
+                }
+
+    			response(newresults.slice(0, 30));
+    		},
+    		delay: 0,
+    		select: function(event, ui) {
+    			jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[ui.item.label][0]);
+    			jQuery(this).closest('.rollover_crs_from').find('.src_from').val(course_data.courses[ui.item.label][1]);
+    		},
+    		change: function(event, ui){
+    			var change_results = jQuery.ui.autocomplete.filter(course_data.courses_search, jQuery(this).val().trim());
+    			if(change_results.length === 0 || jQuery(this).val() === ''){
+    				jQuery(this).closest('.rollover_crs_from').find('.id_from').val('');
+    				jQuery(this).closest('.rollover_crs_from').find('.src_from').val('');
+    			} else {
+    				jQuery(this).closest('.rollover_crs_from').find('.id_from').val(course_data.courses[change_results[0]][0]);
+    				jQuery(this).closest('.rollover_crs_from').find('.src_from').val(course_data.courses[change_results[0]][1]);
+    			}
+    		}
+    	}).focus(function() {
+    		$(this).autocomplete("search");
+    	});
+    });
 
 	jQuery('.rollover_crs_input').each(function() {
-		var id_to = $(this).closest('.rollover_crs_from').find('.id_to').val();
-		var src_to = $(this).closest('.rollover_crs_from').find('.src_to').val();
-
 		var srch = $(this).val();
  		if (srch) {
 			var results = _.filter(course_data.courses_search, function(t) {
@@ -193,14 +201,9 @@ var populateCourseAutoComplete = function(course_data) {
 				var id_from = course_data.courses[results[0]][0];
 				var src_from = course_data.courses[results[0]][1];
 
-				// Dont allow rollover into self.
-				if (id_to != id_from && src_to != src_from) {
-					$(this).val(results[0]);
-					$(this).closest('.rollover_crs_from').find('.id_from').val(id_from);
-					$(this).closest('.rollover_crs_from').find('.src_from').val(src_from);
-				} else {
-					$(this).val('');
-				}
+				$(this).val(results[0]);
+				$(this).closest('.rollover_crs_from').find('.id_from').val(id_from);
+				$(this).closest('.rollover_crs_from').find('.src_from').val(src_from);
 			}
 		}
 	})
