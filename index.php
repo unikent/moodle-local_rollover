@@ -72,8 +72,6 @@ foreach ($modules as $module) {
     $moduleoptions .= '</li>';
 }
 
-//TODO - move this to function and pass in shortcode and embed into the form name.
-//TODO - Pass in schedule.php location rather than hard code it.  Set as a global config? ... overkill?
 $short_code_label_text = get_string('short_code_label_text', 'local_rollover');
 $description_label_text = get_string('description_label_text', 'local_rollover');
 
@@ -138,7 +136,7 @@ $search = trim(optional_param('srch', '', PARAM_TEXT));
 
 echo '<div id="rollover_search">
         <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="get">
-        <input type="text" id="srch" name="srch" value="' . $search . '"placeholder="SEARCH FOR ROLLOVER"/>
+        <input type="text" id="srch" name="srch" value="' . $search . '"placeholder="Search..."/>
         <input type="submit" id="srch_submit" value="Search" />
         </form>
         </div>';
