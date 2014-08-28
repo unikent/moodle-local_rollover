@@ -26,11 +26,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2014080400;
+$plugin->version   = 2014082800;
 $plugin->component = 'local_rollover';
 $plugin->requires = 2014051200;
 $plugin->cron     = 0;
-$plugin->release = '2.2 (Build: 2014080100)';
+$plugin->release = '2.3 (Build: 2014082800)';
 $plugin->maturity = MATURITY_STABLE;
 
 $plugin->dependencies = array(
