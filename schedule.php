@@ -88,8 +88,14 @@ try {
     // Check if the to_course exists in here already.
     $prod = $SHAREDB->get_record('rollovers', (array)$record);
     if ($prod && $prod->status < 2) {
-        header('HTTP/1.1 500 Server Error');
-        exit(0);
+        throw new Exception('There is already a rollover for that course!');
+    }
+
+    // Courses cannot rollover into themselves.
+    if ($record->from_env == $record->to_env &&
+        $record->from_dist == $record->to_dist &&
+        $record->from_course == $record->to_course) {
+        throw new Exception('You cannot roll a course over into itself!');
     }
 
     // Now insert this into the DB.
