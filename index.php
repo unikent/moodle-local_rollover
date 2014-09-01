@@ -17,7 +17,6 @@
 global $USER, $CFG, $PAGE, $OUTPUT;
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
-require_once(dirname(__FILE__) . '/lib.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/filelib.php');
 
@@ -56,10 +55,31 @@ $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 // Init rollovers.
 $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 
-$PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
+$PAGE->requires->css("/local/rollover/scripts/css/styles.css");
+
+$action = optional_param("action", '', PARAM_ALPHA);
+
+$notification = '';
+if ($action == 'undo') {
+    require_sesskey();
+    $id = required_param("id", PARAM_INT);
+
+    // Try to undo the rollover.
+    try {
+        \local_rollover\Rollover::undo($id);
+        $notification = $OUTPUT->notification("Rollover '$id' has been deleted.");
+    } catch (\moodle_exception $e) {
+        $notification = $OUTPUT->notification($e->getMessage());
+    }
+}
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
+
+if (!empty($notification)) {
+    echo $notification;
+    unset($notification);
+}
 
 $moduleoptions = "";
 $modules = \local_rollover\Utils::get_rollover_course_modules();
@@ -67,7 +87,7 @@ foreach ($modules as $module) {
     $shortname = strtolower($module->name);
     $longname = ucfirst(get_string('modulename', $shortname));
 
-    $moduleoptions .= '<li class="rollover_option_item m2">';
+    $moduleoptions .= '<li class="rollover_option_item">';
     $moduleoptions .= "<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}";
     $moduleoptions .= '</li>';
 }
@@ -75,7 +95,7 @@ foreach ($modules as $module) {
 $short_code_label_text = get_string('short_code_label_text', 'local_rollover');
 $description_label_text = get_string('description_label_text', 'local_rollover');
 
-$form = <<< HEREDOC
+$form = <<<HTML
     <div class='rollover_item'>
         <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action=''>
             <table class='rollover_layout'>
@@ -91,7 +111,7 @@ $form = <<< HEREDOC
             </table>
         </form>
     </div>
-HEREDOC;
+HTML;
 
 $search_placeholder = get_string('search_placeholder', 'local_rollover');
 $advanced_options_label = get_string('advanced_options_label', 'local_rollover');
@@ -99,7 +119,7 @@ $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
 $selection_box = "<input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>";
 
-$from_form = <<< HEREDOC
+$from_form = <<<HTML
 <td class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
@@ -124,13 +144,22 @@ $from_form = <<< HEREDOC
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </td>
-HEREDOC;
+HTML;
 
 $from_processing = '<td class="rollover_crs_from processing"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</td>';
 
 $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('requestedmessage', 'local_rollover').'</td>';
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
+
+$form_complete = '
+    <td class="rollover_crs_from success">
+        <div class="arrow"></div>
+        <h3>Completed</h3>
+        <p>Your rollover request has been completed but the module appears to be empty.</p>
+        <p>%s<br />WARNING: this will delete the existing contents of the module!</p>
+    </td>
+';
 
 $search = trim(optional_param('srch', '', PARAM_TEXT));
 
@@ -199,6 +228,14 @@ if (!empty($courses)) {
             case 1:
             case 5:
                 $from_content = $from_processing;
+            break;
+
+            case 2:
+                $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
+                    'id' => $course->rollover_id,
+                    'action' => 'undo'
+                )), 'Click here to undo the rollover.');
+                $from_content = sprintf($form_complete, $a);
             break;
 
             case 3:

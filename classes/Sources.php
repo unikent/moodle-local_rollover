@@ -57,7 +57,7 @@ class Sources {
             $params['username'] = $USER->username;
         }
 
-        $sql .= ' WHERE sc.moodle_env = :current_env';
+        $sql .= ' WHERE sc.moodle_id > 1 AND sc.moodle_env = :current_env';
         if ($dist !== '*') {
             $sql .= empty($dist) ? ' AND sc.moodle_dist <> :current_dist' : ' AND sc.moodle_dist = :current_dist';
         }

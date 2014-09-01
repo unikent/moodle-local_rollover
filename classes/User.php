@@ -69,14 +69,20 @@ SQL;
                 c.id, c.shortname, c.fullname, c.category, c.summary, c.visible,
                 ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel,
                 COUNT(cm.id) as module_count,
+                COALESCE(r.id, '0') AS rollover_id,
                 COALESCE(r.status, '-1') AS rollover_status
             FROM {course} c
             INNER JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = :ctxlevel
             $join
             LEFT OUTER JOIN `$sharedb`.`rollovers` r
-                ON r.to_course = c.id
-                AND r.to_env = :env
+                ON r.to_env = :env
                 AND r.to_dist = :dist
+                AND r.to_course = c.id
+                AND r.id IN (
+                    SELECT MAX(rr.id)
+                    FROM `$sharedb`.`rollovers` rr
+                    GROUP BY rr.to_course, rr.to_env, rr.to_dist
+                )
             LEFT OUTER JOIN {course_modules} cm
                 ON cm.course = c.id
             WHERE c.id > 1 AND c.category <> :rmcatid

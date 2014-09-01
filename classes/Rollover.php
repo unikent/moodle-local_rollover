@@ -34,6 +34,7 @@ class Rollover
     const STATUS_ERROR = 3;
     const STATUS_IN_PROGRESS = 4;
     const STATUS_WAITING_SCHEDULE = 5;
+    const STATUS_DELETED = 10;
 
     /** Rollover UUID */
     private $uuid;
@@ -54,11 +55,11 @@ class Rollover
 
         // Ensure we have the settings we need.
         if (!isset($this->settings['tocourse'])) {
-            throw new \moodle_exception('Must specify ID to roll into!');
+            throw new \moodle_exception('Must specify ID to rollover into!');
         }
 
         if (!isset($this->settings['folder'])) {
-            throw new \moodle_exception('Must specify folder to roll from!');
+            throw new \moodle_exception('Must specify folder to rollover from!');
         }
 
         static::setup_folder();
@@ -76,7 +77,7 @@ class Rollover
 
         $context = \context_course::instance($toid);
         if (!has_capability('moodle/course:update', $context)) {
-            throw new \moodle_exception('You cannot rollover into that course!');
+            throw new \moodle_exception('You do not have access to that course.');
         }
 
         $obj = new \stdClass();
@@ -89,8 +90,15 @@ class Rollover
 
         // Check if the to_course exists in here already.
         $prod = $SHAREDB->get_record('rollovers', (array)$obj);
-        if ($prod && $prod->status != 3) {
-            throw new \moodle_exception('A rollover is already scheduled for that course!');
+        if ($prod && $prod->status != self::STATUS_DELETED) {
+            throw new \moodle_exception('A rollover is already scheduled for that course.');
+        }
+
+        // Courses cannot rollover into themselves.
+        if ($obj->from_env == $obj->to_env &&
+            $obj->from_dist == $obj->to_dist &&
+            $obj->from_course == $obj->to_course) {
+            throw new \moodle_exception('You cannot rollover a course over into itself.');
         }
 
         // Now insert this into the DB.
@@ -101,6 +109,32 @@ class Rollover
         $obj->requester = $USER->username;
 
         return $SHAREDB->insert_record('rollovers', $obj);
+    }
+
+    /**
+     * Undo a rollover
+     */
+    public static function undo($id) {
+        global $CFG, $USER, $SHAREDB;
+
+        $obj = new \stdClass();
+        $obj->id = $id;
+        $obj->to_env = $CFG->kent->environment;
+        $obj->to_dist = $CFG->kent->distribution;
+
+        $obj = $SHAREDB->get_record('rollovers', (array)$obj);
+
+        if (!$obj) {
+            throw new \moodle_exception('Rollover not found.');
+        }
+
+        $context = \context_course::instance($obj->to_course);
+        if (!has_capability('moodle/course:update', $context)) {
+            throw new \moodle_exception('You do not have the required permissions to do that.');
+        }
+
+        $obj->status = self::STATUS_DELETED;
+        $SHAREDB->update_record('rollovers', $obj);
     }
 
     /**

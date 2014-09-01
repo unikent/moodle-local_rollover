@@ -26,14 +26,15 @@ $options = required_param("options", PARAM_RAW);
 $PAGE->set_context(context_course::instance($tocourse));
 $PAGE->set_url('/local/rollover/ajax/schedule.php');
 
-if (!isloggedin()) {
-    print_error("You must be logged in.");
-}
+require_login();
 
 $options = json_decode($options);
-$result = \local_rollover\Rollover::schedule($fromdist, $fromcourse, $tocourse, $options);
+$id = \local_rollover\Rollover::schedule($fromdist, $fromcourse, $tocourse, $options);
+if (!$id) {
+    print_error("Error creating rollover entry (unknown error).");
+}
 
 echo $OUTPUT->header();
 echo json_encode(array(
-    "result" => $result
+    "result" => 'success'
 ));
