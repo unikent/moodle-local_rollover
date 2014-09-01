@@ -56,7 +56,7 @@ $PAGE->requires->string_for_js('errormessage', 'local_rollover');
 // Init rollovers.
 $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 
-$PAGE->requires->css("/local/rollover/scripts/css/styles.min.css");
+$PAGE->requires->css("/local/rollover/scripts/css/styles.css");
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
@@ -132,6 +132,8 @@ $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></di
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
+$form_complete = '<td class="rollover_crs_from success"><div class="arrow"></div><h3>Success!</h3><p>Your rollover request has been completed.</p></td>';
+
 $search = trim(optional_param('srch', '', PARAM_TEXT));
 
 echo '<div id="rollover_search">
@@ -199,6 +201,10 @@ if (!empty($courses)) {
             case 1:
             case 5:
                 $from_content = $from_processing;
+            break;
+
+            case 2:
+                $from_content = $form_complete;
             break;
 
             case 3:
