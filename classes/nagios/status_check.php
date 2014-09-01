@@ -27,7 +27,7 @@ class status_check extends \local_nagios\base_check
      * Execute the check.
      */
     public function execute() {
-    	global $SHAREDB;
+        global $SHAREDB;
 
         $errored = $SHAREDB->count_records('rollovers', array(
             'status' => 3
