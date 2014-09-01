@@ -76,7 +76,7 @@ class Rollover
 
         $context = \context_course::instance($toid);
         if (!has_capability('moodle/course:update', $context)) {
-            throw new \moodle_exception('You cannot rollover into that course!');
+            throw new \moodle_exception('You do not have access to that course.');
         }
 
         $obj = new \stdClass();
@@ -90,7 +90,14 @@ class Rollover
         // Check if the to_course exists in here already.
         $prod = $SHAREDB->get_record('rollovers', (array)$obj);
         if ($prod && $prod->status != 3) {
-            throw new \moodle_exception('A rollover is already scheduled for that course!');
+            throw new \moodle_exception('A rollover is already scheduled for that course.');
+        }
+
+        // Courses cannot rollover into themselves.
+        if ($obj->from_env == $obj->to_env &&
+            $obj->from_dist == $obj->to_dist &&
+            $obj->from_course == $obj->to_course) {
+            throw new \moodle_exception('You cannot roll a course over into itself.');
         }
 
         // Now insert this into the DB.

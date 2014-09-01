@@ -67,7 +67,7 @@ foreach ($modules as $module) {
     $shortname = strtolower($module->name);
     $longname = ucfirst(get_string('modulename', $shortname));
 
-    $moduleoptions .= '<li class="rollover_option_item m2">';
+    $moduleoptions .= '<li class="rollover_option_item">';
     $moduleoptions .= "<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}";
     $moduleoptions .= '</li>';
 }
@@ -75,7 +75,7 @@ foreach ($modules as $module) {
 $short_code_label_text = get_string('short_code_label_text', 'local_rollover');
 $description_label_text = get_string('description_label_text', 'local_rollover');
 
-$form = <<< HEREDOC
+$form = <<<HTML
     <div class='rollover_item'>
         <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action=''>
             <table class='rollover_layout'>
@@ -91,7 +91,7 @@ $form = <<< HEREDOC
             </table>
         </form>
     </div>
-HEREDOC;
+HTML;
 
 $search_placeholder = get_string('search_placeholder', 'local_rollover');
 $advanced_options_label = get_string('advanced_options_label', 'local_rollover');
@@ -99,7 +99,7 @@ $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
 $selection_box = "<input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>";
 
-$from_form = <<< HEREDOC
+$from_form = <<<HTML
 <td class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
@@ -124,7 +124,7 @@ $from_form = <<< HEREDOC
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </td>
-HEREDOC;
+HTML;
 
 $from_processing = '<td class="rollover_crs_from processing"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</td>';
 

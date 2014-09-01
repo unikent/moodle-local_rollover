@@ -2,17 +2,17 @@ jQuery(document).ready(function() {
 
     jQuery(".rollover_crs_submit").each( function() {
         jQuery(this).click( function() {
+
             var button = jQuery(this);
-            var o = {};
-            jQuery( 'input', button.closest('form') ).each( function( i, v ) {
-                
-                if( v.name ) {
-                    if( v.type == 'checkbox' ) {
-                        if( v.checked ) {
-                            o[v.name] = 1;
-                        }
+            var form = button.closest('form');
+
+            var options = {};
+            jQuery('input.rollover_option_item', form).each(function (i, v) {
+                if (v.name) {
+                    if (v.checked) {
+                        options[v.name] = 1;
                     } else {
-                        o[v.name] = v.value;
+                        options[v.name] = 0;
                     }
                 }
             });
@@ -48,11 +48,15 @@ jQuery(document).ready(function() {
                      "Yes": function() {
                          $(this).dialog("close");
                          jQuery.ajax({
-                            url: 'schedule.php',
+                            url: 'ajax/schedule.php',
                             type: "POST",
-                            data: o,
+                            data: {
+                                'from_dist': form.find('.src_from').val(),
+                                'from_course': form.find('.id_from').val(),
+                                'to_course': form.find('.id_to').val(),
+                                'options': JSON.stringify(options)
+                            },
                             success: function (data, textStatus, jqXHR) {
-
                                 if (data.error) {
                                     if (jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
                                         jQuery(button).closest('.rollover_crs_from ').css('height', window.pane_height);
