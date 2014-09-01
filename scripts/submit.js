@@ -51,34 +51,44 @@ jQuery(document).ready(function() {
                             url: 'schedule.php',
                             type: "POST",
                             data: o,
-                            statusCode: {
-                                201: function(data, s) {
-                                    if(jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
+                            success: function (data, textStatus, jqXHR) {
+
+                                if (data.error) {
+                                    if (jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
                                         jQuery(button).closest('.rollover_crs_from ').css('height', window.pane_height);
                                     }
-                                    jQuery(button).closest('.from_form').fadeOut('fast', function() {
-                                        jQuery(button).closest('.rollover_crs_from').addClass('pending').append(window.pendingMessage);
-                                        jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
-                                    });
-                                },
-                                500: function(data, s) {
-                                    if(jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
-                                        jQuery(button).closest('.rollover_crs_from ').css('height', window.pane_height);
-                                    }
+
                                     jQuery(button).closest('.from_form').fadeOut('fast', function() {
                                         jQuery(button).closest('.rollover_crs_from').animate({
                                             backgroundColor: '#FAD7D7'
                                         }, 500 );
+
                                         jQuery(button).closest('.rollover_crs_from').find('.arrow').animate({
                                             borderRightColor: '#FAD7D7'
                                         }, 500 );
-                                        jQuery(button).closest('.rollover_crs_from').addClass('error').append(window.errorMessage);
-                                        jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
+
+                                        jQuery(button).closest('.rollover_crs_from')
+                                            .addClass('error')
+                                            .append('<h3>Error!</h3><p>' + data.error.substr(6) + '</p>');
+
+                                        jQuery(button).closest('.rollover_crs_from').find('h3')
+                                            .hide()
+                                            .fadeIn('slow');
                                     });
+
+                                    return;
                                 }
+
+                                if (jQuery(button).closest('.rollover_crs_from ').hasClass('expanded')) {
+                                    jQuery(button).closest('.rollover_crs_from ').css('height', window.pane_height);
+                                }
+
+                                jQuery(button).closest('.from_form').fadeOut('fast', function() {
+                                    jQuery(button).closest('.rollover_crs_from').addClass('pending').append(window.pendingMessage);
+                                    jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
+                                });
                             },
-                            error: function(j,t,e) {
-                                console.log(j)
+                            error: function(jqXHR, textStatus, errorThrown) {
                                 button.html('error');
                             }
                         });

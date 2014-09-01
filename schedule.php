@@ -25,101 +25,88 @@
  * _POST -- Post data from schedule form.
  */
 
+define('AJAX_SCRIPT', true);
+
 require_once('../../config.php');
 require_once('lib.php');
+
+$PAGE->set_context(context_system::instance());
+$PAGE->set_url('/local/rollover/schedule.php');
 
 require_login();
 
 if (!\local_rollover\User::has_course_update_role()) {
-    header('HTTP/1.0 401 Unauthorized', true, 401);
-    exit(1);
+    print_error('Unauthorized');
 }
 
 // Check that rollover is switched on in config and there is a valid $USER logged in.
 if (!\local_connect\util\helpers::is_enabled()) {
-    header('HTTP/1.0 401 Unauthorized', true, 401);
-    exit(1);
+    print_error('Unauthorized');
 }
 
-// Check the moodleness of this page request.
-$site = get_site();
-if (!$site) {
-    die();
+// Sanitize our post data.
+$data = kent_filter_post_data();
+
+// Ok, we need to create a new rollover event in the moodle DB for this request.
+$fromcourse = $data['id_from'];
+$tocourse = $data['id_to'];
+
+// Grab a course context.
+$context = \context_course::instance($tocourse);
+if (!has_capability('moodle/course:update', $context)) {
+    print_error('Unauthorized');
 }
 
-// Try and catch any problems (be it with filter_var or anything else).
-try {
-    // Sanitize our post data.
-    $data = kent_filter_post_data();
+// Remove those from the data so $data just contains the options.
+unset($data['id_from']);
+unset($data['id_to']);
 
-    // Ok, we need to create a new rollover event in the moodle DB for this request.
-    $fromcourse = $data['id_from'];
-    $tocourse = $data['id_to'];
-
-    // Grab a course context.
-    $context = \context_course::instance($tocourse);
-    if (!has_capability('moodle/course:update', $context)) {
-        header('HTTP/1.0 401 Unauthorized', true, 401);
-        exit(1);
+// Fix so that we do not rollover Turnitin inboxes from previous years (as we can't).
+if (isset($data['backup_source']) && $data['backup_source'] != "live") {
+    if (isset($data['backup_turnitintool'])) {
+        unset($data['backup_turnitintool']);
     }
-
-    // Remove those from the data so $data just contains the options.
-    unset($data['id_from']);
-    unset($data['id_to']);
-
-    // Fix so that we do not rollover Turnitin inboxes from previous years (as we can't).
-    if (isset($data['backup_source']) && $data['backup_source'] != "live") {
-        if (isset($data['backup_turnitintool'])) {
-            unset($data['backup_turnitintool']);
-        }
-    }
-
-    // Json encode the remaining data (options).
-    $options = json_encode($data);
-
-    $record = new stdClass();
-    $record->from_env = $CFG->kent->environment; // Todo - fix this.
-    $record->from_dist = $data['src_from'];
-    $record->from_course = $fromcourse;
-    $record->to_env = $CFG->kent->environment;
-    $record->to_dist = $CFG->kent->distribution;
-    $record->to_course = $tocourse;
-
-    // Check if the to_course exists in here already.
-    $prod = $SHAREDB->get_record('rollovers', (array)$record);
-    if ($prod && $prod->status < 2) {
-        throw new Exception('There is already a rollover for that course!');
-    }
-
-    // Courses cannot rollover into themselves.
-    if ($record->from_env == $record->to_env &&
-        $record->from_dist == $record->to_dist &&
-        $record->from_course == $record->to_course) {
-        throw new Exception('You cannot roll a course over into itself!');
-    }
-
-    // Now insert this into the DB.
-    $record->created = date('Y-m-d H:i:s');
-    $record->updated = date('Y-m-d H:i:s');
-    $record->status = \local_rollover\Rollover::STATUS_WAITING_SCHEDULE;
-    $record->options = $options;
-    $record->requester = $USER->username;
-
-    $id = $SHAREDB->insert_record('rollovers', $record);
-
-    if ($id) {
-        header("HTTP/1.1 201 Created");
-        exit(0);
-    }
-
-} catch (Exception $e) {
-    header("HTTP/1.1 500 Server Error");
-    header('Content-type: application/json');
-    die(json_encode(array(
-        'status' => false,
-        'errors' => htmlentities(print_r($e, true))
-    )));
 }
 
-header("HTTP/1.1 500 Server Error");
-exit(1);
+// Json encode the remaining data (options).
+$options = json_encode($data);
+
+$record = new stdClass();
+$record->from_env = $CFG->kent->environment;
+$record->from_dist = $data['src_from'];
+$record->from_course = $fromcourse;
+$record->to_env = $CFG->kent->environment;
+$record->to_dist = $CFG->kent->distribution;
+$record->to_course = $tocourse;
+
+// Check if the to_course exists in here already.
+$prod = $SHAREDB->get_record('rollovers', (array)$record);
+if ($prod && $prod->status < 2) {
+    print_error('There is already a rollover for that course.');
+}
+
+// Courses cannot rollover into themselves.
+if ($record->from_env == $record->to_env &&
+    $record->from_dist == $record->to_dist &&
+    $record->from_course == $record->to_course) {
+    print_error('You cannot roll a course over into itself.');
+}
+
+// Now insert this into the DB.
+$record->created = date('Y-m-d H:i:s');
+$record->updated = date('Y-m-d H:i:s');
+$record->status = \local_rollover\Rollover::STATUS_WAITING_SCHEDULE;
+$record->options = $options;
+$record->requester = $USER->username;
+
+$id = $SHAREDB->insert_record('rollovers', $record);
+
+if (!$id) {
+    print_error('Could not create rollover (reason unknown).');
+}
+
+echo $OUTPUT->header();
+echo json_encode(array(
+    'status' => 'success',
+    'id' => $id
+));
