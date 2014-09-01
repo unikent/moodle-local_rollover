@@ -34,6 +34,7 @@ class Rollover
     const STATUS_ERROR = 3;
     const STATUS_IN_PROGRESS = 4;
     const STATUS_WAITING_SCHEDULE = 5;
+    const STATUS_DELETED = 10;
 
     /** Rollover UUID */
     private $uuid;
@@ -89,7 +90,7 @@ class Rollover
 
         // Check if the to_course exists in here already.
         $prod = $SHAREDB->get_record('rollovers', (array)$obj);
-        if ($prod && $prod->status != 3) {
+        if ($prod && $prod->status != self::STATUS_DELETED) {
             throw new \moodle_exception('A rollover is already scheduled for that course.');
         }
 
