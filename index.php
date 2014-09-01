@@ -132,7 +132,14 @@ $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></di
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
-$form_complete = '<td class="rollover_crs_from success"><div class="arrow"></div><h3>Success!</h3><p>Your rollover request has been completed.</p></td>';
+$form_complete = '
+    <td class="rollover_crs_from success">
+        <div class="arrow"></div>
+        <h3>Completed</h3>
+        <p>Your rollover request has been completed but the module appears to be empty.</p>
+        <p><a href="?id=%d&action=undo">Click here to undo the rollover.</a><br />WARNING: this will delete the existing contents of the module!</p>
+    </td>
+';
 
 $search = trim(optional_param('srch', '', PARAM_TEXT));
 
