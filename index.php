@@ -157,7 +157,9 @@ $form_complete = '
         <div class="arrow"></div>
         <h3>Completed</h3>
         <p>Your rollover request has been completed but the module appears to be empty.</p>
-        <p>%s<br />WARNING: this will delete the existing contents of the module!</p>
+        <br />
+        %s
+        <p>WARNING: this may result in the deletion of content from the module!</p>
     </td>
 ';
 
