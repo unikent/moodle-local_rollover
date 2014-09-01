@@ -184,27 +184,26 @@ var populateCourseAutoComplete = function(course_data) {
     });
 
 	jQuery('.rollover_crs_input').each(function() {
+        var self = $(this);
+        var id_to = $(this).closest('.rollover_crs_from').find('.id_to').val();
+        var src_to = $(this).closest('.rollover_crs_from').find('.src_to').val();
+
 		var srch = $(this).val();
  		if (srch) {
 			var results = _.filter(course_data.courses_search, function(t) {
 				return t.indexOf(srch) != -1;
 			}).reverse();
 
-			var shrt_cd = $(this).closest('.rollover_layout').find('.rollover_sc_num').text() + ' ';
+            $.each(results, function (i, result) {
+                var id_from = course_data.courses[result][0];
+                var src_from = course_data.courses[result][1];
 
-			if (results.length > 0) {
-
-				if (results[0].split('-')[0] === shrt_cd) {
-					results.shift();
-				}
-
-				var id_from = course_data.courses[results[0]][0];
-				var src_from = course_data.courses[results[0]][1];
-
-				$(this).val(results[0]);
-				$(this).closest('.rollover_crs_from').find('.id_from').val(id_from);
-				$(this).closest('.rollover_crs_from').find('.src_from').val(src_from);
-			}
+                if (id_to != id_from && src_to != src_from) {
+                    self.val(result);
+                    self.closest('.rollover_crs_from').find('.id_from').val(id_from);
+                    self.closest('.rollover_crs_from').find('.src_from').val(src_from);
+                }
+            });
 		}
 	})
 };
