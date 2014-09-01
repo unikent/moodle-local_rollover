@@ -13,7 +13,6 @@
 //Now some library includes
 require_once('../../config.php');
 require_once('../../lib/moodlelib.php');
-require_once('lib.php');
 
 require_login();
 
