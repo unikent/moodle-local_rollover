@@ -56,6 +56,12 @@ if (!empty($id)) {
             $notification = 'Successfully rescheduled as ' . $id;
         }
 
+        if ($action === 'undo') {
+            // Schedule a new rollover.
+            $rollover->status = \local_rollover\Rollover::STATUS_DELETED;
+            $notification = 'Deleted rollover ' . $id;
+        }
+
         if ($action === 'fail') {
             // Schedule a new rollover.
             $rollover->status = \local_rollover\Rollover::STATUS_ERROR;
@@ -114,6 +120,13 @@ foreach ($rollovers as $rollover) {
 
         case \local_rollover\Rollover::STATUS_COMPLETE:
             $status = 'Complete';
+
+            $url = new moodle_url('/local/rollover/manage/index.php', array(
+                'action' => 'undo',
+                'id' => $rollover->id
+            ));
+
+            $action->text = $OUTPUT->single_button($url, 'Undo');
         break;
 
         case \local_rollover\Rollover::STATUS_ERROR:
@@ -136,6 +149,10 @@ foreach ($rollovers as $rollover) {
             ));
 
             $action->text = $OUTPUT->single_button($url, 'Stop');
+        break;
+
+        case \local_rollover\Rollover::STATUS_DELETED:
+            $status = 'Deleted';
         break;
     }
 
