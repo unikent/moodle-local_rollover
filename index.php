@@ -151,7 +151,7 @@ $form_complete = '
         <div class="arrow"></div>
         <h3>Completed</h3>
         <p>Your rollover request has been completed but the module appears to be empty.</p>
-        <p><a href="?id=%d&action=undo">Click here to undo the rollover.</a><br />WARNING: this will delete the existing contents of the module!</p>
+        <p>%s<br />WARNING: this will delete the existing contents of the module!</p>
     </td>
 ';
 
@@ -225,7 +225,11 @@ if (!empty($courses)) {
             break;
 
             case 2:
-                $from_content = sprintf($form_complete, $course->rollover_id);
+                $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
+                    'id' => $course->rollover_id,
+                    'action' => 'undo'
+                )), 'Click here to undo the rollover.');
+                $from_content = sprintf($form_complete, $a);
             break;
 
             case 3:
