@@ -61,6 +61,20 @@ $PAGE->requires->css("/local/rollover/scripts/css/styles.css");
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
 
+$action = optional_param("action", '', PARAM_ALPHA);
+
+if ($action == 'undo') {
+    $id = required_param("id", PARAM_INT);
+
+    // Try to undo the rollover.
+    try {
+        \local_rollover\Rollover::undo($id);
+        echo $OUTPUT->notification("Rollover '$id' has been deleted.");
+    } catch (\moodle_exception $e) {
+        echo $OUTPUT->notification($e->getMessage());
+    }
+}
+
 $moduleoptions = "";
 $modules = \local_rollover\Utils::get_rollover_course_modules();
 foreach ($modules as $module) {
@@ -211,7 +225,7 @@ if (!empty($courses)) {
             break;
 
             case 2:
-                $from_content = $form_complete;
+                $from_content = sprintf($form_complete, $course->rollover_id);
             break;
 
             case 3:
