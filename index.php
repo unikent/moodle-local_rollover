@@ -58,21 +58,28 @@ $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 
 $PAGE->requires->css("/local/rollover/scripts/css/styles.css");
 
-echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
-
 $action = optional_param("action", '', PARAM_ALPHA);
 
+$notification = '';
 if ($action == 'undo') {
+    require_sesskey();
     $id = required_param("id", PARAM_INT);
 
     // Try to undo the rollover.
     try {
         \local_rollover\Rollover::undo($id);
-        echo $OUTPUT->notification("Rollover '$id' has been deleted.");
+        $notification = $OUTPUT->notification("Rollover '$id' has been deleted.");
     } catch (\moodle_exception $e) {
-        echo $OUTPUT->notification($e->getMessage());
+        $notification = $OUTPUT->notification($e->getMessage());
     }
+}
+
+echo $OUTPUT->header();
+echo $OUTPUT->heading(get_string('pluginname', 'local_rollover'));
+
+if (!empty($notification)) {
+    echo $notification;
+    unset($notification);
 }
 
 $moduleoptions = "";
