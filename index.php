@@ -233,11 +233,15 @@ if (!empty($courses)) {
             break;
 
             case 2:
-                $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
-                    'id' => $course->rollover_id,
-                    'action' => 'undo'
-                )), 'Click here to undo the rollover.');
-                $from_content = sprintf($form_complete, $a);
+                if ((int)$course->module_count <= 2) {
+                    $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
+                        'id' => $course->rollover_id,
+                        'action' => 'undo'
+                    )), 'Click here to undo the rollover.');
+                    $from_content = sprintf($form_complete, $a);
+                } else {
+                    continue;
+                }
             break;
 
             case 3:
