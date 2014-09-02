@@ -154,7 +154,7 @@ var populateCourseAutoComplete = function(course_data) {
                 // Dont allow rollover into self.
                 var newresults = []
                 for (var result in results) {
-                    search = course_data.courses_search[result]
+                    search = results[result]
                     data = course_data.courses[search]
                     if (data[0] != toid || data[1] != todist) {
                         newresults.push(search)
