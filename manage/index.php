@@ -32,6 +32,7 @@ require_capability('moodle/site:config', context_system::instance());
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url('/local/rollover/manage/index.php');
 $PAGE->set_pagelayout('admin');
+$PAGE->set_title("Rollover Management");
 $PAGE->navbar->add('Rollover Administration');
 
 // Optional vars.
