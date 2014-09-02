@@ -78,11 +78,7 @@ SQL;
                 ON r.to_env = :env
                 AND r.to_dist = :dist
                 AND r.to_course = c.id
-                AND r.id IN (
-                    SELECT MAX(rr.id)
-                    FROM `$sharedb`.`rollovers` rr
-                    GROUP BY rr.to_course, rr.to_env, rr.to_dist
-                )
+                AND r.rollover_status != '10'
             LEFT OUTER JOIN {course_modules} cm
                 ON cm.course = c.id
             WHERE c.id > 1 AND c.category <> :rmcatid
