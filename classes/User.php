@@ -83,7 +83,7 @@ SQL;
                 ON cm.course = c.id
             WHERE c.id > 1 AND c.category <> :rmcatid
             GROUP BY c.id
-            HAVING module_count <= 2 OR rollover_status != '-1'
+            HAVING module_count <= 2 OR (rollover_status <> '-1' AND rollover_status <> 2)
 SQL;
 
         return $DB->get_records_sql($sql, $params);
