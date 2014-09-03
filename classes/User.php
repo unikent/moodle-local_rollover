@@ -54,7 +54,7 @@ class User
                         AND rc.permission = 1
                     GROUP BY rc.roleid
                 )
-                GROUP BY ira.userid
+                GROUP BY ira.contextid
             ) ra
             ON ra.contextid = ctx.id OR ctx.path LIKE CONCAT('%/', ra.contextid, '/%')
 SQL;
@@ -67,7 +67,7 @@ SQL;
             SELECT
                 c.id, c.shortname, c.fullname, c.category, c.summary, c.visible,
                 ctx.id AS ctxid, ctx.path AS ctxpath, ctx.depth AS ctxdepth, ctx.contextlevel AS ctxlevel,
-                COUNT(cm.id) as module_count,
+                cms.module_count,
                 COALESCE(r.id, '0') AS rollover_id,
                 COALESCE(r.status, '-1') AS rollover_status
             FROM {course} c
@@ -78,11 +78,16 @@ SQL;
                 AND r.to_dist = :dist
                 AND r.to_course = c.id
                 AND r.status <> 10
-            LEFT OUTER JOIN {course_modules} cm
-                ON cm.course = c.id
-            WHERE c.id > 1 AND c.category <> :rmcatid
+            INNER JOIN (
+                SELECT ic.id, COUNT(cm.id) as module_count
+                FROM mdl_course ic
+                LEFT OUTER JOIN mdl_course_modules cm
+                    ON cm.course = ic.id
+                GROUP BY ic.id
+            ) cms
+                ON cms.id = c.id
+            WHERE c.id > 1 AND c.category <> :rmcatid AND cms.module_count <=2 AND (r.status IS NULL OR r.status <> 2)
             GROUP BY c.id
-            HAVING module_count <= 2 OR (rollover_status <> '-1' AND rollover_status <> 2)
 SQL;
 
         return $DB->get_records_sql($sql, $params);
