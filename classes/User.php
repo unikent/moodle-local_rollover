@@ -54,10 +54,9 @@ class User
                         AND rc.permission = 1
                     GROUP BY rc.roleid
                 )
-                GROUP BY ira.contextid
+                GROUP BY ira.userid
             ) ra
-            ON ra.contextid = ctx.id
-                OR ctx.path LIKE CONCAT('%/', ra.contextid, '/%')
+            ON ctx.path LIKE CONCAT('%/', ra.contextid, '/%')
 SQL;
             $params['userid'] = $USER->id;
             $params['capability'] = 'moodle/course:update';
