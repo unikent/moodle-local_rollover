@@ -192,7 +192,7 @@ var populateCourseAutoComplete = function(course_data) {
  		if (srch) {
 			var results = _.filter(course_data.courses_search, function(t) {
 				return t.indexOf(srch) != -1;
-			}).reverse();
+			});
 
             $.each(results, function (i, result) {
                 var id_from = course_data.courses[result][0];
