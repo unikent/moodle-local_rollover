@@ -53,6 +53,6 @@ $string['rollover_button_text'] = 'Rollover';
 $string['no_course_description_text'] = 'No description at this time.';
 
 //Help text
-$string['top_page_help'] = '<p>Note: the rollover tool is currently still under development and may contain a few minor glitches. If you have any problems in using this service please contact <a href="mailto:helpdesk@kent.ac.uk">helpdesk</a></p><p>To rollover content from a previous module to a module listed below, please select a module to rollover from and click the rollover button.</p>';
+$string['top_page_help'] = '<p>To rollover content from a previous module to a module listed below, please select a module to rollover from and click the rollover button.</p>';
 $string['advanced_opt_help'] = 'Advanced rollover options';
 $string['advanced_opt_help_help'] = 'By default, all module components are rolled over.  Uncheck any components you do not wish to have as part of your rollover.';
