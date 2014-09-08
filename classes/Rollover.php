@@ -371,16 +371,27 @@ class Rollover
     }
 
     /**
-     * Run the import.
+     * Remove the contents of a course.
      */
-    private function import() {
-        echo "\nClearing course...\n";
+    public static function remove_course_contents($courseid) {
+        $context = \context_course::instance($courseid);
+        if (!has_capability('moodle/course:update', $context)) {
+            print_error('You do not have access to that course.');
+        }
 
-        // Clear out the existing course.
-        remove_course_contents($this->settings['tocourse'], false, array(
+        return remove_course_contents($courseid, false, array(
             'keep_roles_and_enrolments' => true,
             'keep_groups_and_groupings' => true
         ));
+    }
+
+    /**
+     * Run the import.
+     */
+    private function import() {
+        // Clear out the existing course.
+        echo "\nClearing course...\n";
+        self::remove_course_contents($this->settings['tocourse']);
 
         echo "\nRunning import...\n";
 
