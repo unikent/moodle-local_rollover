@@ -29,11 +29,17 @@ global $CFG, $PAGE;
 require(dirname(__FILE__) . "/../../../config.php");
 require_once($CFG->libdir . "/moodlelib.php");
 
-$PAGE->set_context(context_system::instance());
-$PAGE->set_url('/local/rollover/ajax/auth.php');
+$course = required_param("course", PARAM_INT);
+
+$PAGE->set_context(context_course::instance($course));
+$PAGE->set_url('/local/rollover/ajax/clear.php');
+
+require_login();
+require_sesskey();
+
+$result = \local_rollover\Rollover::remove_course_contents($course);
 
 echo $OUTPUT->header();
 echo json_encode(array(
-    "result" => isloggedin(),
-    "url" => get_login_url()
+    "result" => $result
 ));
