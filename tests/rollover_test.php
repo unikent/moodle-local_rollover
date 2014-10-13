@@ -519,8 +519,14 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->setAdminUser();
 
         // Create a course.
-        $course1 = $this->getDataGenerator()->create_course();
-        $course2 = $this->getDataGenerator()->create_course();
+        $course1 = \local_connect\course::get($this->generate_course());
+        $course1->create_in_moodle();
+        $course1 = $DB->get_record('course', array('id' => $course1->mid));
+
+        // Create a skeleton.
+        $course2 = \local_connect\course::get($this->generate_course());
+        $course2->create_in_moodle();
+        $course2 = $DB->get_record('course', array('id' => $course2->mid));
 
         $module1 = $this->getDataGenerator()->create_module('forum', array('course' => $course1));
         $module2 = $this->getDataGenerator()->create_module('aspirelists', array('course' => $course1));
