@@ -515,6 +515,8 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test rollover output is empty
      */
     public function test_output_is_empty() {
+        global $DB;
+
         $this->resetAfterTest();
         $this->setAdminUser();
 
