@@ -230,7 +230,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->setAdminUser();
 
         // Create a course.
-        $course1 = $this->getDataGenerator()->create_course();
+        $course1 = \local_connect\course::get($this->generate_course());
+        $course1->create_in_moodle();
+        $course1 = $DB->get_record('course', array('id' => $course1->mid));
         $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
         $module2 = $this->getDataGenerator()->create_module('resource', array('course' => $course1));
         $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
@@ -241,13 +243,19 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $module4 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
 
         // Create another course.
-        $course2 = $this->getDataGenerator()->create_course();
+        $course2 = \local_connect\course::get($this->generate_course());
+        $course2->create_in_moodle();
+        $course2 = $DB->get_record('course', array('id' => $course2->mid));
         $module5 = $this->getDataGenerator()->create_module('cla', array('course' => $course2));
         $module6 = $this->getDataGenerator()->create_module('cla', array('course' => $course2));
 
         // Create rollover skeletons.
-        $course3 = $this->getDataGenerator()->create_course();
-        $course4 = $this->getDataGenerator()->create_course();
+        $course3 = \local_connect\course::get($this->generate_course());
+        $course3->create_in_moodle();
+        $course3 = $DB->get_record('course', array('id' => $course3->mid));
+        $course4 = \local_connect\course::get($this->generate_course());
+        $course4->create_in_moodle();
+        $course4 = $DB->get_record('course', array('id' => $course4->mid));
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
@@ -255,7 +263,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->rollover(2);
 
         // The test!
-        $this->assertEquals(8, $DB->count_records('course_modules', array(
+        $this->assertEquals(10, $DB->count_records('course_modules', array(
             'course' => $course3->id
         )));
 
@@ -263,7 +271,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
             'course' => $course3->id
         )));
 
-        $this->assertEquals(2, $DB->count_records('course_modules', array(
+        $this->assertEquals(4, $DB->count_records('course_modules', array(
             'course' => $course4->id
         )));
 
@@ -282,9 +290,14 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->setAdminUser();
 
         // Create a course.
-        $course1 = $this->getDataGenerator()->create_course();
+        $course1 = \local_connect\course::get($this->generate_course());
+        $course1->create_in_moodle();
+        $course1 = $DB->get_record('course', array('id' => $course1->mid));
         $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
-        $course2 = $this->getDataGenerator()->create_course();
+
+        $course2 = \local_connect\course::get($this->generate_course());
+        $course2->create_in_moodle();
+        $course2 = $DB->get_record('course', array('id' => $course2->mid));
 
         // Sanity checks.
         $this->assertEquals(1, $DB->count_records('cla', array(
@@ -306,7 +319,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->rollover(1);
 
         // The test!
-        $this->assertEquals(1, $DB->count_records('course_modules', array(
+        $this->assertEquals(3, $DB->count_records('course_modules', array(
             'course' => $course2->id
         )));
 
@@ -336,7 +349,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->setAdminUser();
 
         // Create a course.
-        $course1 = $this->getDataGenerator()->create_course();
+        $course1 = \local_connect\course::get($this->generate_course());
+        $course1->create_in_moodle();
+        $course1 = $DB->get_record('course', array('id' => $course1->mid));
         $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
 
         // Create directory.
@@ -351,7 +366,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $DB->update_record('cla', $module1);
 
         // Create rollover skeleton.
-        $course2 = $this->getDataGenerator()->create_course();
+        $course2 = \local_connect\course::get($this->generate_course());
+        $course2->create_in_moodle();
+        $course2 = $DB->get_record('course', array('id' => $course2->mid));
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
@@ -385,7 +402,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->setAdminUser();
 
         // Create a course.
-        $course1 = $this->getDataGenerator()->create_course();
+        $course1 = \local_connect\course::get($this->generate_course());
+        $course1->create_in_moodle();
+        $course1 = $DB->get_record('course', array('id' => $course1->mid));
         $module1 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
 
         // Create directory.
@@ -401,7 +420,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $DB->update_record('cla', $module1);
 
         // Create rollover skeleton.
-        $course2 = $this->getDataGenerator()->create_course();
+        $course2 = \local_connect\course::get($this->generate_course());
+        $course2->create_in_moodle();
+        $course2 = $DB->get_record('course', array('id' => $course2->mid));
 
         // Do the rollover.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
