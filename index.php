@@ -27,7 +27,7 @@ if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::ava
     print_error('connect_disabled', 'local_connect');
 }
 
-if (!\local_rollover\User::has_course_update_role()) {
+if (!\local_kent\User::has_course_update_role($USER->id)) {
     throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
 
