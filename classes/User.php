@@ -92,30 +92,4 @@ SQL;
 
         return $DB->get_records_sql($sql, $params);
     }
-
-    /**
-     * Returns true if a user has any access to edit any course.
-     */
-    public static function has_course_update_role() {
-        global $DB, $USER;
-
-        if (has_capability('moodle/site:config', \context_system::instance())) {
-            return true;
-        }
-
-        $sql = <<<SQL
-            SELECT COUNT(ra.id)
-            FROM {role_assignments} ra
-            WHERE ra.userid = :userid AND ra.roleid IN (
-                SELECT rc.roleid
-                FROM {role_capabilities} rc
-                WHERE rc.capability = :capability AND rc.permission = 1
-                GROUP BY rc.roleid
-            )
-SQL;
-        return $DB->count_records_sql($sql, array(
-            'userid' => $USER->id,
-            'capability' => 'moodle/course:update'
-        )) > 0;
-    }
 }
