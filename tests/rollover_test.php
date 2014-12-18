@@ -33,6 +33,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $count = 0;
         while (($task = \core\task\manager::get_next_adhoc_task($time)) !== null) {
             try {
+                // Run the task.
                 $task->execute();
                 $count++;
             } catch (Exception $e) {
@@ -58,6 +59,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $task = new \local_rollover\task\generator();
         $task->schedule_backups();
 
+        // Run tasks.
         echo $this->run_all_tasks($expected);
 
         return ob_get_clean();
@@ -324,14 +326,6 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         )));
 
         $this->assertEquals(1, $DB->count_records('cla', array(
-            'course' => $course2->id
-        )));
-
-        $this->assertEquals(1, $DB->get_field('cla', 'rolled_over', array(
-            'course' => $course2->id
-        )));
-
-        $this->assertEquals(2, $DB->get_field('cla', 'rolled_over_inactive', array(
             'course' => $course2->id
         )));
 

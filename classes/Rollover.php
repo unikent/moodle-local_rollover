@@ -247,13 +247,6 @@ class Rollover
         $this->remove_module($xpath, 'turnitintool');
         $this->remove_module($xpath, 'turnitintooltwo');
 
-        // Set CLA objects to 'rolledover' state.
-        $this->manipulate_fields($xpath, 'cla', 'rolled_over', 1);
-        $this->manipulate_fields($xpath, 'cla', 'rolled_over_inactive', 2);
-
-        // Add CLA notes.
-        $this->add_cla_notes($xpath);
-
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
@@ -311,49 +304,6 @@ class Rollover
             $nodes = $mxpath->query($query);
             foreach ($nodes as $node) {
                 $node->nodeValue = $value;
-            }
-        });
-    }
-
-    /**
-     * Add notes to CLA items.
-     */
-    private function add_cla_notes($xpath) {
-        $fromdist = $this->settings['fromcourse'];
-        $this->manipulate_module($xpath, 'cla', function($doc, $mxpath, $moduleid) use ($fromdist) {
-            global $CFG;
-
-            // Grab an ID.
-            $maxid = 0;
-            $notes = $mxpath->query('/activity/cla/notes/note');
-            foreach ($notes as $note) {
-                $id = $note->attributes->getNamedItem('id');
-                $maxid = max($maxid, $id->nodeValue);
-            }
-
-            $urlbase = $CFG->kent->paths[$fromdist];
-            $url = $urlbase . '/mod/cla/admin.php?claid=' . $moduleid . '&page=search';
-
-            $notetext = 'This request has been rolled over from a Moodle ' . $fromdist . ' resource: ';
-            $notetext .= \html_writer::tag('a', 'Moodle ' . $fromdist, array(
-                'href' => $url
-            ));
-
-            // Add to the notes list.
-            $maxid++;
-            $notes = $mxpath->query('/activity/cla/notes');
-            foreach ($notes as $notepath) {
-                $userid = $doc->createElement('userid', 2);
-                $text = $doc->createElement('text', $notetext);
-                $timestamp = $doc->createElement('timestamp', time());
-
-                $note = $doc->createElement('note');
-                $note->appendChild($userid);
-                $note->appendChild($text);
-                $note->appendChild($timestamp);
-
-                $child = $notepath->appendChild($note);
-                $child->setAttribute("id", $maxid);
             }
         });
     }
