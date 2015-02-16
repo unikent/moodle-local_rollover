@@ -37,7 +37,7 @@ class import extends \core\task\adhoc_task
         global $SHAREDB;
 
         $params = $this->get_custom_data();
-        $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
+        $event = $SHAREDB->get_record('shared_rollovers', (array)$params, '*', MUST_EXIST);
 
         if ((int)$event->status != \local_rollover\Rollover::STATUS_BACKED_UP) {
             echo "Warning! Event not in backed up state for restore: {$event->status}.\n";
@@ -46,7 +46,7 @@ class import extends \core\task\adhoc_task
 
         $event->updated = date('Y-m-d H:i:s');
         $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-        $SHAREDB->update_record('rollovers', $event);
+        $SHAREDB->update_record('shared_rollovers', $event);
 
         try {
             $controller = new \local_rollover\Rollover(array(
@@ -74,13 +74,13 @@ class import extends \core\task\adhoc_task
             $error->trigger();
 
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('rollovers', $event);
+            $SHAREDB->update_record('shared_rollovers', $event);
 
             throw $e;
         }
 
         $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-        $SHAREDB->update_record('rollovers', $event);
+        $SHAREDB->update_record('shared_rollovers', $event);
     }
 
     /**

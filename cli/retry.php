@@ -45,7 +45,7 @@ raise_memory_limit(MEMORY_UNLIMITED);
 
 // Is this a backup?
 
-$event = $SHAREDB->get_record('rollovers', array(
+$event = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'from_env' => $CFG->kent->environment,
     'from_dist' => $CFG->kent->distribution
@@ -53,7 +53,7 @@ $event = $SHAREDB->get_record('rollovers', array(
 
 if ($event) {
     $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
-    $SHAREDB->update_record('rollovers', $event);
+    $SHAREDB->update_record('shared_rollovers', $event);
 
     $task = new \local_rollover\task\backup();
     $task->set_custom_data(array(
@@ -66,7 +66,7 @@ if ($event) {
 
 // Is this an import?
 
-$event = $SHAREDB->get_record('rollovers', array(
+$event = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'to_env' => $CFG->kent->environment,
     'to_dist' => $CFG->kent->distribution
