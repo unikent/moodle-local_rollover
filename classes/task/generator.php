@@ -48,7 +48,7 @@ class generator extends \core\task\scheduled_task
     public function schedule_backups() {
         global $CFG, $SHAREDB;
 
-        $events = $SHAREDB->get_records('rollovers', array(
+        $events = $SHAREDB->get_records('shared_rollovers', array(
             'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE,
             'from_env' => $CFG->kent->environment,
             'from_dist' => $CFG->kent->distribution
@@ -64,7 +64,7 @@ class generator extends \core\task\scheduled_task
             ));
 
             $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
-            $SHAREDB->update_record('rollovers', $event);
+            $SHAREDB->update_record('shared_rollovers', $event);
 
             \core\task\manager::queue_adhoc_task($task, $time);
             $time += 300;
@@ -77,7 +77,7 @@ class generator extends \core\task\scheduled_task
     public function schedule_restores() {
         global $CFG, $SHAREDB;
 
-        $events = $SHAREDB->get_records('rollovers', array(
+        $events = $SHAREDB->get_records('shared_rollovers', array(
             'status' => \local_rollover\Rollover::STATUS_BACKED_UP,
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution

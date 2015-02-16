@@ -29,19 +29,19 @@ class status_check extends \local_nagios\base_check
     public function execute() {
         global $SHAREDB;
 
-        $errored = $SHAREDB->count_records('rollovers', array(
+        $errored = $SHAREDB->count_records('shared_rollovers', array(
             'status' => 3
         ));
 
-        $queued = $SHAREDB->count_records('rollovers', array(
+        $queued = $SHAREDB->count_records('shared_rollovers', array(
             'status' => 0
         ));
 
-        $queued += $SHAREDB->count_records('rollovers', array(
+        $queued += $SHAREDB->count_records('shared_rollovers', array(
             'status' => 1
         ));
 
-        $inprogress = $SHAREDB->count_records('rollovers', array(
+        $inprogress = $SHAREDB->count_records('shared_rollovers', array(
             'status' => 4
         ));
 

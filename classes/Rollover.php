@@ -89,7 +89,7 @@ class Rollover
         $obj->to_course = $toid;
 
         // Check if the to_course exists in here already.
-        $prod = $SHAREDB->get_record('rollovers', (array)$obj);
+        $prod = $SHAREDB->get_record('shared_rollovers', (array)$obj);
         if ($prod && $prod->status != self::STATUS_DELETED) {
             throw new \moodle_exception('A rollover is already scheduled for that course.');
         }
@@ -108,7 +108,7 @@ class Rollover
         $obj->options = json_encode($options);
         $obj->requester = $USER->username;
 
-        return $SHAREDB->insert_record('rollovers', $obj);
+        return $SHAREDB->insert_record('shared_rollovers', $obj);
     }
 
     /**
@@ -122,7 +122,7 @@ class Rollover
         $obj->to_env = $CFG->kent->environment;
         $obj->to_dist = $CFG->kent->distribution;
 
-        $obj = $SHAREDB->get_record('rollovers', (array)$obj);
+        $obj = $SHAREDB->get_record('shared_rollovers', (array)$obj);
 
         if (!$obj) {
             throw new \moodle_exception('Rollover not found.');
@@ -134,7 +134,7 @@ class Rollover
         }
 
         $obj->status = self::STATUS_DELETED;
-        $SHAREDB->update_record('rollovers', $obj);
+        $SHAREDB->update_record('shared_rollovers', $obj);
     }
 
     /**

@@ -44,7 +44,7 @@ $action = optional_param('action', null, PARAM_ALPHA);
 $notification = '';
 
 if (!empty($id)) {
-    $rollover = $SHAREDB->get_record('rollovers', array(
+    $rollover = $SHAREDB->get_record('shared_rollovers', array(
         'id' => $id
     ));
 
@@ -69,7 +69,7 @@ if (!empty($id)) {
             $notification = 'Forced failure of ' . $rollover->id;
         }
 
-        $SHAREDB->update_record('rollovers', $rollover);
+        $SHAREDB->update_record('shared_rollovers', $rollover);
     }
 }
 
@@ -97,7 +97,7 @@ $table->head  = array(
 $table->attributes['class'] = 'admintable generaltable';
 $table->data = array();
 
-$rollovers = $SHAREDB->get_records('rollovers', array(
+$rollovers = $SHAREDB->get_records('shared_rollovers', array(
     'to_env' => $CFG->kent->environment,
     'to_dist' => $CFG->kent->distribution
 ));

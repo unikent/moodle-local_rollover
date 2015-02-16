@@ -39,7 +39,7 @@ class Course
     public function get_status() {
         global $CFG, $SHAREDB;
 
-        $rollovers = $SHAREDB->get_records('rollovers', array(
+        $rollovers = $SHAREDB->get_records('shared_rollovers', array(
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution,
             'to_course' => $this->courseid
