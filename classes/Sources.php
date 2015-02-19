@@ -36,7 +36,7 @@ class Sources {
      * 
      * @return array
      */
-    public static function get_course_list($dist = '') {
+    public static function get_course_list($dist = '', $search = '') {
         global $CFG, $USER, $SHAREDB;
 
         $params = array(
@@ -58,8 +58,14 @@ class Sources {
         }
 
         $sql .= ' WHERE sc.moodle_id > 1 AND sc.moodle_env = :current_env';
+
         if ($dist !== '*') {
             $sql .= empty($dist) ? ' AND sc.moodle_dist <> :current_dist' : ' AND sc.moodle_dist = :current_dist';
+        }
+
+        if (!empty($search)) {
+            $sql .= ' AND sc.shortname LIKE :shortname';
+            $params['shortname'] = $search;
         }
 
         return $SHAREDB->get_records_sql($sql, $params);
