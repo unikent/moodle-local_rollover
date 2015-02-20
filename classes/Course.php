@@ -36,6 +36,20 @@ class Course
     /**
      * What is the current rollover status of this module.
      */
+    public function has_active_rollover() {
+        $status = $this->get_status();
+
+        return (
+            $status === Rollover::STATUS_NONE ||
+            $status === Rollover::STATUS_COMPLETE ||
+            $status === Rollover::STATUS_ERROR ||
+            $status === Rollover::STATUS_DELETED
+        );
+    }
+
+    /**
+     * What is the current rollover status of this module.
+     */
     public function get_status() {
         global $CFG, $SHAREDB;
 
