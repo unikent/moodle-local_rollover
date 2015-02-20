@@ -124,4 +124,23 @@ class Course
         $status = $this->get_status();
         return $status == Rollover::STATUS_NONE || $status == STATUS_DELETED;
     }
+
+    /**
+     * Undo any previous rollover for a course.
+     */
+    public function undo_rollovers() {
+        global $CFG, $SHAREDB;
+
+        $select = 'to_course = :course AND to_dist = :dist AND (status = :complete OR status = :error)';
+        $rollovers = $SHAREDB->get_records_select('shared_rollovers', $select, array(
+            'dist' => $CFG->kent->distribution,
+            'course' => $this->courseid,
+            'complete' => \local_rollover\Rollover::STATUS_COMPLETE,
+            'error' => \local_rollover\Rollover::STATUS_ERROR
+        ), '', 'id');
+
+        foreach ($rollovers as $rollover) {
+            \local_rollover\Rollover::undo($rollover->id);
+        }
+    }
 }
