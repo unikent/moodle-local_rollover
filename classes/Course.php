@@ -117,6 +117,11 @@ class Course
             return false;
         }
 
-        return $this->get_status() == Rollover::STATUS_NONE && $this->is_empty();
+        if (!$this->is_empty()) {
+            return false;
+        }
+
+        $status = $this->get_status();
+        return $status == Rollover::STATUS_NONE || $status == STATUS_DELETED;
     }
 }
