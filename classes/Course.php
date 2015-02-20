@@ -40,10 +40,10 @@ class Course
         $status = $this->get_status();
 
         return (
-            $status === Rollover::STATUS_NONE ||
-            $status === Rollover::STATUS_COMPLETE ||
-            $status === Rollover::STATUS_ERROR ||
-            $status === Rollover::STATUS_DELETED
+            $status === Rollover::STATUS_SCHEDULED ||
+            $status === Rollover::STATUS_BACKED_UP ||
+            $status === Rollover::STATUS_IN_PROGRESS ||
+            $status === Rollover::STATUS_WAITING_SCHEDULE
         );
     }
 
