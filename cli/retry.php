@@ -60,8 +60,6 @@ if ($event) {
         "id" => $event->id
     ));
     $task->execute();
-
-    die;
 }
 
 // Is this an import?
