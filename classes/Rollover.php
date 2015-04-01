@@ -147,6 +147,13 @@ class Rollover
 
         $obj->status = self::STATUS_DELETED;
         $SHAREDB->update_record('shared_rollovers', $obj);
+
+        // Delete any notifications.
+        $kc = new \local_kent\Course($event->courseid);
+        $notification = $kc->get_notification($event->context->id, 'rollover_error');
+        if ($notification) {
+            $notification->delete();
+        }
     }
 
     /**
