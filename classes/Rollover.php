@@ -108,7 +108,19 @@ class Rollover
         $obj->options = json_encode($options);
         $obj->requester = $USER->username;
 
-        return $SHAREDB->insert_record('shared_rollovers', $obj);
+        $result = $SHAREDB->insert_record('shared_rollovers', $obj);
+
+        if ($result) {
+            // Fire event.
+            $error = \local_rollover\event\rollover_started::create(array(
+                'objectid' => $result,
+                'courseid' => $toid,
+                'context' => $context
+            ));
+            $error->trigger();
+        }
+
+        return $result;
     }
 
     /**
@@ -135,6 +147,13 @@ class Rollover
 
         $obj->status = self::STATUS_DELETED;
         $SHAREDB->update_record('shared_rollovers', $obj);
+
+        // Delete any notifications.
+        $kc = new \local_kent\Course($event->courseid);
+        $notification = $kc->get_notification($event->context->id, 'rollover_error');
+        if ($notification) {
+            $notification->delete();
+        }
     }
 
     /**
@@ -201,6 +220,14 @@ class Rollover
         $SHAREDB = new \local_kent\util\sharedb();
 
         $this->post_import();
+
+        // Fire event.
+        $error = \local_rollover\event\rollover_finished::create(array(
+            'objectid' => $this->id,
+            'courseid' => $this->settings['tocourse'],
+            'context' =>  \context_course::instance($this->settings['tocourse'])
+        ));
+        $error->trigger();
     }
 
     /**
