@@ -57,6 +57,8 @@ $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 
 $PAGE->requires->css("/local/rollover/scripts/css/styles.css");
 
+$renderer = $PAGE->get_renderer('local_rollover');
+
 $action = optional_param("action", '', PARAM_ALPHA);
 
 $notification = '';
@@ -84,12 +86,7 @@ if (!empty($notification)) {
 $moduleoptions = "";
 $modules = \local_rollover\Utils::get_rollover_course_modules();
 foreach ($modules as $module) {
-    $shortname = strtolower($module->name);
-    $longname = ucfirst(get_string('modulename', $shortname));
-
-    $moduleoptions .= '<li class="rollover_option_item">';
-    $moduleoptions .= "<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}";
-    $moduleoptions .= '</li>';
+    $moduleoptions .= $renderer->module_option($module->name, get_string('modulename', $module->name));
 }
 
 $short_code_label_text = get_string('short_code_label_text', 'local_rollover');
@@ -160,18 +157,7 @@ HTML5;
 
 $search = trim(optional_param('srch', '', PARAM_TEXT));
 
-echo <<<HTML5
-    <div id="rollover_search" class="bootstrap">
-        <form action="{$CFG->wwwroot}/local/rollover/index.php" method="GET">
-            <div class="input-group">
-                <input type="text" name="srch" value="{$search}" placeholder="Search..." class="form-control" />
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
-                </span>
-            </div>
-        </form>
-    </div>
-HTML5;
+echo $renderer->search_box($search);
 
 $courses = \local_rollover\User::get_target_list();
 if (!empty($search)) {
@@ -183,12 +169,7 @@ if (!empty($courses)) {
     echo get_string('top_page_help', 'local_rollover');
 
     // Add in our confirmation dialog box and other error blocks ready
-    echo '<div id="dialog_sure">'.get_string('are_you_sure_text', 'local_rollover').'</div>';
-    echo '<div id="dialog_id_from_error">'.get_string('rollover_from_error_text', 'local_rollover').'</div>';
-    echo '<div id="dialog_id_to_error">'.get_string('rollover_to_error_text', 'local_rollover').'</div>';
-    echo '<div id="dialog_autocomplete_error">'.get_string('rollover_autocomplete_error', 'local_rollover').'</div>';
-
-    $no_course_description_text = get_string('no_course_description_text', 'local_rollover');
+    echo $renderer->dialogs();
 
     // pagination stuff
     $baseurl = new moodle_url($PAGE->URL, array(
@@ -208,7 +189,7 @@ if (!empty($courses)) {
     }
 
     foreach ($show_courses as $course) {
-        $desc = $no_course_description_text;
+        $desc = get_string('no_course_description_text', 'local_rollover');
         if (!empty($course->summary)) {
             $desc = $course->summary;
         }
