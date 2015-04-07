@@ -227,16 +227,17 @@ if (!empty($courses)) {
         }
 
         switch ($course->rollover_status) {
-            case 0:
+            case \local_rollover\Rollover::STATUS_SCHEDULED:
                 $from_content = $from_requested;
             break;
 
-            case 1:
-            case 5:
+            case \local_rollover\Rollover::STATUS_BACKED_UP:
+            case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
+            case \local_rollover\Rollover::STATUS_IN_PROGRESS:
                 $from_content = $from_processing;
             break;
 
-            case 2:
+            case \local_rollover\Rollover::STATUS_COMPLETE:
                 if ((int)$course->module_count <= 2) {
                     $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
                         'id' => $course->rollover_id,
@@ -248,7 +249,7 @@ if (!empty($courses)) {
                 }
             break;
 
-            case 3:
+            case \local_rollover\Rollover::STATUS_ERROR:
                 $from_content = $form_error;
             break;
 
