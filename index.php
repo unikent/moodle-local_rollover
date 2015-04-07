@@ -117,9 +117,9 @@ $search_placeholder = get_string('search_placeholder', 'local_rollover');
 $advanced_options_label = get_string('advanced_options_label', 'local_rollover');
 $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
 
-$selection_box = "<input type='text' class='rollover_crs_input' placeholder='$search_placeholder' value='%1\$s'/>";
+$selection_box = "<input type='text' class='rollover_crs_input' placeholder='%1\$s' />";
 
-$from_form = <<<HTML
+$from_form = <<<HTML5
 <td class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
@@ -131,10 +131,9 @@ $from_form = <<<HTML
             <div class='more_advanced'>
                 <div class='text'>Show advanced options</div>
                 %s%s
-                <div style=' clear: both'></div>
+                <div class="clearfix"></div>
                 <div class='arrow_border'></div>
                 <div class='arrow_light'></div>
-                
             </div>
         </div>
         <input type="hidden" name="id_from" class="id_from" value=""/>
@@ -144,7 +143,7 @@ $from_form = <<<HTML
         <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
     </div>
 </td>
-HTML;
+HTML5;
 
 $from_processing = '<td class="rollover_crs_from processing"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</td>';
 
