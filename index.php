@@ -189,9 +189,9 @@ if (!empty($courses)) {
     }
 
     foreach ($show_courses as $course) {
-        $desc = get_string('no_course_description_text', 'local_rollover');
-        if (!empty($course->summary)) {
-            $desc = $course->summary;
+        $desc = $course->summary;
+        if (empty($course->summary)) {
+            $desc = get_string('no_course_description_text', 'local_rollover');
         }
 
         $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
