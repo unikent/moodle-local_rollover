@@ -95,37 +95,33 @@ foreach ($modules as $module) {
 $short_code_label_text = get_string('short_code_label_text', 'local_rollover');
 $description_label_text = get_string('description_label_text', 'local_rollover');
 
-$form = <<<HTML
+$form = <<<HTML5
     <div class='rollover_item'>
         <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action=''>
             <table class='rollover_layout'>
                 <tr>
-                        <td class='rollover_crs_title'>
-                            <div class='arrow'></div>
-                            <h3><a href="">%3\$s</a></h3>
-                            <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span><span class='rollover_sc_num'>%2\$s</span></p>
-                            <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
-                        </td>
-                        %5\$s
+                    <td class='rollover_crs_title'>
+                        <div class='arrow'></div>
+                        <h3><a href="">%3\$s</a></h3>
+                        <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span><span class='rollover_sc_num'>%2\$s</span></p>
+                        <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
+                    </td>
+                    %5\$s
                 </tr>
             </table>
         </form>
     </div>
-HTML;
+HTML5;
 
-$search_placeholder = get_string('search_placeholder', 'local_rollover');
-$advanced_options_label = get_string('advanced_options_label', 'local_rollover');
 $rollover_button_text = get_string('rollover_button_text', 'local_rollover');
-
-$selection_box = "<input type='text' class='rollover_crs_input' placeholder='%1\$s' />";
 
 $from_form = <<<HTML5
 <td class='rollover_crs_from'>
     <div class='arrow'></div>
     <div class='from_form'>
-        $selection_box
+        <input type='text' class='rollover_crs_input' placeholder='%1\$s' />
         <ul class='rollover_advanced_options'>
-            $moduleoptions
+            {$moduleoptions}
         </ul>
         <div class='more_advanced_wrap'>
             <div class='more_advanced'>
@@ -140,7 +136,7 @@ $from_form = <<<HTML5
         <input type="hidden" name="src_from" class="src_from" value=""/>
         <input type="hidden" name="id_to" class="id_to" value="%d"/>
         <input type="hidden" name="src_to" class="src_to" value="%s"/>
-        <button type='buttons' class='rollover_crs_submit'>$rollover_button_text</button>
+        <button type='buttons' class='rollover_crs_submit'>{$rollover_button_text}</button>
     </div>
 </td>
 HTML5;
@@ -151,7 +147,7 @@ $from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></di
 
 $form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
 
-$form_complete = '
+$form_complete = <<<HTML5
     <td class="rollover_crs_from success">
         <div class="arrow"></div>
         <h3>Completed</h3>
@@ -160,20 +156,22 @@ $form_complete = '
         %s
         <p>WARNING: this may result in the deletion of content from the module!</p>
     </td>
-';
+HTML5;
 
 $search = trim(optional_param('srch', '', PARAM_TEXT));
 
-echo '<div id="rollover_search" class="bootstrap">
-        <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="GET">
+echo <<<HTML5
+    <div id="rollover_search" class="bootstrap">
+        <form action="{$CFG->wwwroot}/local/rollover/index.php" method="GET">
             <div class="input-group">
-                <input type="text" name="srch" value="' . $search . '" placeholder="Search..." class="form-control" />
+                <input type="text" name="srch" value="{$search}" placeholder="Search..." class="form-control" />
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
                 </span>
             </div>
         </form>
-    </div>';
+    </div>
+HTML5;
 
 $courses = \local_rollover\User::get_target_list();
 if (!empty($search)) {
