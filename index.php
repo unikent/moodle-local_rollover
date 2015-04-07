@@ -165,12 +165,16 @@ $form_complete = '
 
 $search = trim(optional_param('srch', '', PARAM_TEXT));
 
-echo '<div id="rollover_search">
-        <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="get">
-        <input type="text" id="srch" name="srch" value="' . $search . '"placeholder="Search..."/>
-        <input type="submit" id="srch_submit" value="Search" />
+echo '<div id="rollover_search" class="bootstrap">
+        <form action="'. $CFG->wwwroot . '/local/rollover/index.php" method="GET">
+            <div class="input-group">
+                <input type="text" name="srch" value="' . $search . '" placeholder="Search..." class="form-control" />
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
+                </span>
+            </div>
         </form>
-        </div>';
+    </div>';
 
 $courses = \local_rollover\User::get_target_list();
 if (!empty($search)) {
