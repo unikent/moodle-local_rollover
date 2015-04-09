@@ -39,11 +39,11 @@ class local_rollover_renderer extends plugin_renderer_base
 		$shortname = strtolower($shortname);
 		$longname = ucfirst($longname);
 
-	    $output = '<li class="rollover_option_item">';
-	    $output .= "<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}";
-	    $output .= '</li>';
-
-	    return $output;
+	    return <<<HTML5
+	    	<li class="rollover_option_item">
+	    		<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}
+	    	</li>
+HTML5;
 	}
 
 	/**
@@ -92,11 +92,11 @@ HTML5;
 	 */
 	public function processing_form() {
 		return <<<HTML5
-		<td class="rollover_crs_from processing">
-			<div class="arrow"></div>
-			<h3>Scheduled for rollover</h3>
-			<p>Your request will be completed in the next 24 hours.</p>
-		</td>
+			<td class="rollover_crs_from processing">
+				<div class="arrow"></div>
+				<h3>Scheduled for rollover</h3>
+				<p>Your request will be completed in the next 24 hours.</p>
+			</td>
 HTML5;
 	}
 
@@ -105,11 +105,11 @@ HTML5;
 	 */
 	public function requested_form() {
 		return <<<HTML5
-		<td class="rollover_crs_from pending">
-			<div class="arrow"></div>
-			<h3>Successfully scheduled</h3>
-			<p>Your request will be completed in the next 24 hours.</p>
-		</td>
+			<td class="rollover_crs_from pending">
+				<div class="arrow"></div>
+				<h3>Successfully scheduled</h3>
+				<p>Your request will be completed in the next 24 hours.</p>
+			</td>
 HTML5;
 	}
 
@@ -125,14 +125,14 @@ HTML5;
         )), 'Click here to undo the rollover.');
 
 		return <<<HTML5
-	    <td class="rollover_crs_from success">
-	        <div class="arrow"></div>
-	        <h3>Completed</h3>
-	        <p>Your rollover request has been completed but the module appears to be empty.</p>
-	        <br />
-	        $button
-	        <p>WARNING: this may result in the deletion of content from the module!</p>
-	    </td>
+		    <td class="rollover_crs_from success">
+		        <div class="arrow"></div>
+		        <h3>Completed</h3>
+		        <p>Your rollover request has been completed but the module appears to be empty.</p>
+		        <br />
+		        $button
+		        <p>WARNING: this may result in the deletion of content from the module!</p>
+		    </td>
 HTML5;
 	}
 
@@ -145,29 +145,29 @@ HTML5;
 		$help = $OUTPUT->help_icon('advanced_opt_help', 'local_rollover');
 
 		return <<<HTML5
-		<td class='rollover_crs_from'>
-		    <div class='arrow'></div>
-		    <div class='from_form'>
-		        <input type='text' class='rollover_crs_input' placeholder='{$shortname}' />
-		        <ul class='rollover_advanced_options'>
-		            {$moduleoptions}
-		        </ul>
-		        <div class='more_advanced_wrap'>
-		            <div class='more_advanced'>
-		                <div class='text'>Show advanced options</div>
-		                {$shortname}{$help}
-		                <div class="clearfix"></div>
-		                <div class='arrow_border'></div>
-		                <div class='arrow_light'></div>
-		            </div>
-		        </div>
-		        <input type="hidden" name="id_from" class="id_from" value=""/>
-		        <input type="hidden" name="src_from" class="src_from" value=""/>
-		        <input type="hidden" name="id_to" class="id_to" value="{$id}"/>
-		        <input type="hidden" name="src_to" class="src_to" value="{$src}"/>
-		        <button type='buttons' class='rollover_crs_submit'>Rollover</button>
-		    </div>
-		</td>
+			<td class='rollover_crs_from'>
+			    <div class='arrow'></div>
+			    <div class='from_form'>
+			        <input type='text' class='rollover_crs_input' placeholder='{$shortname}' />
+			        <ul class='rollover_advanced_options'>
+			            {$moduleoptions}
+			        </ul>
+			        <div class='more_advanced_wrap'>
+			            <div class='more_advanced'>
+			                <div class='text'>Show advanced options</div>
+			                {$shortname}{$help}
+			                <div class="clearfix"></div>
+			                <div class='arrow_border'></div>
+			                <div class='arrow_light'></div>
+			            </div>
+			        </div>
+			        <input type="hidden" name="id_from" class="id_from" value=""/>
+			        <input type="hidden" name="src_from" class="src_from" value=""/>
+			        <input type="hidden" name="id_to" class="id_to" value="{$id}"/>
+			        <input type="hidden" name="src_to" class="src_to" value="{$src}"/>
+			        <button type='buttons' class='rollover_crs_submit'>Rollover</button>
+			    </div>
+			</td>
 HTML5;
 	}
 }
