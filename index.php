@@ -194,16 +194,6 @@ if (!empty($courses)) {
             $desc = get_string('no_course_description_text', 'local_rollover');
         }
 
-        $coursename = html_writer::link(new moodle_url('/course/view.php', array('id' => $course->id)), $course->fullname);
-
-        //Extract the shortname without year - only grabs the first
-        $pattern = "([a-zA-Z]{2,4}[0-9]{1,4})";
-        preg_match($pattern, $course->shortname, $matches);
-        $shortcode = $course->shortname;
-        if ($matches != false) {
-            $shortcode = $matches[0];
-        }
-
         switch ($course->rollover_status) {
             case \local_rollover\Rollover::STATUS_SCHEDULED:
                 $from_content = $from_requested;
@@ -232,14 +222,18 @@ if (!empty($courses)) {
             break;
 
             default:
-                $from_content = sprintf($from_form, $shortcode, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
+                $from_content = sprintf($from_form, $course->shortname, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
             break;
         }
+
+        $coursename = html_writer::link(new moodle_url('/course/view.php', array(
+            'id' => $course->id
+        )), $course->fullname);
 
         printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
     }
 
-    //Show paging if we have more courses than per page allowed.
+    // Show paging if we have more courses than per page allowed.
     if ($total_courses > $per_page) {
         echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
     }
