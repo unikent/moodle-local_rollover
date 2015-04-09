@@ -20,18 +20,17 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/filelib.php');
 
-$systemcontext = context_system::instance();
 require_login();
 
-if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::available() || $CFG->kent->distribution == 'archive') {
+if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::available()) {
     print_error('connect_disabled', 'local_connect');
 }
 
 if (!\local_kent\User::has_course_update_role($USER->id)) {
-    throw new required_capability_exception($systemcontext, 'moodle/course:update', 'no_permissions', 'local_rollover');
+    throw new required_capability_exception(\context_system::instance(), 'moodle/course:update', 'no_permissions', 'local_rollover');
 }
 
-$PAGE->set_context(context_system::instance());
+$PAGE->set_context(\context_system::instance());
 
 $currentpage = optional_param('page', 0, PARAM_INT);
 $perpage = optional_param('perpage', 20, PARAM_INT);
