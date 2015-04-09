@@ -32,7 +32,24 @@ if (!\local_kent\User::has_course_update_role($USER->id)) {
 }
 
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url('/local/rollover/index.php');
+
+$currentpage = optional_param('page', 0, PARAM_INT);
+$perpage = optional_param('perpage', 20, PARAM_INT);
+$search = trim(optional_param('q',   '', PARAM_TEXT));
+$action = optional_param('action',   '', PARAM_ALPHA);
+
+$params = array(
+    'page' => $currentpage,
+    'perpage' => $perpage
+);
+if (!empty($search)) {
+    $params['search'] = $search;
+}
+if (!empty($action)) {
+    $params['action'] = $action;
+}
+$PAGE->set_url('/local/rollover/index.php', $params);
+
 $PAGE->set_pagelayout('admin');
 $PAGE->navbar->add(get_string('pluginname', 'local_rollover'));
 
@@ -58,8 +75,6 @@ $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 $PAGE->requires->css("/local/rollover/scripts/css/styles.css");
 
 $renderer = $PAGE->get_renderer('local_rollover');
-
-$action = optional_param("action", '', PARAM_ALPHA);
 
 $notification = '';
 if ($action == 'undo') {
@@ -155,8 +170,6 @@ $form_complete = <<<HTML5
     </td>
 HTML5;
 
-$search = trim(optional_param('srch', '', PARAM_TEXT));
-
 echo $renderer->search_box($search);
 
 $courses = \local_rollover\User::get_target_list();
@@ -164,85 +177,81 @@ if (!empty($search)) {
     $courses = \local_rollover\Utils::filter_target_list($courses, $search);
 }
 
-if (!empty($courses)) {
-    // Top page content
-    echo get_string('top_page_help', 'local_rollover');
-
-    // Add in our confirmation dialog box and other error blocks ready
-    echo $renderer->dialogs();
-
-    // pagination stuff
-    $baseurl = new moodle_url($PAGE->URL, array(
-        'srch' => $search
-    ));
-    $current_page = optional_param('page', 0, PARAM_INT);
-    $per_page = 20;
-    $offset = $current_page == 0 ? 0 : $current_page * $per_page;
-    $total_courses = count($courses);
-
-    // get the slice of $courses for this page
-    $show_courses = array_slice($courses, $offset, $per_page);
-
-    //Show paging if we have more courses than per page allowed.
-    if ($total_courses > $per_page) {
-        echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
-    }
-
-    foreach ($show_courses as $course) {
-        $desc = $course->summary;
-        if (empty($course->summary)) {
-            $desc = get_string('no_course_description_text', 'local_rollover');
-        }
-
-        switch ($course->rollover_status) {
-            case \local_rollover\Rollover::STATUS_SCHEDULED:
-                $from_content = $from_requested;
-            break;
-
-            case \local_rollover\Rollover::STATUS_BACKED_UP:
-            case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
-            case \local_rollover\Rollover::STATUS_IN_PROGRESS:
-                $from_content = $from_processing;
-            break;
-
-            case \local_rollover\Rollover::STATUS_COMPLETE:
-                if ((int)$course->module_count <= 2) {
-                    $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
-                        'id' => $course->rollover_id,
-                        'action' => 'undo'
-                    )), 'Click here to undo the rollover.');
-                    $from_content = sprintf($form_complete, $a);
-                } else {
-                    continue;
-                }
-            break;
-
-            case \local_rollover\Rollover::STATUS_ERROR:
-                $from_content = $form_error;
-            break;
-
-            default:
-                $from_content = sprintf($from_form, $course->shortname, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
-            break;
-        }
-
-        $coursename = html_writer::link(new moodle_url('/course/view.php', array(
-            'id' => $course->id
-        )), $course->fullname);
-
-        printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
-    }
-
-    // Show paging if we have more courses than per page allowed.
-    if ($total_courses > $per_page) {
-        echo $OUTPUT->paging_bar($total_courses, $current_page, $per_page, $baseurl);
-    }
-
-    echo "<div class='paging-spacer'></div>";
-} else {
+if (empty($courses)) {
     echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
+    echo $OUTPUT->footer();
+    die;
 }
 
+// Top page content
+echo get_string('top_page_help', 'local_rollover');
+
+// Add in our confirmation dialog box and other error blocks ready
+echo $renderer->dialogs();
+
+// Pagination stuff.
+$offset = $currentpage == 0 ? 0 : $currentpage * $perpage;
+$totalcourses = count($courses);
+
+// get the slice of $courses for this page
+$show_courses = array_slice($courses, $offset, $perpage);
+
+//Show paging if we have more courses than per page allowed.
+if ($totalcourses > $perpage) {
+    echo $OUTPUT->paging_bar($totalcourses, $currentpage, $perpage, $PAGE->url);
+}
+
+foreach ($show_courses as $course) {
+    $desc = $course->summary;
+    if (empty($course->summary)) {
+        $desc = get_string('no_course_description_text', 'local_rollover');
+    }
+
+    switch ($course->rollover_status) {
+        case \local_rollover\Rollover::STATUS_SCHEDULED:
+            $from_content = $from_requested;
+        break;
+
+        case \local_rollover\Rollover::STATUS_BACKED_UP:
+        case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
+        case \local_rollover\Rollover::STATUS_IN_PROGRESS:
+            $from_content = $from_processing;
+        break;
+
+        case \local_rollover\Rollover::STATUS_COMPLETE:
+            if ((int)$course->module_count <= 2) {
+                $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
+                    'id' => $course->rollover_id,
+                    'action' => 'undo'
+                )), 'Click here to undo the rollover.');
+                $from_content = sprintf($form_complete, $a);
+            } else {
+                continue;
+            }
+        break;
+
+        case \local_rollover\Rollover::STATUS_ERROR:
+            $from_content = $form_error;
+        break;
+
+        default:
+            $from_content = sprintf($from_form, $course->shortname, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
+        break;
+    }
+
+    $coursename = html_writer::link(new moodle_url('/course/view.php', array(
+        'id' => $course->id
+    )), $course->fullname);
+
+    printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
+}
+
+// Show paging if we have more courses than per page allowed.
+if ($totalcourses > $perpage) {
+    echo $OUTPUT->paging_bar($totalcourses, $currentpage, $perpage, $PAGE->url);
+}
+
+echo "<div class='paging-spacer'></div>";
 
 $urls = $CFG->kent->paths;
 unset($urls['connect']);
