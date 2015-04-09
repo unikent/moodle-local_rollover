@@ -61,8 +61,7 @@ $PAGE->requires->jquery_plugin('ui');
 $PAGE->requires->jquery_plugin('ui-css');
 $PAGE->requires->jquery_plugin('blockui', 'theme_kent');
 
-$PAGE->requires->string_for_js('requestedmessage', 'local_rollover');
-$PAGE->requires->string_for_js('errormessage', 'local_rollover');
+$PAGE->requires->strings_for_js(array('requestedmessage', 'errormessage'), 'local_rollover');
 
 $PAGE->requires->js("/local/rollover/scripts/js/underscore-min.js");
 $PAGE->requires->js("/local/rollover/scripts/js/hideshow.js");
@@ -197,8 +196,6 @@ foreach ($show_courses as $course) {
 if ($totalcourses > $perpage) {
     echo $OUTPUT->paging_bar($totalcourses, $currentpage, $perpage, $PAGE->url);
 }
-
-echo "<div class='paging-spacer'></div>";
 
 $urls = $CFG->kent->paths;
 unset($urls['connect']);
