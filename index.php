@@ -101,8 +101,8 @@ foreach ($modules as $module) {
     $moduleoptions .= $renderer->module_option($module->name, get_string('modulename', $module->name));
 }
 
-$short_code_label_text = get_string('short_code_label_text', 'local_rollover');
-$description_label_text = get_string('description_label_text', 'local_rollover');
+$shortcodelabeltext = get_string('short_code_label_text', 'local_rollover');
+$descriptionlabeltext = get_string('description_label_text', 'local_rollover');
 
 $form = <<<HTML5
     <div class='rollover_item'>
@@ -112,59 +112,14 @@ $form = <<<HTML5
                     <td class='rollover_crs_title'>
                         <div class='arrow'></div>
                         <h3><a href="">%3\$s</a></h3>
-                        <p class='rollover_shrt_code'><span class='rollover_txt_head'>$short_code_label_text: </span><span class='rollover_sc_num'>%2\$s</span></p>
-                        <p class='rollover_desc'><span class='rollover_txt_head'>$description_label_text: </span>%4\$s</p>
+                        <p class='rollover_shrt_code'><span class='rollover_txt_head'>{$shortcodelabeltext}: </span><span class='rollover_sc_num'>%2\$s</span></p>
+                        <p class='rollover_desc'><span class='rollover_txt_head'>{$descriptionlabeltext}: </span>%4\$s</p>
                     </td>
                     %5\$s
                 </tr>
             </table>
         </form>
     </div>
-HTML5;
-
-$rollover_button_text = get_string('rollover_button_text', 'local_rollover');
-
-$from_form = <<<HTML5
-<td class='rollover_crs_from'>
-    <div class='arrow'></div>
-    <div class='from_form'>
-        <input type='text' class='rollover_crs_input' placeholder='%1\$s' />
-        <ul class='rollover_advanced_options'>
-            {$moduleoptions}
-        </ul>
-        <div class='more_advanced_wrap'>
-            <div class='more_advanced'>
-                <div class='text'>Show advanced options</div>
-                %s%s
-                <div class="clearfix"></div>
-                <div class='arrow_border'></div>
-                <div class='arrow_light'></div>
-            </div>
-        </div>
-        <input type="hidden" name="id_from" class="id_from" value=""/>
-        <input type="hidden" name="src_from" class="src_from" value=""/>
-        <input type="hidden" name="id_to" class="id_to" value="%d"/>
-        <input type="hidden" name="src_to" class="src_to" value="%s"/>
-        <button type='buttons' class='rollover_crs_submit'>{$rollover_button_text}</button>
-    </div>
-</td>
-HTML5;
-
-$from_processing = '<td class="rollover_crs_from processing"><div class="arrow"></div>'. get_string('processingmessage', 'local_rollover').'</td>';
-
-$from_requested = '<td class="rollover_crs_from pending"><div class="arrow"></div>'. get_string('requestedmessage', 'local_rollover').'</td>';
-
-$form_error = '<td class="rollover_crs_from error"><div class="arrow"></div>'. get_string('errormessage', 'local_rollover').'</td>';
-
-$form_complete = <<<HTML5
-    <td class="rollover_crs_from success">
-        <div class="arrow"></div>
-        <h3>Completed</h3>
-        <p>Your rollover request has been completed but the module appears to be empty.</p>
-        <br />
-        %s
-        <p>WARNING: this may result in the deletion of content from the module!</p>
-    </td>
 HTML5;
 
 echo $renderer->search_box($search);
@@ -181,7 +136,9 @@ if (empty($courses)) {
 }
 
 // Top page content
-echo get_string('top_page_help', 'local_rollover');
+echo <<<HTML5
+    <p>To rollover content from a previous module to a module listed below, please select a module to rollover from and click the rollover button.</p>
+HTML5;
 
 // Add in our confirmation dialog box and other error blocks ready
 echo $renderer->dialogs();
@@ -206,33 +163,26 @@ foreach ($show_courses as $course) {
 
     switch ($course->rollover_status) {
         case \local_rollover\Rollover::STATUS_SCHEDULED:
-            $from_content = $from_requested;
+            $from_content = $renderer->requested_form();
         break;
 
         case \local_rollover\Rollover::STATUS_BACKED_UP:
         case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
         case \local_rollover\Rollover::STATUS_IN_PROGRESS:
-            $from_content = $from_processing;
+            $from_content = $renderer->processing_form();
         break;
 
+        case \local_rollover\Rollover::STATUS_ERROR:
         case \local_rollover\Rollover::STATUS_COMPLETE:
             if ((int)$course->module_count <= 2) {
-                $a = $OUTPUT->single_button(new moodle_url('/local/rollover/', array(
-                    'id' => $course->rollover_id,
-                    'action' => 'undo'
-                )), 'Click here to undo the rollover.');
-                $from_content = sprintf($form_complete, $a);
+                $from_content = $renderer->error_form($course->rollover_id);
             } else {
                 continue;
             }
         break;
 
-        case \local_rollover\Rollover::STATUS_ERROR:
-            $from_content = $form_error;
-        break;
-
         default:
-            $from_content = sprintf($from_form, $course->shortname, $OUTPUT->help_icon('advanced_opt_help', 'local_rollover'), $course->id, $CFG->kent->distribution);
+            $from_content = $renderer->rollover_form($moduleoptions, $course->shortname, $course->id, $CFG->kent->distribution);
         break;
     }
 
