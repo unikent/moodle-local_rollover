@@ -88,7 +88,7 @@ jQuery(document).ready(function() {
                                 }
 
                                 jQuery(button).closest('.from_form').fadeOut('fast', function() {
-                                    jQuery(button).closest('.rollover_crs_from').addClass('pending').append(window.pendingMessage);
+                                    jQuery(button).closest('.rollover_crs_from').addClass('pending').append(M.str.local_rollover.requestedmessage);
                                     jQuery(button).closest('.rollover_crs_from').find('h3').hide().fadeIn('slow');
                                 });
                             },

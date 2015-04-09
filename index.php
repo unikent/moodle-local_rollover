@@ -208,8 +208,6 @@ $urls = json_encode($urls);
 
 echo '<script type="text/javascript">
     window.rollover_paths = JSON.parse(\''.$urls.'\');
-    window.pendingMessage = "'. get_string('requestedmessage', 'local_rollover').'";
-    window.errorMessage = "'. get_string('errormessage', 'local_rollover').'";
 </script>';
 
 echo $OUTPUT->footer();
