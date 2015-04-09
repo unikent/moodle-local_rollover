@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-global $USER, $CFG, $PAGE, $OUTPUT;
-
-require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/filelib.php');
 
@@ -100,27 +98,6 @@ foreach ($modules as $module) {
     $moduleoptions .= $renderer->module_option($module->name, get_string('modulename', $module->name));
 }
 
-$shortcodelabeltext = get_string('short_code_label_text', 'local_rollover');
-$descriptionlabeltext = get_string('description_label_text', 'local_rollover');
-
-$form = <<<HTML5
-    <div class='rollover_item'>
-        <form method='post' id='rollover_form_%1\$d' name='rollover_form_%1\$d' action=''>
-            <table class='rollover_layout'>
-                <tr>
-                    <td class='rollover_crs_title'>
-                        <div class='arrow'></div>
-                        <h3><a href="">%3\$s</a></h3>
-                        <p class='rollover_shrt_code'><span class='rollover_txt_head'>{$shortcodelabeltext}: </span><span class='rollover_sc_num'>%2\$s</span></p>
-                        <p class='rollover_desc'><span class='rollover_txt_head'>{$descriptionlabeltext}: </span>%4\$s</p>
-                    </td>
-                    %5\$s
-                </tr>
-            </table>
-        </form>
-    </div>
-HTML5;
-
 echo $renderer->search_box($search);
 
 $courses = \local_rollover\User::get_target_list();
@@ -129,15 +106,13 @@ if (!empty($search)) {
 }
 
 if (empty($courses)) {
-    echo "<p>" . get_string('no_courses', 'local_rollover') . "</p>";
+    echo $renderer->no_courses();
     echo $OUTPUT->footer();
     die;
 }
 
 // Top page content
-echo <<<HTML5
-    <p>To rollover content from a previous module to a module listed below, please select a module to rollover from and click the rollover button.</p>
-HTML5;
+echo $renderer->help();
 
 // Add in our confirmation dialog box and other error blocks ready
 echo $renderer->dialogs();
@@ -157,7 +132,7 @@ if ($totalcourses > $perpage) {
 foreach ($show_courses as $course) {
     $desc = $course->summary;
     if (empty($course->summary)) {
-        $desc = get_string('no_course_description_text', 'local_rollover');
+        $desc = 'No description was found.';
     }
 
     switch ($course->rollover_status) {
@@ -189,7 +164,7 @@ foreach ($show_courses as $course) {
         'id' => $course->id
     )), $course->fullname);
 
-    printf($form, $course->id, $course->shortname, $coursename, $desc, $from_content);
+    echo $renderer->course_form($course->id, $course->shortname, $coursename, $desc, $from_content);
 }
 
 // Show paging if we have more courses than per page allowed.

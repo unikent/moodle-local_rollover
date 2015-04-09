@@ -67,6 +67,15 @@ HTML5;
 	}
 
 	/**
+	 * Renders the no courses text.
+	 */
+	public function no_courses() {
+		return <<<HTML5
+		    <p>You currently do not have access to any modules requiring content rollover. Please contact an administrator if you require any assistance.</p>
+HTML5;
+	}
+
+	/**
 	 * Renders the help text.
 	 */
 	public function help() {
@@ -84,6 +93,29 @@ HTML5;
 		    <div id="dialog_id_from_error">Please select a valid existing module to rollover from.</div>
 		    <div id="dialog_id_to_error">No destination module set. Please refresh this page and try again. If this error persists, please contact an administrator.</div>
 		    <div id="dialog_autocomplete_error">Could not retrieve autocomplete data.</div>
+HTML5;
+	}
+
+	/**
+	 * Render a course.
+	 */
+	public function course_form($courseid, $shortname, $longname, $description, $form) {
+		return <<<HTML5
+		    <div class='rollover_item'>
+		        <form method='post' id='rollover_form_{$courseid}' name='rollover_form_{$courseid}' action=''>
+		            <table class='rollover_layout'>
+		                <tr>
+		                    <td class='rollover_crs_title'>
+		                        <div class='arrow'></div>
+		                        <h3>{$longname}</h3>
+		                        <p class='rollover_shrt_code'><span class='rollover_txt_head'>Short code: </span><span class='rollover_sc_num'>{$shortname}</span></p>
+		                        <p class='rollover_desc'><span class='rollover_txt_head'>Description: </span>{$description}</p>
+		                    </td>
+		                    {$form}
+		                </tr>
+		            </table>
+		        </form>
+		    </div>
 HTML5;
 	}
 
