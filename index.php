@@ -22,7 +22,7 @@ require_once($CFG->libdir . '/filelib.php');
 
 require_login();
 
-if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::available()) {
+if (!\local_connect\util\helpers::is_enabled() || !\local_kent\util\sharedb::available() || $CFG->kent->distribution == 'archive') {
     print_error('connect_disabled', 'local_connect');
 }
 
