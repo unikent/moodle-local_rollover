@@ -118,7 +118,7 @@ echo $renderer->help();
 echo $renderer->dialogs();
 
 // Pagination stuff.
-$offset = $currentpage == 0 ? 0 : $currentpage * $perpage;
+$offset = ($currentpage == 0 ? 0 : $currentpage) * $perpage;
 $totalcourses = count($courses);
 
 // get the slice of $courses for this page
