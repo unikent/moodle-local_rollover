@@ -274,6 +274,9 @@ class Rollover
         $this->remove_module($xpath, 'turnitintool');
         $this->remove_module($xpath, 'turnitintooltwo');
 
+        // Rename news forum.
+        $this->manipulate_fields($xpath, 'forum', 'name', 'Announcements', 'News forum');
+
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
@@ -325,12 +328,14 @@ class Rollover
      * Modules have their own special tables which are stored as XML files in rollover.
      * This function lets you manipulate a particular field.
      */
-    private function manipulate_fields($xpath, $module, $field, $value) {
-        $this->manipulate_module($xpath, $module, function($doc, $mxpath, $moduleid) use ($module, $field, $value) {
+    private function manipulate_fields($xpath, $module, $field, $value, $where = null) {
+        $this->manipulate_module($xpath, $module, function($doc, $mxpath, $moduleid) use ($module, $field, $value, $where) {
             $query = "/activity/{$module}/{$field}";
             $nodes = $mxpath->query($query);
             foreach ($nodes as $node) {
-                $node->nodeValue = $value;
+                if (!$where || $node->nodeValue == $where) {
+                    $node->nodeValue = $value;
+                }
             }
         });
     }
