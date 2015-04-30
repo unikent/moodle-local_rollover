@@ -275,7 +275,7 @@ class Rollover
         $this->remove_module($xpath, 'turnitintooltwo');
 
         // Rename news forum.
-        $this->manipulate_fields($xpath, 'forum', 'name', 'Announcements', 'News Forum');
+        $this->manipulate_fields($xpath, 'forum', 'name', 'Announcements', 'News forum');
 
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
