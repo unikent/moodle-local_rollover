@@ -26,11 +26,34 @@ class Course
     /** Course ID. */
     private $courseid;
 
+    /** Course. */
+    private $_course;
+
     /**
      * Constructor
      */
-    public function __construct($courseid) {
-        $this->courseid = $courseid;
+    public function __construct($courseorid) {
+        $this->courseid = $courseorid;
+
+        if (is_object($courseid)) {
+            $this->_course = $courseorid;
+            $this->courseid = $courseorid->id;
+        }
+    }
+
+    /**
+     * Get.
+     */
+    public function __get($name) {
+        global $DB;
+
+        if ($name == 'course') {
+            if (!isset($this->_course)) {
+                $this->_course = $DB->get_record('course', array('id' => $this->courseid));
+            }
+
+            return $this->_course;
+        }
     }
 
     /**
