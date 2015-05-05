@@ -57,6 +57,41 @@ class Course
     }
 
     /**
+     * Get the best match for a course.
+     */
+    public function best_match($extdist) {
+        global $SHAREDB;
+
+        $like = $SHAREDB->sql_like('shortname', ':shortname');
+        $matches = $SHAREDB->get_records_select('shared_courses', 'moodle_dist=:moodle_dist AND ' . $like, array(
+            'moodle_dist' => $extdist,
+            'shortname' => "%" . $this->course->shortname . "%"
+        ));
+
+        if (empty($matches)) {
+            return null;
+        }
+
+        if (count($matches) == 1) {
+            return $matches[0];
+        }
+
+        // Calculate best match based on levenshtein distance of shortnames.
+        $best = null;
+        $bestlev = 99999;
+
+        foreach ($matches as $match) {
+            $distance = levenshtein($this->course->shortname, $match->shortname);
+            if ($distance >= 0 && $distance < $bestlev) {
+                $best = $match;
+                $bestlev = $distance;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
      * What is the current rollover status of this module.
      */
     public function has_active_rollover() {
