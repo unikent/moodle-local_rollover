@@ -92,6 +92,13 @@ class Course
     }
 
     /**
+     * Schedule a rollover on this course.
+     */
+    public function rollover($fromdist, $fromid) {
+        Rollover::schedule($fromdist, $fromid, $this->courseid);
+    }
+
+    /**
      * What is the current rollover status of this module.
      */
     public function has_active_rollover() {
