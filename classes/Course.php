@@ -35,7 +35,7 @@ class Course
     public function __construct($courseorid) {
         $this->courseid = $courseorid;
 
-        if (is_object($courseid)) {
+        if (is_object($courseorid)) {
             $this->_course = $courseorid;
             $this->courseid = $courseorid->id;
         }
