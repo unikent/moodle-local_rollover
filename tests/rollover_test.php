@@ -263,7 +263,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->rollover(2);
 
         // The test!
-        $this->assertEquals(10, $DB->count_records('course_modules', array(
+        $this->assertEquals(8, $DB->count_records('course_modules', array(
             'course' => $course3->id
         )));
 
@@ -271,7 +271,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
             'course' => $course3->id
         )));
 
-        $this->assertEquals(4, $DB->count_records('course_modules', array(
+        $this->assertEquals(2, $DB->count_records('course_modules', array(
             'course' => $course4->id
         )));
 
@@ -319,7 +319,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->rollover(1);
 
         // The test!
-        $this->assertEquals(3, $DB->count_records('course_modules', array(
+        $this->assertEquals(1, $DB->count_records('course_modules', array(
             'course' => $course2->id
         )));
 
