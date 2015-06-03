@@ -34,12 +34,22 @@ class generator extends \core\task\scheduled_task
     }
 
     public function execute() {
+        global $DB;
+
         if (!\local_kent\util\sharedb::available()) {
             return;
         }
 
-        $this->schedule_backups();
-        $this->schedule_restores();
+        // If we already have more than 5 pending adhoc tasks, don't schedule any more.
+        $count = $DB->count_records('task_adhoc', array(
+            'component' => 'local_rollover',
+            'faildelay' => 0
+        ));
+
+        if ($count < 5) {
+            $this->schedule_backups();
+            $this->schedule_restores();
+        }
     }
 
     /**
@@ -90,4 +100,4 @@ class generator extends \core\task\scheduled_task
             \core\task\manager::queue_adhoc_task($task);
         }
     }
-} 
+}
