@@ -45,13 +45,25 @@ raise_memory_limit(MEMORY_UNLIMITED);
 // Grab a list of courses in this Moodle.
 $courses = $DB->get_recordset('course');
 foreach ($courses as $course) {
-	$rc = new \local_rollover\Course($course);
-	$match = $rc->best_match($options['from']);
-	if ($match) {
-		echo "No match for {$course->shortname}.\n";
-		continue;
-	}
+    $rc = new \local_rollover\Course($course);
 
-	$rc->rollover($options['from'], $match->id);
+    $matchtype = 'Exact';
+    $match = $rc->exact_match($options['from']);
+    if (!$match) {
+        $match = $rc->best_match($options['from']);
+        $matchtype = 'Approximate';
+    }
+
+    if (!$match) {
+        echo "No match for {$course->shortname}.\n";
+        continue;
+    }
+
+    if (isset($options['dry']) && $options['dry']) {
+        echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
+        continue;
+    }
+
+    $rc->rollover($options['from'], $match->id);
 }
 $courses->close();

@@ -24,10 +24,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015040900;
+$plugin->version   = 2015060500;
 $plugin->component = 'local_rollover';
 $plugin->requires = 2014051200;
 
 $plugin->dependencies = array(
-    'local_nagios' => 2014080100
+    'local_nagios' => 2015060500
 );
