@@ -52,6 +52,11 @@ foreach ($courses as $course) {
         continue;
     }
 
+    if (isset($options['dry']) && $options['dry']) {
+        echo "Match for {$course->shortname}.\n";
+        continue;
+    }
+
     $rc->rollover($options['from'], $match->id);
 }
 $courses->close();
