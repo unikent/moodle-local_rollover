@@ -46,14 +46,21 @@ raise_memory_limit(MEMORY_UNLIMITED);
 $courses = $DB->get_recordset('course');
 foreach ($courses as $course) {
     $rc = new \local_rollover\Course($course);
+
+    $matchtype = 'Exact';
     $match = $rc->exact_match($options['from']);
-    if ($match) {
+    if (!$match) {
+        $match = $rc->best_match($options['from']);
+        $matchtype = 'Approximate';
+    }
+
+    if (!$match) {
         echo "No match for {$course->shortname}.\n";
         continue;
     }
 
     if (isset($options['dry']) && $options['dry']) {
-        echo "Match for {$course->shortname}.\n";
+        echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
         continue;
     }
 

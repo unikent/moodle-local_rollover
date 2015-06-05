@@ -62,10 +62,16 @@ class Course
     public function best_match($extdist) {
         global $SHAREDB;
 
-        $like = $SHAREDB->sql_like('shortname', ':shortname');
+        $shortname = $this->course->shortname;
+        $list = explode(' ', $shortname);
+        if (count($list) > 1) {
+            $shortname = $list[0];
+        }
+
+        $like = $SHAREDB->sql_like('shortname', ':shortname', false, false);
         $matches = $SHAREDB->get_records_select('shared_courses', 'moodle_dist=:moodle_dist AND ' . $like, array(
             'moodle_dist' => $extdist,
-            'shortname' => "%" . $this->course->shortname . "%"
+            'shortname' => "%{$shortname}%"
         ));
 
         if (empty($matches)) {
@@ -73,7 +79,7 @@ class Course
         }
 
         if (count($matches) == 1) {
-            return $matches[0];
+            return reset($matches);
         }
 
         // Calculate best match based on levenshtein distance of shortnames.
