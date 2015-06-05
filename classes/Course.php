@@ -92,6 +92,18 @@ class Course
     }
 
     /**
+     * Get an exact match for a course.
+     */
+    public function exact_match($extdist) {
+        global $SHAREDB;
+
+        return $SHAREDB->get_record('shared_courses', array(
+            'moodle_dist' => $extdist,
+            'shortname' => $this->course->shortname
+        ));
+    }
+
+    /**
      * Schedule a rollover on this course.
      */
     public function rollover($fromdist, $fromid) {

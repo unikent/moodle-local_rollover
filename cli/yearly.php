@@ -46,7 +46,7 @@ raise_memory_limit(MEMORY_UNLIMITED);
 $courses = $DB->get_recordset('course');
 foreach ($courses as $course) {
     $rc = new \local_rollover\Course($course);
-    $match = $rc->best_match($options['from']);
+    $match = $rc->exact_match($options['from']);
     if ($match) {
         echo "No match for {$course->shortname}.\n";
         continue;
