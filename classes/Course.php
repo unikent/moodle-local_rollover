@@ -148,7 +148,7 @@ class Course
 
         // Get the most recent rollover object.
         $rollover = end($rollovers);
-        return $rollover->status;
+        return (int)$rollover->status;
     }
 
     /**
