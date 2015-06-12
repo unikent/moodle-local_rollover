@@ -49,10 +49,10 @@ foreach ($courses as $course) {
 
     $matchtype = 'Exact';
     $match = $rc->exact_match($options['from']);
-    if (!$match) {
-        $match = $rc->best_match($options['from']);
-        $matchtype = 'Approximate';
-    }
+    //if (!$match) {
+        //$match = $rc->best_match($options['from']);
+        //$matchtype = 'Approximate';
+    //}
 
     if (!$match) {
         echo "No match for {$course->shortname}.\n";
