@@ -150,7 +150,7 @@ class Rollover
 
         // Delete any notifications.
         $kc = new \local_kent\Course($event->courseid);
-        $notification = $kc->get_notification($event->context->id, 'rollover_error');
+        $notification = $kc->get_notification($event->context->id, 'rollover');
         if ($notification) {
             $notification->delete();
         }

@@ -26,7 +26,8 @@ require_once($CFG->libdir . '/clilib.php');
 list($options, $unrecognized) = cli_get_params(
     array(
         'from' => PREVIOUS_MOODLE,
-        'dry' => false
+        'dry' => false,
+        'mode' => 'exact'
     )
 );
 
@@ -49,21 +50,22 @@ foreach ($courses as $course) {
 
     $matchtype = 'Exact';
     $match = $rc->exact_match($options['from']);
-    //if (!$match) {
-        //$match = $rc->best_match($options['from']);
-        //$matchtype = 'Approximate';
-    //}
+    if (!$match && $options['mode'] == 'approximate') {
+        $match = $rc->best_match($options['from']);
+        $matchtype = 'Approximate';
+    }
 
     if (!$match) {
         echo "No match for {$course->shortname}.\n";
         continue;
     }
 
+    echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
+
     if (isset($options['dry']) && $options['dry']) {
-        echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
         continue;
     }
 
-    $rc->rollover($options['from'], $match->id);
+    $rc->rollover($options['from'], $match->moodle_id);
 }
 $courses->close();
