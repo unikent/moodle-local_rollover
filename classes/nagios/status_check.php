@@ -27,36 +27,47 @@ class status_check extends \local_nagios\base_check
      * Execute the check.
      */
     public function execute() {
-        global $SHAREDB;
+        global $CFG, $SHAREDB;
 
-        $errored = $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 3
+        $sql = <<<SQL
+        SELECT status, COUNT(*)
+        FROM {shared_rollovers}
+        WHERE to_dist=:to_dist AND to_env=:to_env
+        GROUP BY status
+SQL;
+        $counts = $SHAREDB->get_records($sql, array(
+            'to_env' => $CFG->kent->environment,
+            'to_dist' => $CFG->kent->distribution
         ));
 
-        $queued = $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 0
-        ));
+        $total = 0;
+        foreach ($counts as $k => $v) {
+            $total += $v;
+        }
 
-        $queued += $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 1
-        ));
+        $complete = $counts[\local_rollover\Rollover::STATUS_COMPLETE];
+        $errored = $counts[\local_rollover\Rollover::STATUS_ERROR];
 
-        $inprogress = $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 4
-        ));
+        $queued = $counts[\local_rollover\Rollover::STATUS_WAITING_SCHEDULE];
+        $queued += $counts[\local_rollover\Rollover::STATUS_SCHEDULED];
 
-        $threshold = 5;
+        $inprogress = $counts[\local_rollover\Rollover::STATUS_IN_PROGRESS];
+        $inprogress += $counts[\local_rollover\Rollover::STATUS_RESTORE_SCHEDULED];
+        $inprogress += $counts[\local_rollover\Rollover::STATUS_BACKED_UP];
 
         if ($errored > 0) {
             $this->error($errored . ' failed rollovers.');
         }
 
-        if ($queued > $threshold) {
+        if ($queued > $CFG->local_rollover_ratelimit) {
             $this->warning($queued . ' queued rollovers.');
         }
 
-        if ($inprogress > $threshold) {
+        if ($inprogress > $CFG->local_rollover_ratelimit) {
             $this->warning($inprogress . ' in progress rollovers.');
         }
+
+        $this->set_perf_var('rollovers_queued', $queued);
+        $this->set_perf_var('rollovers_inprogress', $inprogress);
     }
 }
