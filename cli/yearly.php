@@ -47,6 +47,9 @@ raise_memory_limit(MEMORY_UNLIMITED);
 $courses = $DB->get_recordset('course');
 foreach ($courses as $course) {
     $rc = new \local_rollover\Course($course);
+    if (!$rc->can_rollover()) {
+        continue;
+    }
 
     $matchtype = 'Exact';
     $match = $rc->exact_match($options['from']);
