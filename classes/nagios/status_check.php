@@ -30,12 +30,12 @@ class status_check extends \local_nagios\base_check
         global $CFG, $SHAREDB;
 
         $sql = <<<SQL
-        SELECT status, COUNT(*)
+        SELECT status, COUNT(*) cnt
         FROM {shared_rollovers}
         WHERE to_dist=:to_dist AND to_env=:to_env
         GROUP BY status
 SQL;
-        $counts = $SHAREDB->get_records($sql, array(
+        $counts = $SHAREDB->get_records_sql($sql, array(
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution
         ));
@@ -45,15 +45,15 @@ SQL;
             $total += $v;
         }
 
-        $complete = $counts[\local_rollover\Rollover::STATUS_COMPLETE];
-        $errored = $counts[\local_rollover\Rollover::STATUS_ERROR];
+        $complete = $counts[\local_rollover\Rollover::STATUS_COMPLETE]->cnt;
+        $errored = $counts[\local_rollover\Rollover::STATUS_ERROR]->cnt;
 
-        $queued = $counts[\local_rollover\Rollover::STATUS_WAITING_SCHEDULE];
-        $queued += $counts[\local_rollover\Rollover::STATUS_SCHEDULED];
+        $queued = $counts[\local_rollover\Rollover::STATUS_WAITING_SCHEDULE]->cnt;
+        $queued += $counts[\local_rollover\Rollover::STATUS_SCHEDULED]->cnt;
 
-        $inprogress = $counts[\local_rollover\Rollover::STATUS_IN_PROGRESS];
-        $inprogress += $counts[\local_rollover\Rollover::STATUS_RESTORE_SCHEDULED];
-        $inprogress += $counts[\local_rollover\Rollover::STATUS_BACKED_UP];
+        $inprogress = $counts[\local_rollover\Rollover::STATUS_IN_PROGRESS]->cnt;
+        $inprogress += $counts[\local_rollover\Rollover::STATUS_RESTORE_SCHEDULED]->cnt;
+        $inprogress += $counts[\local_rollover\Rollover::STATUS_BACKED_UP]->cnt;
 
         if ($errored > 0) {
             $this->error($errored . ' failed rollovers');
