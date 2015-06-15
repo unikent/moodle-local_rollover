@@ -214,6 +214,7 @@ class Rollover
         $this->migrate_data();
         $this->manipulate_data();
         $this->import();
+        $this->fix_sections();
 
         // SHAREDB may no longer be connected, reconnect just in case.
         \local_kent\util\sharedb::dispose();
@@ -398,5 +399,27 @@ class Rollover
         }
 
         $controller->execute_plan();
+    }
+
+    /**
+     * Fix sections for courses.
+     */
+    private function fix_sections() {
+        global $DB;
+
+        // Count the number of sections.
+        $sectioncount = $DB->count_records('course_sections', array(
+            'course' => $this->settings['tocourse']
+        ));
+
+        // Current setting.
+        $current = $DB->get_record('course_format_options', array(
+            'courseid' => $this->settings['tocourse'],
+            'name' => 'numsections'
+        ));
+
+        // update value.
+        $current->value = $sectioncount;
+        $DB->update_record('course_format_options', $current);
     }
 }

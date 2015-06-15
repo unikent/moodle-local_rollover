@@ -33,6 +33,33 @@ function xmldb_local_rollover_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2014060900, 'local', 'rollover');
     }
 
+    if ($oldversion < 2015061500 && $CFG->kent->distribution == '2015') {
+        // Fix all section counts.
+        $courses = $DB->get_records('course');
+        foreach ($courses as $course) {
+            // Is there a rollover?
+            $kr = new \local_rollover\Course($course);
+            if ($kr->get_status() !== \local_rollover\Rollover::STATUS_NONE) {
+                // Count the number of sections.
+                $sectioncount = $DB->count_records('course_sections', array(
+                    'course' => $course->id
+                ));
+
+                // Current setting.
+                $current = $DB->get_record('course_format_options', array(
+                    'courseid' => $course->id,
+                    'name' => 'numsections'
+                ));
+
+                // update value.
+                $current->value = $sectioncount;
+                $DB->update_record('course_format_options', $current);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2015061500, 'local', 'rollover');
+    }
+
     return true;
 
 }

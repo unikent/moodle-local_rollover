@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015060500;
+$plugin->version   = 2015061500;
 $plugin->component = 'local_rollover';
 $plugin->requires = 2014051200;
 
