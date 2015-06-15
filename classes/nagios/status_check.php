@@ -56,15 +56,15 @@ SQL;
         $inprogress += $counts[\local_rollover\Rollover::STATUS_BACKED_UP];
 
         if ($errored > 0) {
-            $this->error($errored . ' failed rollovers.');
+            $this->error($errored . ' failed rollovers');
         }
 
         if ($queued > $CFG->local_rollover_ratelimit) {
-            $this->warning($queued . ' queued rollovers.');
+            $this->warning($queued . ' queued rollovers');
         }
 
         if ($inprogress > $CFG->local_rollover_ratelimit) {
-            $this->warning($inprogress . ' in progress rollovers.');
+            $this->warning($inprogress . ' in progress rollovers');
         }
 
         $this->set_perf_var('rollovers_queued', $queued);
