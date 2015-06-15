@@ -60,8 +60,9 @@ foreach ($courses as $course) {
         continue;
     }
 
+    echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
+
     if (isset($options['dry']) && $options['dry']) {
-        echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
         continue;
     }
 
