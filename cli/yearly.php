@@ -66,6 +66,6 @@ foreach ($courses as $course) {
         continue;
     }
 
-    $rc->rollover($options['from'], $match->id);
+    $rc->rollover($options['from'], $match->moodle_id);
 }
 $courses->close();
