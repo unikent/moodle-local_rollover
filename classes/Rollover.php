@@ -19,7 +19,6 @@ namespace local_rollover;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-require_once($CFG->dirroot . '/mod/cla/lib.php');
 
 /**
  * Rollover stuff
