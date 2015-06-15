@@ -35,6 +35,7 @@ class Rollover
     const STATUS_IN_PROGRESS = 4;
     const STATUS_WAITING_SCHEDULE = 5;
     const STATUS_DELETED = 10;
+    const STATUS_RESTORE_SCHEDULED = 32;
 
     /** Rollover UUID */
     private $uuid;
@@ -225,7 +226,7 @@ class Rollover
         $error = \local_rollover\event\rollover_finished::create(array(
             'objectid' => $this->id,
             'courseid' => $this->settings['tocourse'],
-            'context' =>  \context_course::instance($this->settings['tocourse'])
+            'context' => \context_course::instance($this->settings['tocourse'])
         ));
         $error->trigger();
     }

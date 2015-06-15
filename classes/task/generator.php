@@ -97,6 +97,9 @@ class generator extends \core\task\scheduled_task
                 'id' => $event->id
             ));
 
+            $event->status = \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED;
+            $SHAREDB->update_record('shared_rollovers', $event);
+
             \core\task\manager::queue_adhoc_task($task);
         }
     }

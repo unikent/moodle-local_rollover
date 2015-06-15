@@ -126,6 +126,7 @@ class Course
             $status === Rollover::STATUS_SCHEDULED ||
             $status === Rollover::STATUS_BACKED_UP ||
             $status === Rollover::STATUS_IN_PROGRESS ||
+            $status === Rollover::STATUS_RESTORE_SCHEDULED ||
             $status === Rollover::STATUS_WAITING_SCHEDULE
         );
     }

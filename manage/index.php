@@ -112,6 +112,7 @@ foreach ($rollovers as $rollover) {
         break;
 
         case \local_rollover\Rollover::STATUS_SCHEDULED:
+        case \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED:
             $status = 'Scheduled';
         break;
 

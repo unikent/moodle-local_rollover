@@ -39,8 +39,8 @@ class import extends \core\task\adhoc_task
         $params = $this->get_custom_data();
         $event = $SHAREDB->get_record('shared_rollovers', (array)$params, '*', MUST_EXIST);
 
-        if ((int)$event->status != \local_rollover\Rollover::STATUS_BACKED_UP) {
-            echo "Warning! Event not in backed up state for restore: {$event->status}.\n";
+        if ((int)$event->status != \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED) {
+            echo "Warning! Event not in scheduled state for restore: {$event->status}.\n";
             return;
         }
 
