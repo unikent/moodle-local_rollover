@@ -60,23 +60,29 @@ if ($event) {
         "id" => $event->id
     ));
     $task->execute();
+
+    echo "Backup complete\n";
 }
 
 // Is this an import?
 
-$event = $SHAREDB->get_record('shared_rollovers', array(
+$importevent = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'to_env' => $CFG->kent->environment,
     'to_dist' => $CFG->kent->distribution
 ));
 
-if (!$event) {
-    cli_error('Are you sure you picked the right distribution?');
+if (!$importevent) {
+    if (!$event) {
+        cli_error('Are you sure you picked the right distribution?');
+    }
+
+    exit(1);
 }
 
 // Import.
 $task = new \local_rollover\task\import();
 $task->set_custom_data(array(
-    "id" => $event->id
+    "id" => $importevent->id
 ));
 $task->execute();
