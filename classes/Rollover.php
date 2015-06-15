@@ -220,8 +220,6 @@ class Rollover
         \local_kent\util\sharedb::dispose();
         $SHAREDB = new \local_kent\util\sharedb();
 
-        $this->post_import();
-
         // Fire event.
         $error = \local_rollover\event\rollover_finished::create(array(
             'objectid' => $this->id,
@@ -401,12 +399,5 @@ class Rollover
         }
 
         $controller->execute_plan();
-    }
-
-    /**
-     * Run stuff after import is complete.
-     */
-    private function post_import() {
-        cla_post_rollover($this->id);
     }
 }
