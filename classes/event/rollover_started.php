@@ -60,15 +60,6 @@ class rollover_started extends \core\event\base
     }
 
     /**
-     * Return the legacy event log data.
-     * 
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->objectid, 'rollover', 'rollover started', '', $this->objectid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception

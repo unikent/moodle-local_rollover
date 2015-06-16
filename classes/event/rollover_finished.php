@@ -60,15 +60,6 @@ class rollover_finished extends \core\event\base
     }
 
     /**
-     * Return the legacy event log data.
-     * 
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->objectid, 'rollover', 'rollover finished', '', $this->objectid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
