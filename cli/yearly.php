@@ -27,7 +27,8 @@ list($options, $unrecognized) = cli_get_params(
     array(
         'from' => PREVIOUS_MOODLE,
         'dry' => false,
-        'mode' => 'exact'
+        'mode' => 'exact',
+        'weeks' => '*' // If set, restrict to SDS modules beginning in weeks "x-y"
     )
 );
 
@@ -50,6 +51,31 @@ foreach ($courses as $course) {
     if (!$rc->can_rollover()) {
         continue;
     }
+
+    // Restrict to SDS modules beginning in weeks "x-y"
+    if ($options['weeks'] != '*') {
+        $weeks = explode('-', $options['weeks']);
+        $connect = \local_connect\course::get_by('mid', $course->id);
+
+        // No connect course!
+        if (!$connect) {
+            continue;
+        }
+
+        // Handle merged courses.
+        if (is_array($connect)) {
+            $connect = reset($connect);
+
+            if ($connect->is_version_merged()) {
+                $connect = $connect->get_primary_version();
+            }
+        }
+
+        if ($connect->module_week_beginning < $weeks[0] || $connect->module_week_beginning > $weeks[1]) {
+            continue;
+        }
+    }
+
 
     $matchtype = 'Exact';
     $match = $rc->exact_match($options['from']);
