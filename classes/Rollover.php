@@ -404,7 +404,7 @@ class Rollover
             }
 
             if (isset($results['warnings'])) {
-                echo var_dump($results['warnings']) . "\n";
+                debugging(var_export($results['warnings'], true));
             }
         }
 
