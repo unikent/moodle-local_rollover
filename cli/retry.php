@@ -48,7 +48,8 @@ raise_memory_limit(MEMORY_UNLIMITED);
 $event = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'from_env' => $CFG->kent->environment,
-    'from_dist' => $CFG->kent->distribution
+    'from_dist' => $CFG->kent->distribution,
+    'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE
 ));
 
 if ($event) {
@@ -69,16 +70,20 @@ if ($event) {
 $importevent = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'to_env' => $CFG->kent->environment,
-    'to_dist' => $CFG->kent->distribution
+    'to_dist' => $CFG->kent->distribution,
+    'status' => \local_rollover\Rollover::STATUS_BACKED_UP
 ));
 
 if (!$importevent) {
     if (!$event) {
-        cli_error('Are you sure you picked the right distribution?');
+        cli_error('Could not find event.');
     }
 
-    exit(1);
+    die();
 }
+
+$importevent->status = \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED;
+$SHAREDB->update_record('shared_rollovers', $importevent);
 
 // Import.
 $task = new \local_rollover\task\import();
@@ -86,3 +91,5 @@ $task->set_custom_data(array(
     "id" => $importevent->id
 ));
 $task->execute();
+
+echo "Restore complete\n";
