@@ -79,9 +79,15 @@ foreach ($courses as $course) {
 
     $matchtype = 'Exact';
     $match = $rc->exact_match($options['from']);
+
     if (!$match && $options['mode'] == 'approximate') {
         $match = $rc->best_match($options['from']);
         $matchtype = 'Approximate';
+    }
+
+    if (!$match && $options['mode'] == 'sds') {
+        $match = $rc->sds_match('moodle_' . $options['from']);
+        $matchtype = 'SDS';
     }
 
     if (!$match) {
