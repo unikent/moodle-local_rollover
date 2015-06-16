@@ -112,12 +112,12 @@ class Rollover
 
         if ($result) {
             // Fire event.
-            $error = \local_rollover\event\rollover_started::create(array(
+            $event = \local_rollover\event\rollover_scheduled::create(array(
                 'objectid' => $result,
                 'courseid' => $toid,
                 'context' => $context
             ));
-            $error->trigger();
+            $event->trigger();
         }
 
         return $result;
@@ -211,6 +211,16 @@ class Rollover
     public function go() {
         global $SHAREDB;
 
+        $context = \context_course::instance($this->settings['tocourse']);
+
+        // Fire event.
+        $event = \local_rollover\event\rollover_started::create(array(
+            'objectid' => $this->id,
+            'courseid' => $this->settings['tocourse'],
+            'context' => $context
+        ));
+        $event->trigger();
+
         $this->migrate_data();
         $this->manipulate_data();
         $this->import();
@@ -221,12 +231,12 @@ class Rollover
         $SHAREDB = new \local_kent\util\sharedb();
 
         // Fire event.
-        $error = \local_rollover\event\rollover_finished::create(array(
+        $event = \local_rollover\event\rollover_finished::create(array(
             'objectid' => $this->id,
             'courseid' => $this->settings['tocourse'],
-            'context' => \context_course::instance($this->settings['tocourse'])
+            'context' => $context
         ));
-        $error->trigger();
+        $event->trigger();
     }
 
     /**
