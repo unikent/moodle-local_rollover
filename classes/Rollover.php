@@ -93,26 +93,27 @@ class Rollover
         $obj->options = json_encode($options);
         $obj->requester = $USER->username;
 
-        $result = $SHAREDB->insert_record('shared_rollovers', $obj);
+        $obj->id = $SHAREDB->insert_record('shared_rollovers', $obj);
 
-        if (!$result) {
+        if (!$obj->id) {
             return false;
         }
 
         // Add notification.
         $message = '<i class="fa fa-info-circle"></i> A rollover has been scheduled on this course.';
-        $kc = new \local_kent\Course($result);
+        $kc = new \local_kent\Course($obj->id);
         $kc->replace_notification($context->id, 'rollover', $message, 'info', false, false);
 
         // Fire event.
         $event = \local_rollover\event\rollover_scheduled::create(array(
-            'objectid' => $result,
+            'objectid' => $obj->id,
             'courseid' => $toid,
             'context' => $context
         ));
+        $event->add_shared_record_snapshot('shared_rollovers', $obj);
         $event->trigger();
 
-        return $result;
+        return $obj->id;
     }
 
     /**
@@ -224,6 +225,7 @@ class Rollover
             'courseid' => $this->record->to_course,
             'context' => $context
         ));
+        $event->add_shared_record_snapshot('shared_rollovers', $this->record);
         $event->trigger();
 
         $this->migrate_data();
@@ -242,6 +244,7 @@ class Rollover
             'courseid' => $this->record->to_course,
             'context' => $context
         ));
+        $event->add_shared_record_snapshot('shared_rollovers', $this->record);
         $event->trigger();
     }
 

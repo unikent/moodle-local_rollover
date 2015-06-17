@@ -21,7 +21,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Event Class
  */
-class rollover_scheduled extends \core\event\base
+class rollover_scheduled extends \local_kent\event\sharedb_event
 {
     /**
      * Init method.

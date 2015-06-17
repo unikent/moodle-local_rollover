@@ -21,7 +21,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Event Class
  */
-class rollover_error extends \core\event\base
+class rollover_error extends \local_kent\event\sharedb_event
 {
     /**
      * Init method.
@@ -34,7 +34,7 @@ class rollover_error extends \core\event\base
 
     /**
      * Returns localised general event name.
-     * 
+     *
      * @return string
      */
     public static function get_name() {
@@ -52,7 +52,7 @@ class rollover_error extends \core\event\base
 
     /**
      * Returns relevant URL.
-     * 
+     *
      * @return \moodle_url
      */
     public function get_url() {

@@ -82,7 +82,7 @@ class import extends \core\task\adhoc_task
                     'message' => $e->getMessage()
                 )
             ));
-            $error->add_record_snapshot('shared_rollovers', $event);
+            $error->add_shared_record_snapshot('shared_rollovers', $event);
             $error->trigger();
 
             throw $e;
