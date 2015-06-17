@@ -446,7 +446,7 @@ class Rollover
 
             $message = '<i class="fa fa-history"></i> ';
             $message .= "This {$moduletext} has been rolled over from ";
-            $message .= '<a href="{$url}" class="alert-link" target="_blank">Moodle {$rollover->from_dist}</a>.';
+            $message .= "<a href=\"{$url}\" class=\"alert-link\" target=\"_blank\">Moodle {$rollover->from_dist}</a>.";
         }
 
         // Is this a manual course?
