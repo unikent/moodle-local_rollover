@@ -56,31 +56,41 @@ class import extends \core\task\adhoc_task
                 'fromcourse' => $event->from_dist
             ));
             $controller->go();
+
+            // Update status.
+            $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
+            $SHAREDB->update_record('shared_rollovers', $event);
         } catch (\moodle_exception $e) {
+            // Update status.
+            $event->status = \local_rollover\Rollover::STATUS_ERROR;
+            $SHAREDB->update_record('shared_rollovers', $event);
+
             // Also, wipe the course.
             remove_course_contents($event->to_course, false, array(
                 'keep_roles_and_enrolments' => true,
                 'keep_groups_and_groupings' => true
             ));
 
+            $context = \context_course::instance($event->to_course);
+
+            // Add message.
+            $message = '<i class="fa fa-exclamation-triangle"></i> The rollover for this course failed! Please contact your FLT.';
+            $kc = new \local_kent\Course($event->to_course);
+            $kc->add_notification($context->id, 'rollover', $message, 'error', false, false);
+
+            // Register event.
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,
                 'courseid' => $event->to_course,
-                'context' => \context_course::instance($event->to_course),
+                'context' => $context,
                 'other' => array(
                     'message' => $e->getMessage()
                 )
             ));
             $error->trigger();
 
-            $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('shared_rollovers', $event);
-
             throw $e;
         }
-
-        $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-        $SHAREDB->update_record('shared_rollovers', $event);
     }
 
     /**

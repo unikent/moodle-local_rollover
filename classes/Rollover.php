@@ -110,15 +110,22 @@ class Rollover
 
         $result = $SHAREDB->insert_record('shared_rollovers', $obj);
 
-        if ($result) {
-            // Fire event.
-            $event = \local_rollover\event\rollover_scheduled::create(array(
-                'objectid' => $result,
-                'courseid' => $toid,
-                'context' => $context
-            ));
-            $event->trigger();
+        if (!$result) {
+            return false;
         }
+
+        // Add notification.
+        $message = '<i class="fa fa-info-circle"></i> A rollover has been scheduled on this course.';
+        $kc = new \local_kent\Course($result);
+        $kc->replace_notification($context->id, 'rollover', $message, 'info', false, false);
+
+        // Fire event.
+        $event = \local_rollover\event\rollover_scheduled::create(array(
+            'objectid' => $result,
+            'courseid' => $toid,
+            'context' => $context
+        ));
+        $event->trigger();
 
         return $result;
     }
@@ -207,6 +214,7 @@ class Rollover
 
     /**
      * Do the rollover.
+     * This should only EVER be called from the import task.
      */
     public function go() {
         global $SHAREDB;
@@ -225,6 +233,7 @@ class Rollover
         $this->manipulate_data();
         $this->import();
         $this->fix_sections();
+        $this->notify_course($context);
 
         // SHAREDB may no longer be connected, reconnect just in case.
         \local_kent\util\sharedb::dispose();
@@ -431,5 +440,39 @@ class Rollover
         // update value.
         $current->value = $sectioncount;
         $DB->update_record('course_format_options', $current);
+    }
+
+    /**
+     * Notify the couse.
+     */
+    private function notify_course($context) {
+        global $CFG, $SHAREDB;
+
+        $kc = new \local_kent\Course($context->instanceid);
+        $manual = $kc->is_manual();
+        $moduletext = ($manual ? 'manually-created ' : '') . 'module';
+
+        $message = "<i class=\"fa fa-history\"></i> This {$moduletext} has been rolled over from a previous year.";
+
+        // Get the rollover.
+        $rollover = $SHAREDB->get_record('shared_rollovers', array('id' => $this->id));
+        if ($rollover && isset($CFG->kent->paths[$rollover->from_dist])) {
+            $url = $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
+
+            $message = '<i class="fa fa-history"></i> ';
+            $message .= "This {$moduletext} has been rolled over from ";
+            $message .= '<a href="{$url}" class="alert-link" target="_blank">Moodle {$rollover->from_dist}</a>.';
+        }
+
+        // Is this a manual course?
+        if ($manual) {
+            $message .= ' An administrator must re-link any previous meta-enrolments.';
+            $message .= 'Information on how to do this can be found on the ';
+            $message .= '<a href="http://www.kent.ac.uk/elearning/files/moodle/moodle-meta-enrolment.pdf" class="alert-link" target="_blank">';
+            $message .= 'E-Learning website</a>.';
+        }
+
+        // Add message.
+        $kc->replace_notification($context->id, 'rollover', $message, 'info', false, true);
     }
 }
