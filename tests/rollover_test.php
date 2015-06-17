@@ -33,9 +33,11 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $count = 0;
         while (($task = \core\task\manager::get_next_adhoc_task($time)) !== null) {
             try {
-                // Run the task.
-                $task->execute();
-                $count++;
+                if ($task->get_component() == 'local_rollover') {
+                    // Run the task.
+                    $task->execute();
+                    $count++;
+                }
             } catch (Exception $e) {
                 echo $e->getMessage();
             }
@@ -132,7 +134,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $task = new \local_rollover\task\generator();
         $task->execute();
 
-        $this->run_all_tasks(2);
+        $this->run_all_tasks(1);
         $this->run_all_tasks(0);
 
         $task = new \local_rollover\task\generator();
