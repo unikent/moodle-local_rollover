@@ -59,11 +59,11 @@ SQL;
             $this->error($errored . ' failed rollovers');
         }
 
-        if ($queued > $CFG->local_rollover_ratelimit) {
+        if ($queued > $CFG->kent->rollover_ratelimit) {
             $this->warning($queued . ' queued rollovers');
         }
 
-        if ($inprogress > $CFG->local_rollover_ratelimit) {
+        if ($inprogress > $CFG->kent->rollover_ratelimit) {
             $this->warning($inprogress . ' in progress rollovers');
         }
 
