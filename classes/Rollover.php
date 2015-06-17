@@ -39,30 +39,15 @@ class Rollover
     /** Rollover UUID */
     private $uuid;
 
-    /** Rollover ID */
-    private $id;
-
-    /** Rollover settings */
-    private $settings;
+    /** Rollover object */
+    private $record;
 
     /**
      * Begin a rollover.
      */
-    public function __construct($settings) {
+    public function __construct($rollover) {
         $this->uuid = uniqid('rollover-');
-        $this->settings = $settings;
-        $this->id = $this->settings['id'];
-
-        // Ensure we have the settings we need.
-        if (!isset($this->settings['tocourse'])) {
-            throw new \moodle_exception('Must specify ID to rollover into!');
-        }
-
-        if (!isset($this->settings['folder'])) {
-            throw new \moodle_exception('Must specify folder to rollover from!');
-        }
-
-        static::setup_folder();
+        $this->record = $rollover;
     }
 
     /**
@@ -192,6 +177,16 @@ class Rollover
     }
 
     /**
+     * Remove the contents of a course.
+     */
+    public static function remove_course_contents($courseid) {
+        return remove_course_contents($courseid, false, array(
+            'keep_roles_and_enrolments' => true,
+            'keep_groups_and_groupings' => true
+        ));
+    }
+
+    /**
      * Setup.
      */
     private static function setup_folder() {
@@ -219,12 +214,14 @@ class Rollover
     public function go() {
         global $SHAREDB;
 
-        $context = \context_course::instance($this->settings['tocourse']);
+        static::setup_folder();
+
+        $context = \context_course::instance($this->record->to_course);
 
         // Fire event.
         $event = \local_rollover\event\rollover_started::create(array(
-            'objectid' => $this->id,
-            'courseid' => $this->settings['tocourse'],
+            'objectid' => $this->record->id,
+            'courseid' => $this->record->to_course,
             'context' => $context
         ));
         $event->trigger();
@@ -241,8 +238,8 @@ class Rollover
 
         // Fire event.
         $event = \local_rollover\event\rollover_finished::create(array(
-            'objectid' => $this->id,
-            'courseid' => $this->settings['tocourse'],
+            'objectid' => $this->record->id,
+            'courseid' => $this->record->to_course,
             'context' => $context
         ));
         $event->trigger();
@@ -257,7 +254,7 @@ class Rollover
         $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->uuid);
 
         // Work out the from location.
-        $from = $this->settings['folder'];
+        $from = $this->record->path;
         if (strpos($from, '/data/moodledata') === 0) {
             $from = str_replace('/data/moodledata/', '/mnt/stollen/archivedata/', $from);
         }
@@ -371,33 +368,18 @@ class Rollover
     }
 
     /**
-     * Remove the contents of a course.
-     */
-    public static function remove_course_contents($courseid) {
-        $context = \context_course::instance($courseid);
-        if (!has_capability('moodle/course:update', $context)) {
-            print_error('You do not have access to that course.');
-        }
-
-        return remove_course_contents($courseid, false, array(
-            'keep_roles_and_enrolments' => true,
-            'keep_groups_and_groupings' => true
-        ));
-    }
-
-    /**
      * Run the import.
      */
     private function import() {
         // Clear out the existing course.
-        echo "\nClearing course...\n";
-        self::remove_course_contents($this->settings['tocourse']);
+        echo "Clearing course...\n";
+        self::remove_course_contents($this->record->to_course);
 
-        echo "\nRunning import...\n";
+        echo "Running import...\n";
 
         $controller = new \restore_controller(
             $this->uuid,
-            $this->settings['tocourse'],
+            $this->record->to_course,
             \backup::INTERACTIVE_NO,
             \backup::MODE_GENERAL,
             2,
@@ -428,12 +410,12 @@ class Rollover
 
         // Count the number of sections.
         $sectioncount = $DB->count_records('course_sections', array(
-            'course' => $this->settings['tocourse']
+            'course' => $this->record->to_course
         ));
 
         // Current setting.
         $current = $DB->get_record('course_format_options', array(
-            'courseid' => $this->settings['tocourse'],
+            'courseid' => $this->record->to_course,
             'name' => 'numsections'
         ));
 
@@ -455,7 +437,7 @@ class Rollover
         $message = "<i class=\"fa fa-history\"></i> This {$moduletext} has been rolled over from a previous year.";
 
         // Get the rollover.
-        $rollover = $SHAREDB->get_record('shared_rollovers', array('id' => $this->id));
+        $rollover = $SHAREDB->get_record('shared_rollovers', array('id' => $this->record->id));
         if ($rollover && isset($CFG->kent->paths[$rollover->from_dist])) {
             $url = $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
 

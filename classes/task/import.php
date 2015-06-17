@@ -49,12 +49,7 @@ class import extends \core\task\adhoc_task
         $SHAREDB->update_record('shared_rollovers', $event);
 
         try {
-            $controller = new \local_rollover\Rollover(array(
-                'id' => $event->id,
-                'tocourse' => $event->to_course,
-                'folder' => $event->path,
-                'fromcourse' => $event->from_dist
-            ));
+            $controller = new \local_rollover\Rollover($event);
             $controller->go();
 
             // Update status.
@@ -87,6 +82,7 @@ class import extends \core\task\adhoc_task
                     'message' => $e->getMessage()
                 )
             ));
+            $error->add_record_snapshot('shared_rollovers', $event);
             $error->trigger();
 
             throw $e;
