@@ -110,6 +110,36 @@ class Course
     }
 
     /**
+     * Get an SDS match for a course.
+     */
+    public function sds_match($extdist, $extdb) {
+        global $DB;
+
+        $connect = \local_connect\course::get_by('mid', $this->course->id);
+        if (!$connect || is_array($connect)) {
+            return null;
+        }
+
+        if (preg_match('/moodle_[a-z0-9]+/', $extdb) !== 1) {
+            debugging("Invalid DB name.");
+            return null;
+        }
+
+        $sql = <<<SQL
+        SELECT cc.mid as moodle_id, cc.module_delivery_key as shortname
+        FROM $extdb.mdl_connect_course cc
+        WHERE cc.module_delivery_key=:mdk
+SQL;
+
+        $ret = $DB->get_record_sql($sql, array('mdk' => $connect->module_delivery_key));
+        if (!empty($ret->moodle_id)) {
+            return $ret;
+        }
+
+        return null;
+    }
+
+    /**
      * Schedule a rollover on this course.
      */
     public function rollover($fromdist, $fromid) {
@@ -126,6 +156,7 @@ class Course
             $status === Rollover::STATUS_SCHEDULED ||
             $status === Rollover::STATUS_BACKED_UP ||
             $status === Rollover::STATUS_IN_PROGRESS ||
+            $status === Rollover::STATUS_RESTORE_SCHEDULED ||
             $status === Rollover::STATUS_WAITING_SCHEDULE
         );
     }

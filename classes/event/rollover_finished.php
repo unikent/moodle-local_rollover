@@ -21,7 +21,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Event Class
  */
-class rollover_finished extends \core\event\base
+class rollover_finished extends \local_kent\event\sharedb_event
 {
     /**
      * Init method.
@@ -34,7 +34,7 @@ class rollover_finished extends \core\event\base
 
     /**
      * Returns localised general event name.
-     * 
+     *
      * @return string
      */
     public static function get_name() {
@@ -52,20 +52,11 @@ class rollover_finished extends \core\event\base
 
     /**
      * Returns relevant URL.
-     * 
+     *
      * @return \moodle_url
      */
     public function get_url() {
         return new \moodle_url('/local/rollover/');
-    }
-
-    /**
-     * Return the legacy event log data.
-     * 
-     * @return array
-     */
-    protected function get_legacy_logdata() {
-        return array($this->objectid, 'rollover', 'rollover finished', '', $this->objectid);
     }
 
     /**

@@ -19,7 +19,6 @@ namespace local_rollover;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/backup/util/includes/restore_includes.php');
-require_once($CFG->dirroot . '/mod/cla/lib.php');
 
 /**
  * Rollover stuff
@@ -35,34 +34,20 @@ class Rollover
     const STATUS_IN_PROGRESS = 4;
     const STATUS_WAITING_SCHEDULE = 5;
     const STATUS_DELETED = 10;
+    const STATUS_RESTORE_SCHEDULED = 32;
 
     /** Rollover UUID */
     private $uuid;
 
-    /** Rollover ID */
-    private $id;
-
-    /** Rollover settings */
-    private $settings;
+    /** Rollover object */
+    private $record;
 
     /**
      * Begin a rollover.
      */
-    public function __construct($settings) {
+    public function __construct($rollover) {
         $this->uuid = uniqid('rollover-');
-        $this->settings = $settings;
-        $this->id = $this->settings['id'];
-
-        // Ensure we have the settings we need.
-        if (!isset($this->settings['tocourse'])) {
-            throw new \moodle_exception('Must specify ID to rollover into!');
-        }
-
-        if (!isset($this->settings['folder'])) {
-            throw new \moodle_exception('Must specify folder to rollover from!');
-        }
-
-        static::setup_folder();
+        $this->record = $rollover;
     }
 
     /**
@@ -108,19 +93,27 @@ class Rollover
         $obj->options = json_encode($options);
         $obj->requester = $USER->username;
 
-        $result = $SHAREDB->insert_record('shared_rollovers', $obj);
+        $obj->id = $SHAREDB->insert_record('shared_rollovers', $obj);
 
-        if ($result) {
-            // Fire event.
-            $error = \local_rollover\event\rollover_started::create(array(
-                'objectid' => $result,
-                'courseid' => $toid,
-                'context' => $context
-            ));
-            $error->trigger();
+        if (!$obj->id) {
+            return false;
         }
 
-        return $result;
+        // Add notification.
+        $message = '<i class="fa fa-info-circle"></i> A rollover has been scheduled on this course.';
+        $kc = new \local_kent\Course($obj->id);
+        $kc->replace_notification($context->id, 'rollover', $message, 'info', false, false);
+
+        // Fire event.
+        $event = \local_rollover\event\rollover_scheduled::create(array(
+            'objectid' => $obj->id,
+            'courseid' => $toid,
+            'context' => $context
+        ));
+        $event->add_shared_record_snapshot('shared_rollovers', $obj);
+        $event->trigger();
+
+        return $obj->id;
     }
 
     /**
@@ -185,6 +178,16 @@ class Rollover
     }
 
     /**
+     * Remove the contents of a course.
+     */
+    public static function remove_course_contents($courseid) {
+        return remove_course_contents($courseid, false, array(
+            'keep_roles_and_enrolments' => true,
+            'keep_groups_and_groupings' => true
+        ));
+    }
+
+    /**
      * Setup.
      */
     private static function setup_folder() {
@@ -207,27 +210,42 @@ class Rollover
 
     /**
      * Do the rollover.
+     * This should only EVER be called from the import task.
      */
     public function go() {
         global $SHAREDB;
 
+        static::setup_folder();
+
+        $context = \context_course::instance($this->record->to_course);
+
+        // Fire event.
+        $event = \local_rollover\event\rollover_started::create(array(
+            'objectid' => $this->record->id,
+            'courseid' => $this->record->to_course,
+            'context' => $context
+        ));
+        $event->add_shared_record_snapshot('shared_rollovers', $this->record);
+        $event->trigger();
+
         $this->migrate_data();
         $this->manipulate_data();
         $this->import();
+        $this->fix_sections();
+        $this->notify_course($context);
 
         // SHAREDB may no longer be connected, reconnect just in case.
         \local_kent\util\sharedb::dispose();
         $SHAREDB = new \local_kent\util\sharedb();
 
-        $this->post_import();
-
         // Fire event.
-        $error = \local_rollover\event\rollover_finished::create(array(
-            'objectid' => $this->id,
-            'courseid' => $this->settings['tocourse'],
-            'context' =>  \context_course::instance($this->settings['tocourse'])
+        $event = \local_rollover\event\rollover_finished::create(array(
+            'objectid' => $this->record->id,
+            'courseid' => $this->record->to_course,
+            'context' => $context
         ));
-        $error->trigger();
+        $event->add_shared_record_snapshot('shared_rollovers', $this->record);
+        $event->trigger();
     }
 
     /**
@@ -239,7 +257,7 @@ class Rollover
         $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->uuid);
 
         // Work out the from location.
-        $from = $this->settings['folder'];
+        $from = $this->record->path;
         if (strpos($from, '/data/moodledata') === 0) {
             $from = str_replace('/data/moodledata/', '/mnt/stollen/archivedata/', $from);
         }
@@ -353,33 +371,18 @@ class Rollover
     }
 
     /**
-     * Remove the contents of a course.
-     */
-    public static function remove_course_contents($courseid) {
-        $context = \context_course::instance($courseid);
-        if (!has_capability('moodle/course:update', $context)) {
-            print_error('You do not have access to that course.');
-        }
-
-        return remove_course_contents($courseid, false, array(
-            'keep_roles_and_enrolments' => true,
-            'keep_groups_and_groupings' => true
-        ));
-    }
-
-    /**
      * Run the import.
      */
     private function import() {
         // Clear out the existing course.
-        echo "\nClearing course...\n";
-        self::remove_course_contents($this->settings['tocourse']);
+        echo "Clearing course...\n";
+        self::remove_course_contents($this->record->to_course);
 
-        echo "\nRunning import...\n";
+        echo "Running import...\n";
 
         $controller = new \restore_controller(
             $this->uuid,
-            $this->settings['tocourse'],
+            $this->record->to_course,
             \backup::INTERACTIVE_NO,
             \backup::MODE_GENERAL,
             2,
@@ -395,7 +398,7 @@ class Rollover
             }
 
             if (isset($results['warnings'])) {
-                echo var_dump($results['warnings']) . "\n";
+                debugging(var_export($results['warnings'], true));
             }
         }
 
@@ -403,9 +406,58 @@ class Rollover
     }
 
     /**
-     * Run stuff after import is complete.
+     * Fix sections for courses.
      */
-    private function post_import() {
-        cla_post_rollover($this->id);
+    private function fix_sections() {
+        global $DB;
+
+        // Count the number of sections.
+        $sectioncount = $DB->count_records('course_sections', array(
+            'course' => $this->record->to_course
+        ));
+
+        // Current setting.
+        $current = $DB->get_record('course_format_options', array(
+            'courseid' => $this->record->to_course,
+            'name' => 'numsections'
+        ));
+
+        // update value.
+        $current->value = $sectioncount;
+        $DB->update_record('course_format_options', $current);
+    }
+
+    /**
+     * Notify the couse.
+     */
+    private function notify_course($context) {
+        global $CFG, $SHAREDB;
+
+        $kc = new \local_kent\Course($context->instanceid);
+        $manual = $kc->is_manual();
+        $moduletext = ($manual ? 'manually-created ' : '') . 'module';
+
+        $message = "<i class=\"fa fa-history\"></i> This {$moduletext} has been rolled over from a previous year.";
+
+        // Get the rollover.
+        $rollover = $SHAREDB->get_record('shared_rollovers', array('id' => $this->record->id));
+        if ($rollover && isset($CFG->kent->paths[$rollover->from_dist])) {
+            $url = $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
+
+            $message = '<i class="fa fa-history"></i> ';
+            $message .= "This {$moduletext} has been rolled over from ";
+            $message .= '<a href="{$url}" class="alert-link" target="_blank">Moodle {$rollover->from_dist}</a>.';
+        }
+
+        // Is this a manual course?
+        if ($manual) {
+            $message .= ' An administrator must re-link any previous meta-enrolments.';
+            $message .= 'Information on how to do this can be found on the ';
+            $message .= '<a href="http://www.kent.ac.uk/elearning/files/moodle/moodle-meta-enrolment.pdf" class="alert-link" target="_blank">';
+            $message .= 'E-Learning website</a>.';
+        }
+
+        // Add message.
+        $kc->replace_notification($context->id, 'rollover', $message, 'info', false, true);
     }
 }

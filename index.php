@@ -142,6 +142,7 @@ foreach ($show_courses as $course) {
 
         case \local_rollover\Rollover::STATUS_BACKED_UP:
         case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
+        case \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED:
         case \local_rollover\Rollover::STATUS_IN_PROGRESS:
             $from_content = $renderer->processing_form();
         break;

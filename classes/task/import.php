@@ -39,8 +39,8 @@ class import extends \core\task\adhoc_task
         $params = $this->get_custom_data();
         $event = $SHAREDB->get_record('shared_rollovers', (array)$params, '*', MUST_EXIST);
 
-        if ((int)$event->status != \local_rollover\Rollover::STATUS_BACKED_UP) {
-            echo "Warning! Event not in backed up state for restore: {$event->status}.\n";
+        if ((int)$event->status != \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED) {
+            echo "Warning! Event not in scheduled state for restore: {$event->status}.\n";
             return;
         }
 
@@ -49,38 +49,44 @@ class import extends \core\task\adhoc_task
         $SHAREDB->update_record('shared_rollovers', $event);
 
         try {
-            $controller = new \local_rollover\Rollover(array(
-                'id' => $event->id,
-                'tocourse' => $event->to_course,
-                'folder' => $event->path,
-                'fromcourse' => $event->from_dist
-            ));
+            $controller = new \local_rollover\Rollover($event);
             $controller->go();
+
+            // Update status.
+            $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
+            $SHAREDB->update_record('shared_rollovers', $event);
         } catch (\moodle_exception $e) {
+            // Update status.
+            $event->status = \local_rollover\Rollover::STATUS_ERROR;
+            $SHAREDB->update_record('shared_rollovers', $event);
+
             // Also, wipe the course.
             remove_course_contents($event->to_course, false, array(
                 'keep_roles_and_enrolments' => true,
                 'keep_groups_and_groupings' => true
             ));
 
+            $context = \context_course::instance($event->to_course);
+
+            // Add message.
+            $message = '<i class="fa fa-exclamation-triangle"></i> The rollover for this course failed! Please contact your FLT.';
+            $kc = new \local_kent\Course($event->to_course);
+            $kc->add_notification($context->id, 'rollover', $message, 'error', false, false);
+
+            // Register event.
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,
                 'courseid' => $event->to_course,
-                'context' => \context_course::instance($event->to_course),
+                'context' => $context,
                 'other' => array(
                     'message' => $e->getMessage()
                 )
             ));
+            $error->add_shared_record_snapshot('shared_rollovers', $event);
             $error->trigger();
-
-            $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('shared_rollovers', $event);
 
             throw $e;
         }
-
-        $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-        $SHAREDB->update_record('shared_rollovers', $event);
     }
 
     /**

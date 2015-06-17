@@ -23,10 +23,12 @@ $fromdist = required_param("from_dist", PARAM_ALPHANUM);
 $tocourse = required_param("to_course", PARAM_INT);
 $options = required_param("options", PARAM_RAW);
 
-$PAGE->set_context(context_course::instance($tocourse));
+$context = context_course::instance($tocourse);
+$PAGE->set_context($context);
 $PAGE->set_url('/local/rollover/ajax/schedule.php');
 
 require_login();
+require_capability('moodle/course:update', $context);
 
 $options = json_decode($options);
 $id = \local_rollover\Rollover::schedule($fromdist, $fromcourse, $tocourse, $options);

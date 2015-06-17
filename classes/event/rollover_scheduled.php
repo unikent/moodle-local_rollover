@@ -21,14 +21,14 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Event Class
  */
-class rollover_error extends \local_kent\event\sharedb_event
+class rollover_scheduled extends \local_kent\event\sharedb_event
 {
     /**
      * Init method.
      */
     protected function init() {
         $this->data['objecttable'] = 'course';
-        $this->data['crud'] = 'u';
+        $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_OTHER;
     }
 
@@ -38,7 +38,7 @@ class rollover_error extends \local_kent\event\sharedb_event
      * @return string
      */
     public static function get_name() {
-        return "Rollover Error";
+        return "Rollover Started";
     }
 
     /**
@@ -47,7 +47,7 @@ class rollover_error extends \local_kent\event\sharedb_event
      * @return string
      */
     public function get_description() {
-        return 'The rollover with an ID of ' . $this->objectid . ' failed because of: "' . $this->other['message'] . '".';
+        return 'The rollover with an ID of ' . $this->objectid . ' has begun.';
     }
 
     /**
@@ -70,10 +70,6 @@ class rollover_error extends \local_kent\event\sharedb_event
 
         if (!isset($this->courseid)) {
             throw new \coding_exception('The \'courseid\' must be set.');
-        }
-
-        if (!isset($this->other['message'])) {
-            throw new \coding_exception('The \'message\' must be set.');
         }
     }
 }

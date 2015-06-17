@@ -27,36 +27,47 @@ class status_check extends \local_nagios\base_check
      * Execute the check.
      */
     public function execute() {
-        global $SHAREDB;
+        global $CFG, $SHAREDB;
 
-        $errored = $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 3
+        $sql = <<<SQL
+        SELECT status, COUNT(*) cnt
+        FROM {shared_rollovers}
+        WHERE to_dist=:to_dist AND to_env=:to_env
+        GROUP BY status
+SQL;
+        $counts = $SHAREDB->get_records_sql($sql, array(
+            'to_env' => $CFG->kent->environment,
+            'to_dist' => $CFG->kent->distribution
         ));
 
-        $queued = $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 0
-        ));
+        $total = 0;
+        foreach ($counts as $k => $v) {
+            $total += $v;
+        }
 
-        $queued += $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 1
-        ));
+        $complete = $counts[\local_rollover\Rollover::STATUS_COMPLETE]->cnt;
+        $errored = $counts[\local_rollover\Rollover::STATUS_ERROR]->cnt;
 
-        $inprogress = $SHAREDB->count_records('shared_rollovers', array(
-            'status' => 4
-        ));
+        $queued = $counts[\local_rollover\Rollover::STATUS_WAITING_SCHEDULE]->cnt;
+        $queued += $counts[\local_rollover\Rollover::STATUS_SCHEDULED]->cnt;
 
-        $threshold = 5;
+        $inprogress = $counts[\local_rollover\Rollover::STATUS_IN_PROGRESS]->cnt;
+        $inprogress += $counts[\local_rollover\Rollover::STATUS_RESTORE_SCHEDULED]->cnt;
+        $inprogress += $counts[\local_rollover\Rollover::STATUS_BACKED_UP]->cnt;
 
         if ($errored > 0) {
-            $this->error($errored . ' failed rollovers.');
+            $this->error($errored . ' failed rollovers');
         }
 
-        if ($queued > $threshold) {
-            $this->warning($queued . ' queued rollovers.');
+        if ($queued > $CFG->local_rollover_ratelimit) {
+            $this->warning($queued . ' queued rollovers');
         }
 
-        if ($inprogress > $threshold) {
-            $this->warning($inprogress . ' in progress rollovers.');
+        if ($inprogress > $CFG->local_rollover_ratelimit) {
+            $this->warning($inprogress . ' in progress rollovers');
         }
+
+        $this->set_perf_var('rollovers_queued', $queued);
+        $this->set_perf_var('rollovers_inprogress', $inprogress);
     }
 }

@@ -34,19 +34,19 @@ class generator extends \core\task\scheduled_task
     }
 
     public function execute() {
-        global $DB;
+        global $CFG, $DB;
 
         if (!\local_kent\util\sharedb::available()) {
             return;
         }
 
-        // If we already have more than 5 pending adhoc tasks, don't schedule any more.
+        // If we already have more than <x> pending adhoc tasks, don't schedule any more.
         $count = $DB->count_records('task_adhoc', array(
             'component' => 'local_rollover',
             'faildelay' => 0
         ));
 
-        if ($count < 5) {
+        if ($count < $CFG->local_rollover_ratelimit) {
             $this->schedule_backups();
             $this->schedule_restores();
         }
@@ -62,7 +62,7 @@ class generator extends \core\task\scheduled_task
             'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE,
             'from_env' => $CFG->kent->environment,
             'from_dist' => $CFG->kent->distribution
-        ));
+        ), '', '*', 0, $CFG->local_rollover_ratelimit);
 
         // All of these need to be backed up.
         foreach ($events as $event) {
@@ -88,7 +88,7 @@ class generator extends \core\task\scheduled_task
             'status' => \local_rollover\Rollover::STATUS_BACKED_UP,
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution
-        ));
+        ), '', '*', 0, $CFG->local_rollover_ratelimit);
 
         // All of these need to be imported.
         foreach ($events as $event) {
@@ -96,6 +96,9 @@ class generator extends \core\task\scheduled_task
             $task->set_custom_data(array(
                 'id' => $event->id
             ));
+
+            $event->status = \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED;
+            $SHAREDB->update_record('shared_rollovers', $event);
 
             \core\task\manager::queue_adhoc_task($task);
         }

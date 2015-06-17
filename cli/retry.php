@@ -48,7 +48,8 @@ raise_memory_limit(MEMORY_UNLIMITED);
 $event = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'from_env' => $CFG->kent->environment,
-    'from_dist' => $CFG->kent->distribution
+    'from_dist' => $CFG->kent->distribution,
+    'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE
 ));
 
 if ($event) {
@@ -60,23 +61,35 @@ if ($event) {
         "id" => $event->id
     ));
     $task->execute();
+
+    echo "Backup complete\n";
 }
 
 // Is this an import?
 
-$event = $SHAREDB->get_record('shared_rollovers', array(
+$importevent = $SHAREDB->get_record('shared_rollovers', array(
     'id' => $options['id'],
     'to_env' => $CFG->kent->environment,
-    'to_dist' => $CFG->kent->distribution
+    'to_dist' => $CFG->kent->distribution,
+    'status' => \local_rollover\Rollover::STATUS_BACKED_UP
 ));
 
-if (!$event) {
-    cli_error('Are you sure you picked the right distribution?');
+if (!$importevent) {
+    if (!$event) {
+        cli_error('Could not find event.');
+    }
+
+    die();
 }
+
+$importevent->status = \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED;
+$SHAREDB->update_record('shared_rollovers', $importevent);
 
 // Import.
 $task = new \local_rollover\task\import();
 $task->set_custom_data(array(
-    "id" => $event->id
+    "id" => $importevent->id
 ));
 $task->execute();
+
+echo "Restore complete\n";
