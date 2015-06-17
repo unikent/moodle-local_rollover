@@ -101,7 +101,7 @@ class Rollover
 
         // Add notification.
         $message = '<i class="fa fa-info-circle"></i> A rollover has been scheduled on this course.';
-        $kc = new \local_kent\Course($obj->id);
+        $kc = new \local_kent\Course($obj->to_course);
         $kc->replace_notification($context->id, 'rollover', $message, 'info', false, false);
 
         // Fire event.
@@ -446,7 +446,7 @@ class Rollover
 
             $message = '<i class="fa fa-history"></i> ';
             $message .= "This {$moduletext} has been rolled over from ";
-            $message .= '<a href="{$url}" class="alert-link" target="_blank">Moodle {$rollover->from_dist}</a>.';
+            $message .= "<a href=\"{$url}\" class=\"alert-link\" target=\"_blank\">Moodle {$rollover->from_dist}</a>.";
         }
 
         // Is this a manual course?
