@@ -46,7 +46,7 @@ class generator extends \core\task\scheduled_task
             'faildelay' => 0
         ));
 
-        if ($count < $CFG->local_rollover_ratelimit) {
+        if ($count < $CFG->kent->rollover_ratelimit) {
             $this->schedule_backups();
             $this->schedule_restores();
         }
@@ -62,7 +62,7 @@ class generator extends \core\task\scheduled_task
             'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE,
             'from_env' => $CFG->kent->environment,
             'from_dist' => $CFG->kent->distribution
-        ), '', '*', 0, $CFG->local_rollover_ratelimit);
+        ), '', '*', 0, $CFG->kent->rollover_ratelimit);
 
         // All of these need to be backed up.
         foreach ($events as $event) {
@@ -88,7 +88,7 @@ class generator extends \core\task\scheduled_task
             'status' => \local_rollover\Rollover::STATUS_BACKED_UP,
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution
-        ), '', '*', 0, $CFG->local_rollover_ratelimit);
+        ), '', '*', 0, $CFG->kent->rollover_ratelimit);
 
         // All of these need to be imported.
         foreach ($events as $event) {
