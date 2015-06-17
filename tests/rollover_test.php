@@ -132,7 +132,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $task = new \local_rollover\task\generator();
         $task->execute();
 
-        $this->run_all_tasks(1);
+        $this->run_all_tasks(2);
         $this->run_all_tasks(0);
 
         $task = new \local_rollover\task\generator();
