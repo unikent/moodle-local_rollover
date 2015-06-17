@@ -60,6 +60,21 @@ function xmldb_local_rollover_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015061500, 'local', 'rollover');
     }
 
+    if ($oldversion < 2015061700) {
+        // Upgrade previous notifications.
+        $DB->set_field('course_notifications', 'extref', 'rollover', array(
+            'extref' => 'rollover_scheduled'
+        ));
+        $DB->set_field('course_notifications', 'extref', 'rollover', array(
+            'extref' => 'rollover_error'
+        ));
+        $DB->set_field('course_notifications', 'extref', 'rollover', array(
+            'extref' => 'rollover_finished'
+        ));
+
+        upgrade_plugin_savepoint(true, 2015061700, 'local', 'rollover');
+    }
+
     return true;
 
 }
