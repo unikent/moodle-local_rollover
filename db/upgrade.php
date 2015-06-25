@@ -60,35 +60,6 @@ function xmldb_local_rollover_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015061500, 'local', 'rollover');
     }
 
-    if ($oldversion < 2015062500) {
-        // Upgrade previous notifications.
-        $courses = $DB->get_records('course');
-        foreach ($courses as $course) {
-            $context = \context_course::instance($course->id);
-
-            $kr = new \local_rollover\Course($course);
-            if ($kr->get_status() !== \local_rollover\Rollover::STATUS_NONE) {
-                $record = $kr->get_rollover();
-
-                $kc = new \local_kent\Course($course->id);
-
-                // Generate a status notification.
-                \local_rollover\notification\status::create(array(
-                    'objectid' => $course->id,
-                    'context' => $context,
-                    'other' => array(
-                        'complete' => true,
-                        'rolloverid' => $record->id,
-                        'record' => $record,
-                        'manual' => $kc->is_manual()
-                    )
-                ));
-            }
-        }
-
-        upgrade_plugin_savepoint(true, 2015062500, 'local', 'rollover');
-    }
-
     return true;
 
 }
