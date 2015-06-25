@@ -58,7 +58,7 @@ class status extends \local_notifications\base {
         global $SHAREDB;
 
         if (isset($this->other['complete'])) {
-            return $this->render_complete($rollover);
+            return $this->render_complete();
         }
 
         $rollover = $SHAREDB->get_record('shared_rollovers', array(
