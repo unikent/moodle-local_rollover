@@ -100,9 +100,14 @@ class Rollover
         }
 
         // Add notification.
-        $message = '<i class="fa fa-info-circle"></i> A rollover has been scheduled on this course.';
-        $kc = new \local_kent\Course($obj->to_course);
-        $kc->replace_notification($context->id, 'rollover', $message, 'info', false, false);
+        \local_rollover\notification\status::create(array(
+            'objectid' => $obj->to_course,
+            'objecttable' => 'course',
+            'context' => $context,
+            'other' => array(
+                'rolloverid' => $obj->id
+            )
+        ));
 
         // Fire event.
         $event = \local_rollover\event\rollover_scheduled::create(array(
@@ -142,8 +147,7 @@ class Rollover
         $SHAREDB->update_record('shared_rollovers', $obj);
 
         // Delete any notifications.
-        $kc = new \local_kent\Course($event->courseid);
-        $notification = $kc->get_notification($event->context->id, 'rollover');
+        $notification = \local_rollover\notification\status::get($event->courseid, $event->context);
         if ($notification) {
             $notification->delete();
         }
@@ -431,33 +435,19 @@ class Rollover
      * Notify the couse.
      */
     private function notify_course($context) {
-        global $CFG, $SHAREDB;
-
         $kc = new \local_kent\Course($context->instanceid);
-        $manual = $kc->is_manual();
-        $moduletext = ($manual ? 'manually-created ' : '') . 'module';
-
-        $message = "<i class=\"fa fa-history\"></i> This {$moduletext} has been rolled over from a previous year.";
-
-        // Get the rollover.
-        $rollover = $SHAREDB->get_record('shared_rollovers', array('id' => $this->record->id));
-        if ($rollover && isset($CFG->kent->paths[$rollover->from_dist])) {
-            $url = $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
-
-            $message = '<i class="fa fa-history"></i> ';
-            $message .= "This {$moduletext} has been rolled over from ";
-            $message .= "<a href=\"{$url}\" class=\"alert-link\" target=\"_blank\">Moodle {$rollover->from_dist}</a>.";
-        }
-
-        // Is this a manual course?
-        if ($manual) {
-            $message .= ' An administrator must re-link any previous meta-enrolments.';
-            $message .= 'Information on how to do this can be found on the ';
-            $message .= '<a href="http://www.kent.ac.uk/elearning/files/moodle/moodle-meta-enrolment.pdf" class="alert-link" target="_blank">';
-            $message .= 'E-Learning website</a>.';
-        }
 
         // Add message.
-        $kc->replace_notification($context->id, 'rollover', $message, 'info', false, true);
+        \local_rollover\notification\status::create(array(
+            'objectid' => $this->record->to_course,
+            'objecttable' => 'course',
+            'context' => $context,
+            'other' => array(
+                'complete' => true,
+                'rolloverid' => $this->record->id,
+                'record' => $this->record,
+                'manual' => $kc->is_manual()
+            )
+        ));
     }
 }
