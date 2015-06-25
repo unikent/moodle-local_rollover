@@ -68,11 +68,6 @@ class import extends \core\task\adhoc_task
 
             $context = \context_course::instance($event->to_course);
 
-            // Add message.
-            $message = '<i class="fa fa-exclamation-triangle"></i> The rollover for this course failed! Please contact your FLT.';
-            $kc = new \local_kent\Course($event->to_course);
-            $kc->add_notification($context->id, 'rollover', $message, 'error', false, false);
-
             // Register event.
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,

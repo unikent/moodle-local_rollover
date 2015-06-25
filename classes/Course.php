@@ -29,6 +29,9 @@ class Course
     /** Course. */
     private $_course;
 
+    /** Rollovers. */
+    private $_rollovers;
+
     /**
      * Constructor
      */
@@ -149,6 +152,28 @@ SQL;
     /**
      * What is the current rollover status of this module.
      */
+    public function get_rollover() {
+        global $CFG, $SHAREDB;
+
+        if (!isset($this->_rollovers)) {
+            $this->_rollovers = array();
+            $this->_rollovers = $SHAREDB->get_records('shared_rollovers', array(
+                'to_env' => $CFG->kent->environment,
+                'to_dist' => $CFG->kent->distribution,
+                'to_course' => $this->courseid
+            ));
+        }
+
+        if (empty($this->_rollovers)) {
+            return null;
+        }
+
+        return end($this->_rollovers);
+    }
+
+    /**
+     * What is the current rollover status of this module.
+     */
     public function has_active_rollover() {
         $status = $this->get_status();
 
@@ -165,21 +190,8 @@ SQL;
      * What is the current rollover status of this module.
      */
     public function get_status() {
-        global $CFG, $SHAREDB;
-
-        $rollovers = $SHAREDB->get_records('shared_rollovers', array(
-            'to_env' => $CFG->kent->environment,
-            'to_dist' => $CFG->kent->distribution,
-            'to_course' => $this->courseid
-        ));
-
-        if (empty($rollovers)) {
-            return Rollover::STATUS_NONE;
-        }
-
-        // Get the most recent rollover object.
-        $rollover = end($rollovers);
-        return (int)$rollover->status;
+        $rollover = $this->get_rollover();
+        return !$rollover ? Rollover::STATUS_NONE : (int)$rollover->status;
     }
 
     /**
