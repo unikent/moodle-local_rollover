@@ -18,7 +18,7 @@ namespace local_rollover\notification;
 
 defined('MOODLE_INTERNAL') || die();
 
-class status extends \local_notifications\base {
+class status extends \local_notifications\notification\base {
     /**
      * Returns the component of the notification.
      */
@@ -38,10 +38,10 @@ class status extends \local_notifications\base {
      */
     public function get_level() {
         if (isset($this->other['complete'])) {
-            return \local_notifications\base::LEVEL_INFO;
+            return \local_notifications\notification\base::LEVEL_INFO;
         }
 
-        return \local_notifications\base::LEVEL_DANGER;
+        return \local_notifications\notification\base::LEVEL_DANGER;
     }
 
     /**
