@@ -102,7 +102,6 @@ class Rollover
         // Add notification.
         \local_rollover\notification\status::create(array(
             'objectid' => $obj->to_course,
-            'objecttable' => 'course',
             'context' => $context,
             'other' => array(
                 'rolloverid' => $obj->id
@@ -440,7 +439,6 @@ class Rollover
         // Add message.
         \local_rollover\notification\status::create(array(
             'objectid' => $this->record->to_course,
-            'objecttable' => 'course',
             'context' => $context,
             'other' => array(
                 'complete' => true,
