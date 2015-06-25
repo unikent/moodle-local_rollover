@@ -29,5 +29,6 @@ $plugin->component = 'local_rollover';
 $plugin->requires = 2014051200;
 
 $plugin->dependencies = array(
-    'local_nagios' => 2015060500
+    'local_nagios' => 2015060500,
+    'local_notifications' => 2015062500
 );
