@@ -146,7 +146,7 @@ foreach ($rollovers as $rollover) {
         case \local_rollover\Rollover::STATUS_COMPLETE:
             $status = 'Complete';
 
-            $url = new moodle_url('/local/rollover/manage/index.php', array(
+            $url = new moodle_url($PAGE->url, array(
                 'action' => 'undo',
                 'id' => $rollover->id
             ));
@@ -157,7 +157,7 @@ foreach ($rollovers as $rollover) {
         case \local_rollover\Rollover::STATUS_ERROR:
             $status = 'Error';
 
-            $url = new moodle_url('/local/rollover/manage/index.php', array(
+            $url = new moodle_url($PAGE->url, array(
                 'action' => 'retry',
                 'id' => $rollover->id
             ));
@@ -168,7 +168,7 @@ foreach ($rollovers as $rollover) {
         case \local_rollover\Rollover::STATUS_IN_PROGRESS:
             $status = 'In Progress';
 
-            $url = new moodle_url('/local/rollover/manage/index.php', array(
+            $url = new moodle_url($PAGE->url, array(
                 'action' => 'fail',
                 'id' => $rollover->id
             ));
