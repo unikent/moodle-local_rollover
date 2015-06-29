@@ -37,16 +37,15 @@ class rollover extends base implements \loggable
      * Allow the controller to set specific settings.
      */
     public function set_prefs($prefs) {
-        $users = $this->get_setting('users');
-        $users->set_value(0);
+        $setting = $this->get_setting('users');
+        $setting->set_value(0);
+
+        $setting = $this->get_setting('calendarevents');
+        $setting->set_value(0);
+
+        $setting = $this->get_setting('groups');
+        $setting->set_value(0);
 
         parent::set_prefs($prefs);
-    }
-
-    /**
-     * Should we process the requested pref?
-     */
-    protected function can_process($pref) {
-        return $pref != 'id' || $pref != 'users';
     }
 }
