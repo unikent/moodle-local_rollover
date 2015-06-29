@@ -181,11 +181,11 @@ foreach ($rollovers as $rollover) {
         break;
     }
 
-    $from = html_writer::tag('a', "{$rollover->from_shortname}: {$rollover->from_fullname} ({$rollover->from_dist})", array(
+    $from = html_writer::tag('a', "{$rollover->from_shortname}: {$rollover->from_fullname}", array(
         'href' => $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course
     ));
 
-    $to = html_writer::tag('a', "{$rollover->to_shortname}: {$rollover->to_fullname} ({$rollover->to_dist})", array(
+    $to = html_writer::tag('a', "{$rollover->to_shortname}: {$rollover->to_fullname}", array(
         'href' => $CFG->kent->paths[$rollover->to_dist] . "course/view.php?id=" . $rollover->to_course
     ));
 
