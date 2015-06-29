@@ -28,9 +28,15 @@ require_once($CFG->libdir . '/accesslib.php');
 require_login();
 require_capability('moodle/site:config', context_system::instance());
 
+$currentpage = optional_param('page', 0, PARAM_INT);
+$perpage = optional_param('perpage', 20, PARAM_INT);
+
 // Page setup.
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url('/local/rollover/manage/index.php');
+$PAGE->set_url(new \moodle_url('/local/rollover/manage/index.php', array(
+    'page' => $currentpage,
+    'perpage' => $perpage
+)));
 $PAGE->set_pagelayout('admin');
 $PAGE->set_title("Rollover Management");
 $PAGE->navbar->add('Rollover Administration');
@@ -100,7 +106,7 @@ $table->data = array();
 $rollovers = $SHAREDB->get_records('shared_rollovers', array(
     'to_env' => $CFG->kent->environment,
     'to_dist' => $CFG->kent->distribution
-));
+), '', '*', $currentpage * $perpage, $perpage);
 
 foreach ($rollovers as $rollover) {
     $action = new html_table_cell('-');
@@ -179,5 +185,13 @@ foreach ($rollovers as $rollover) {
 }
 
 echo html_writer::table($table);
+
+$total = $SHAREDB->count_records('shared_rollovers', array(
+    'to_env' => $CFG->kent->environment,
+    'to_dist' => $CFG->kent->distribution
+));
+
+echo $OUTPUT->paging_bar($total, $currentpage, $perpage, $PAGE->url);
+
 
 echo $OUTPUT->footer();
