@@ -28,9 +28,15 @@ require_once($CFG->libdir . '/accesslib.php');
 require_login();
 require_capability('moodle/site:config', context_system::instance());
 
+$currentpage = optional_param('page', 0, PARAM_INT);
+$perpage = optional_param('perpage', 20, PARAM_INT);
+
 // Page setup.
 $PAGE->set_context(context_system::instance());
-$PAGE->set_url('/local/rollover/manage/index.php');
+$PAGE->set_url(new \moodle_url('/local/rollover/manage/index.php', array(
+    'page' => $currentpage,
+    'perpage' => $perpage
+)));
 $PAGE->set_pagelayout('admin');
 $PAGE->set_title("Rollover Management");
 $PAGE->navbar->add('Rollover Administration');
@@ -97,10 +103,27 @@ $table->head  = array(
 $table->attributes['class'] = 'admintable generaltable';
 $table->data = array();
 
-$rollovers = $SHAREDB->get_records('shared_rollovers', array(
-    'to_env' => $CFG->kent->environment,
-    'to_dist' => $CFG->kent->distribution
-));
+$sql = <<<SQL
+    SELECT
+        sr.id, sr.status, sr.from_dist, sr.from_course, sr.to_dist, sr.to_course, sr.created, sr.updated,
+        sc.shortname as from_shortname, sc2.shortname as to_shortname,
+        sc.fullname as from_fullname, sc2.fullname as to_fullname
+    FROM {shared_rollovers} sr
+    LEFT OUTER JOIN {shared_courses} sc
+        ON sc.moodle_id=sr.from_course
+        AND sc.moodle_env=sr.from_env
+        AND sc.moodle_dist=sr.from_dist
+    LEFT OUTER JOIN {shared_courses} sc2
+        ON sc2.moodle_id=sr.to_course
+        AND sc2.moodle_env=sr.to_env
+        AND sc2.moodle_dist=sr.to_dist
+    WHERE sr.to_env = :env AND sr.to_dist = :dist
+SQL;
+
+$rollovers = $SHAREDB->get_recordset_sql($sql, array(
+    'env' => $CFG->kent->environment,
+    'dist' => $CFG->kent->distribution
+), $currentpage * $perpage, $perpage);
 
 foreach ($rollovers as $rollover) {
     $action = new html_table_cell('-');
@@ -123,7 +146,7 @@ foreach ($rollovers as $rollover) {
         case \local_rollover\Rollover::STATUS_COMPLETE:
             $status = 'Complete';
 
-            $url = new moodle_url('/local/rollover/manage/index.php', array(
+            $url = new moodle_url($PAGE->url, array(
                 'action' => 'undo',
                 'id' => $rollover->id
             ));
@@ -134,7 +157,7 @@ foreach ($rollovers as $rollover) {
         case \local_rollover\Rollover::STATUS_ERROR:
             $status = 'Error';
 
-            $url = new moodle_url('/local/rollover/manage/index.php', array(
+            $url = new moodle_url($PAGE->url, array(
                 'action' => 'retry',
                 'id' => $rollover->id
             ));
@@ -145,7 +168,7 @@ foreach ($rollovers as $rollover) {
         case \local_rollover\Rollover::STATUS_IN_PROGRESS:
             $status = 'In Progress';
 
-            $url = new moodle_url('/local/rollover/manage/index.php', array(
+            $url = new moodle_url($PAGE->url, array(
                 'action' => 'fail',
                 'id' => $rollover->id
             ));
@@ -158,11 +181,11 @@ foreach ($rollovers as $rollover) {
         break;
     }
 
-    $from = html_writer::tag('a', "Link ({$rollover->from_dist})", array(
+    $from = html_writer::tag('a', "{$rollover->from_shortname}: {$rollover->from_fullname} ({$rollover->from_dist})", array(
         'href' => $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course
     ));
 
-    $to = html_writer::tag('a', "Link ({$rollover->to_dist})", array(
+    $to = html_writer::tag('a', "{$rollover->to_shortname}: {$rollover->to_fullname} ({$rollover->to_dist})", array(
         'href' => $CFG->kent->paths[$rollover->to_dist] . "course/view.php?id=" . $rollover->to_course
     ));
 
@@ -178,6 +201,16 @@ foreach ($rollovers as $rollover) {
     $table->data[] = $row;
 }
 
+$rollovers->close();
+
 echo html_writer::table($table);
+
+$total = $SHAREDB->count_records('shared_rollovers', array(
+    'to_env' => $CFG->kent->environment,
+    'to_dist' => $CFG->kent->distribution
+));
+
+echo $OUTPUT->paging_bar($total, $currentpage, $perpage, $PAGE->url);
+
 
 echo $OUTPUT->footer();
