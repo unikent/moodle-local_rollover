@@ -54,7 +54,7 @@ class status extends \local_notifications\notification\base {
     /**
      * Returns the notification.
      */
-    public function render() {
+    protected function get_contents() {
         global $SHAREDB;
 
         if (isset($this->other['complete'])) {
@@ -107,7 +107,7 @@ class status extends \local_notifications\notification\base {
      * Setter for $customdata.
      * @param mixed $customdata (anything that can be handled by json_encode)
      */
-    public function set_custom_data($customdata) {
+    protected function set_custom_data($customdata) {
         if (empty($customdata['rolloverid'])) {
             throw new \moodle_exception("rolloverid cannot be empty!");
         }
