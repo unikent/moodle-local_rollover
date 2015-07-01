@@ -58,7 +58,13 @@ class Rollover
 
         if (empty($options)) {
             $options = new \stdClass();
+        } else {
+            $options = (object)$options;
         }
+
+        // Force this.
+        $options->turnitintool = false;
+        $options->turnitintooltwo = false;
 
         $context = \context_course::instance($toid);
         if (!has_capability('moodle/course:update', $context)) {
@@ -155,12 +161,12 @@ class Rollover
     /**
      * Static backup method.
      */
-    public static function backup($settings) {
+    public static function backup($id, $settings) {
         global $CFG;
 
         static::setup_folder();
 
-        $controller = new backup\controllers\rollover($settings['id'], $settings);
+        $controller = new backup\controllers\rollover($id, $settings);
         $controller->execute_plan();
 
         $result = $controller->get_results();
@@ -291,29 +297,12 @@ class Rollover
 
         $xpath = new \DOMXPath($doc);
 
-        // Remove all turnitintool activities.
-        $this->remove_module($xpath, 'turnitintool');
-        $this->remove_module($xpath, 'turnitintooltwo');
-
         // Rename news forum.
         $this->manipulate_fields($xpath, 'forum', 'name', 'Announcements', 'News forum');
 
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
-    }
-
-    /**
-     * Remove a specified modules from this rollover.
-     */
-    private function remove_module($xpath, $name) {
-        // Remove all $name activities.
-        $query = "/moodle_backup/information/contents/activities/activity[modulename/text()='$name']";
-        $this->remove_nodes($xpath, $query);
-
-        // Remove all $name settings.
-        $query = "/moodle_backup/information/settings/setting[activity/text()[contains(.,'$name')]]";
-        $this->remove_nodes($xpath, $query);
     }
 
     /**
@@ -359,18 +348,6 @@ class Rollover
                 }
             }
         });
-    }
-
-    /**
-     * Manipulate a DOM Document - remove a path.
-     */
-    private function remove_nodes($xpath, $query) {
-        $nodes = $xpath->query($query);
-
-        // Remove them.
-        foreach ($nodes as $node) {
-            $node->parentNode->removeChild($node);
-        }
     }
 
     /**

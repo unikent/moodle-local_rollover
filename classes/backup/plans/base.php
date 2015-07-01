@@ -41,38 +41,18 @@ class base extends \backup_plan implements \loggable
 
         // Loop through our settings array.
         foreach ($prefs as $pref => $value) {
-            // Check that the chosen pref is not already dealt with.
-            if ($this->can_process($pref)) {
-                // Loops through backup settings.
-                foreach ($this->settings as $key => $setting) {
-                    // Checks to see if it is a resource or global course setting.
-                    if (preg_match($pattern, $setting->get_name())) {
-                        $s = explode('_', $setting->get_name());
-                        // Checks to see if our pref and the backup setting match.
-                        if ($s[0] == $pref) {
-                            // See if it is a userinfo setting.
-                            if ($s[2] == 'userinfo' && $users->get_value() == 1 && $value == 1) {
-                                $setting->set_value(1);
-                            } else if ($s[2] == 'included') {
-                                $setting->set_value((int)$value);
-                            } else {
-                                $setting->set_value(0);
-                            }
-                        }
-                    } else {
-                        if ($setting->get_name() == $pref) {
-                            $setting->set_value((int)$value);
-                        }
+            // Loops through backup settings.
+            foreach ($this->settings as $key => $setting) {
+                // Checks to see if it is a resource or global course setting.
+                if (preg_match($pattern, $setting->get_name())) {
+                    $parts = explode('_', $setting->get_name());
+
+                    // Checks to see if our pref and the backup setting match.
+                    if ($parts[0] == $pref) {
+                        $setting->set_value((int)$value);
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Should we process the requested pref?
-     */
-    protected function can_process($pref) {
-        return $pref != 'id';
     }
 }

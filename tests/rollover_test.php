@@ -166,6 +166,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $task = new \local_rollover\task\generator();
         $task->schedule_backups();
 
+        $rollover = new \local_rollover\Course($course2->id);
         $this->assertEquals(\local_rollover\Rollover::STATUS_SCHEDULED, $rollover->get_status());
     }
 
@@ -200,11 +201,13 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         $result = \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
 
+        $rollover = new \local_rollover\Course($course2->id);
         $this->assertEquals(\local_rollover\Rollover::STATUS_WAITING_SCHEDULE, $rollover->get_status());
 
         // Now run a backup.
         $this->run_backups(1);
 
+        $rollover = new \local_rollover\Course($course2->id);
         $this->assertEquals(\local_rollover\Rollover::STATUS_BACKED_UP, $rollover->get_status());
         $this->assertTrue($rollover->is_empty());
 
@@ -212,6 +215,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->run_imports(1);
 
         // Check things worked.
+        $rollover = new \local_rollover\Course($course2->id);
         $this->assertEquals(\local_rollover\Rollover::STATUS_COMPLETE, $rollover->get_status());
         $this->assertFalse($rollover->is_empty());
         $this->assertEquals(3, $DB->count_records('course_modules', array(

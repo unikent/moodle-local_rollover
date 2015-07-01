@@ -46,11 +46,10 @@ class backup extends \core\task\adhoc_task
 
         $event->updated = date('Y-m-d H:i:s');
 
+        // Decode settings.
         $settings = (array)json_decode($event->options);
-        $settings['backup_turnitintool'] = 0;
-        $settings['backup_turnitintooltwo'] = 0;
-        $settings['id'] = $event->from_course;
 
+        // Decode user.
         $context = \context_course::instance($event->from_course);
         $user = $DB->get_record('user', array(
             'username' => $event->requester
@@ -67,7 +66,7 @@ class backup extends \core\task\adhoc_task
         $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
         $SHAREDB->update_record('shared_rollovers', $event);
 
-        $event->path = \local_rollover\Rollover::backup($settings);
+        $event->path = \local_rollover\Rollover::backup($event->from_course, $settings);
         if ($event->path) {
             $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
         } else {
