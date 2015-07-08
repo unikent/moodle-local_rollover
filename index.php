@@ -61,12 +61,12 @@ $PAGE->requires->jquery_plugin('blockui', 'theme_kent');
 
 $PAGE->requires->strings_for_js(array('requestedmessage', 'errormessage'), 'local_rollover');
 
-$PAGE->requires->js("/local/rollover/scripts/js/underscore-min.js");
-$PAGE->requires->js("/local/rollover/scripts/js/hideshow.js");
-$PAGE->requires->js("/local/rollover/scripts/js/submit.js");
-$PAGE->requires->js("/local/rollover/scripts/js/autoComplete.js");
+$PAGE->requires->js("/local/rollover/scripts/underscore-min.js");
+$PAGE->requires->js("/local/rollover/scripts/hideshow.js");
+$PAGE->requires->js("/local/rollover/scripts/submit.js");
+$PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
 
-$PAGE->requires->css("/local/rollover/scripts/css/styles.css");
+$PAGE->requires->css("/local/rollover/less/build/build.css");
 
 $renderer = $PAGE->get_renderer('local_rollover');
 

@@ -57,6 +57,8 @@ class Course
 
             return $this->_course;
         }
+
+        return null;
     }
 
     /**
