@@ -80,7 +80,7 @@ var getCourseData = function(from) {
 		timeout: 20000 // 20 Seconds max to try and fetch
 	});
 
-}
+};
 
 var refreshCourseData = function() {
 	
@@ -133,12 +133,12 @@ var refreshCourseData = function() {
 
 		populateCourseAutoComplete(course_data);
 	});
-}
+};
 
 var populateCourseAutoComplete = function(course_data) {
 
 	jQuery('.rollover_crs_input').each(function(i, el) {
-        el = jQuery(el)
+        el = jQuery(el);
         el.autocomplete({
     		minLength: 1,
     		source: function(request, response) {
@@ -152,10 +152,10 @@ var populateCourseAutoComplete = function(course_data) {
                 var todist = el.closest('.rollover_crs_from').find('.src_to').val();
 
                 // Dont allow rollover into self.
-                var newresults = []
+                var newresults = [];
                 for (var result in results) {
-                    search = results[result]
-                    data = course_data.courses[search]
+                    search = results[result];
+                    data = course_data.courses[search];
                     if (data[0] != toid || data[1] != todist) {
                         newresults.push(search)
                     }

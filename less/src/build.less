@@ -38,18 +38,9 @@
   -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box; 
 }
 .border-radius(@topright: 0, @bottomright: 0, @bottomleft: 0, @topleft: 0) {
-  -webkit-border-top-right-radius: @topright;
-  -webkit-border-bottom-right-radius: @bottomright;
-  -webkit-border-bottom-left-radius: @bottomleft;
-  -webkit-border-top-left-radius: @topleft;
-  -moz-border-radius-topright: @topright;
-  -moz-border-radius-bottomright: @bottomright;
-  -moz-border-radius-bottomleft: @bottomleft;
-  -moz-border-radius-topleft: @topleft;
-  border-top-right-radius: @topright;
-  border-bottom-right-radius: @bottomright;
-  border-bottom-left-radius: @bottomleft;
-  border-top-left-radius: @topleft;
+  -webkit-border-radius: @topleft @topright @bottomright @bottomleft;
+  -moz-border-radius: @topleft @topright @bottomright @bottomleft;
+  border-radius: @topleft @topright @bottomright @bottomleft;
   -moz-background-clip: padding; -webkit-background-clip: padding-box; background-clip: padding-box; 
 }
 .opacity(@opacity: 0.5) {
@@ -90,7 +81,7 @@
 .ui-dialog {
     background: #fff !important;
     border: 1px solid #E3E3E3 !important;
-    padding: 0px !important;
+    padding: 0 !important;
 }
 
 .ui-dialog .ui-widget-header {
@@ -98,12 +89,12 @@
     background: #efefef;
     border: 1px solid #fff;
     color: #6f6f6f;
-    -webkit-border-bottom-right-radius: 0px;
-    -webkit-border-bottom-left-radius: 0px;
-    -moz-border-radius-bottomright: 0px;
-    -moz-border-radius-bottomleft: 0px;
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
+    -webkit-border-bottom-right-radius: 0;
+    -webkit-border-bottom-left-radius: 0;
+    -moz-border-radius-bottomright: 0;
+    -moz-border-radius-bottomleft: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .ui-widget-header .ui-state-hover {
@@ -193,7 +184,7 @@
   #srch { 
     display: block;
     padding: 10px;
-    margin: 0px auto;
+    margin: 0 auto;
     width: 97%;
   }
   #srch_submit {
@@ -202,7 +193,7 @@
     top: 15px;
     padding: 9px;
     color: #fff;
-    text-shadow: 0px 0px 0px transparent;
+    text-shadow: 0 0 0 transparent;
     .gradient(#27519f, #214587, #27519f);
     border: 1px solid #214587;
     .border-radius(0);
@@ -248,29 +239,28 @@
         position: relative;
         vertical-align: top;
         border-right: 2px solid #fff;
-        text-shadow: 1px 1px 0px #fff;
+        text-shadow: 1px 1px 0 #fff;
 
         .arrow {
-            border-color: transparent #fff transparent transparent;
-            border-style: solid;
-            border-width: 21px;
-            width:0px;
-            height:0px;
+          border: 21px solid transparent;
+          border-right-color: #fff;
+          width:0;
+            height:0;
             position:absolute;
-            right: 0px;
+            right: 0;
             top: 8px;
         }
 
         h3 {
             font-weight:normal;
             size:18px;
-            margin-bottom:0px;
+            margin-bottom:0;
             color: #6e6e6e;
         }
 
         .rollover_shrt_code {
             padding: 17px 0 7px 0;
-            margin: 0px;
+            margin: 0;
             color: #6E6E6E;
             font-size: 13px;
 
@@ -284,7 +274,7 @@
 
         .rollover_desc {
             padding: 10px 0 7px 0;
-            margin: 0px;
+            margin: 0;
             color: #6E6E6E;
             font-size: 13px;
             
@@ -299,14 +289,13 @@
         background: #f0f0f0;
         padding: 20px;
         position:relative;
-        text-shadow: 1px 1px 0px #fff;
+        text-shadow: 1px 1px 0 #fff;
         
         .arrow {
-            border-color: transparent #f0f0f0 transparent transparent;
-            border-style: solid;
-            border-width: 20px;
-            width:0px;
-            height:0px;
+          border: 20px solid transparent;
+          border-right-color: #f0f0f0;
+          width:0;
+            height:0;
             position:absolute;
             left: -40px;
             top: 9px;
@@ -316,9 +305,8 @@
            padding: 9px;
            border: solid 1px #E5E5E5;
            outline: 0;
-           background: #fff;
-           background-image: none;
-           font-size: 14px;
+          background: #fff none;
+          font-size: 14px;
            font-weight: normal;
            color: #6E6E6E;
            width: 95%;
@@ -360,7 +348,7 @@
 
         .rollover_advanced_options {
             list-style: none;
-            margin: 0px;
+            margin: 0;
             clear: both;
             display: none;
 
@@ -405,9 +393,8 @@
             clear: both;
             width: 70%;
             text-align: center;
-            margin: 0 auto;
-            margin-bottom: 20px;
-            padding-top: 10px;
+          margin: 0 auto 20px;
+          padding-top: 10px;
 
             .more_advanced {
                 position:relative;
@@ -437,22 +424,20 @@
                 }
                 
                 .arrow_border {
-                    border-color: #DBDBDB transparent transparent transparent;
-                    border-style: solid;
-                    border-width: 10px;
-                    width:0px;
-                    height:0px;
+                  border: 10px solid transparent;
+                  border-top-color: #DBDBDB;
+                  width:0;
+                    height:0;
                     position:absolute;
                     left: 45%;
                     top: 23px;
                 }
 
                 .arrow_light {
-                    border-color: #f3f3f3 transparent transparent transparent;
-                    border-style: solid;
-                    border-width: 10px;
-                    width:0px;
-                    height:0px;
+                  border: 10px solid transparent;
+                  border-top-color: #f3f3f3;
+                  width:0;
+                    height:0;
                     position:absolute;
                     left: 45%;
                     top: 22px;
@@ -480,7 +465,7 @@
      
         h3 {
             text-align: center;
-            padding-top: 0px;
+            padding-top: 0;
         }
 
         p {
@@ -499,7 +484,7 @@
      
         h3 {
             text-align: center;
-            padding-top: 0px;
+            padding-top: 0;
         }
 
         p {
@@ -517,7 +502,7 @@
 
         h3 {
             text-align: center;
-            padding-top: 0px;
+            padding-top: 0;
        }
 
        p {
