@@ -177,7 +177,7 @@ class api extends external_api
      * @throws \invalid_parameter_exception
      */
     public static function schedule($target, $source) {
-        global $DB;
+        global $DB, $SHAREDB;
 
         $params = self::validate_parameters(self::schedule_parameters(), array(
             'target' => $target,
@@ -234,7 +234,7 @@ class api extends external_api
             'dist' => new external_value(
                 PARAM_TEXT,
                 'The search string',
-                VALUE_DEFAULT, ''
+                VALUE_DEFAULT, '*'
             )
         ));
     }
@@ -253,7 +253,7 @@ class api extends external_api
      * @return array [string]
      * @throws \invalid_parameter_exception
      */
-    public static function search_sources($search, $target, $source) {
+    public static function search_sources($search, $target, $dist) {
         global $CFG, $DB;
 
         $params = self::validate_parameters(self::search_sources_parameters(), array(
