@@ -49,11 +49,6 @@ class api extends external_api
                 PARAM_INT,
                 'The course ID',
                 VALUE_REQUIRED
-            ),
-            'asstring' => new external_value(
-                PARAM_BOOL,
-                'Return the status as a string?',
-                VALUE_DEFAULT, false
             )
         ));
     }
@@ -73,58 +68,65 @@ class api extends external_api
      * @return array [string]
      * @throws \invalid_parameter_exception
      */
-    public static function get_status($courseid, $asstring) {
+    public static function get_status($courseid) {
         global $DB;
 
         $params = self::validate_parameters(self::get_status_parameters(), array(
-            'courseid' => $courseid,
-            'asstring' => $asstring
+            'courseid' => $courseid
         ));
         $courseid = $params['courseid'];
-        $asstring = $params['asstring'];
 
         $course = new \local_rollover\Course($courseid);
         $status = $course->get_status();
+        $stringstatus = 'Unknown';
+        $progress = -1;
 
-        if ($asstring) {
-            switch ($status) {
-                case \local_rollover\Rollover::STATUS_SCHEDULED:
-                    $status = 'Creating backup';
-                break;
+        switch ($status) {
+            case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
+                $stringstatus = 'Scheduling';
+                $progress = 15;
+            break;
 
-                case \local_rollover\Rollover::STATUS_BACKED_UP:
-                    $status = 'Backup complete';
-                break;
+            case \local_rollover\Rollover::STATUS_SCHEDULED:
+                $stringstatus = 'Creating backup';
+                $progress = 25;
+            break;
 
-                case \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED:
-                    $status = 'Restore Scheduled';
-                break;
+            case \local_rollover\Rollover::STATUS_BACKED_UP:
+                $stringstatus = 'Backup complete';
+                $progress = 50;
+            break;
 
-                case \local_rollover\Rollover::STATUS_IN_PROGRESS:
-                    $status = 'In Progress';
-                break;
+            case \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED:
+                $stringstatus = 'Restore Scheduled';
+                $progress = 75;
+            break;
 
-                case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
-                    $status = 'Scheduling';
-                break;
+            case \local_rollover\Rollover::STATUS_COMPLETE:
+                $stringstatus = 'Rollover Complete';
+                $progress = 100;
+            break;
 
-                case \local_rollover\Rollover::STATUS_COMPLETE:
-                    $status = 'Rollover Complete';
-                break;
+            case \local_rollover\Rollover::STATUS_IN_PROGRESS:
+                $stringstatus = 'In Progress';
+            break;
 
-                case \local_rollover\Rollover::STATUS_ERROR:
-                    $status = 'Rollover Error';
-                break;
+            case \local_rollover\Rollover::STATUS_ERROR:
+                $stringstatus = 'Rollover Error';
+            break;
 
-                case \local_rollover\Rollover::STATUS_DELETED:
-                case \local_rollover\Rollover::STATUS_NONE:
-                default:
-                    $status = 'No Rollover';
-                break;
-            }
+            case \local_rollover\Rollover::STATUS_DELETED:
+            case \local_rollover\Rollover::STATUS_NONE:
+            default:
+                $stringstatus = 'No Rollover';
+            break;
         }
 
-        return $status;
+        return array(
+            'status_code' => $status,
+            'status_str' => $stringstatus,
+            'progress' => $progress
+        );
     }
 
     /**
@@ -134,7 +136,9 @@ class api extends external_api
      */
     public static function get_status_returns() {
         return new external_single_structure(array(
-            new external_value(PARAM_TEXT, 'The status code or string.')
+            'status_code' => new external_value(PARAM_TEXT, 'The status code.'),
+            'status_str' => new external_value(PARAM_TEXT, 'The status string.'),
+            'progress' => new external_value(PARAM_INT, 'The current level of progress.')
         ));
     }
 
