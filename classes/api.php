@@ -253,10 +253,10 @@ class api extends external_api
      * @return array [string]
      * @throws \invalid_parameter_exception
      */
-    public static function search_sources($target, $source) {
+    public static function search_sources($search, $target, $source) {
         global $CFG, $DB;
 
-        $params = self::validate_parameters(self::search_parameters(), array(
+        $params = self::validate_parameters(self::search_sources_parameters(), array(
             'search' => $search,
             'target' => $target,
             'dist' => $dist
