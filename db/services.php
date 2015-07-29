@@ -15,20 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines the version.
+ * Local stuff for Kent rollover
  *
- * @package    local_rollover
+ * @package    local_kent
  * @copyright  2015 Skylar Kelty <S.Kelty@kent.ac.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+$services = array(
+    'Rollover service' => array(
+        'functions' => array (
+            'get_rollover_status'
+        ),
+        'requiredcapability' => '',
+        'restrictedusers' => 0,
+        'enabled' => 1
+    )
+);
 
-$plugin->version   = 2015072900;
-$plugin->component = 'local_rollover';
-$plugin->requires = 2014051200;
-
-$plugin->dependencies = array(
-    'local_nagios' => 2015060500,
-    'local_notifications' => 2015062500
+$functions = array(
+    'get_rollover_status' => array(
+        'classname'   => 'local_rollover\api',
+        'methodname'  => 'get_status',
+        'description' => 'Get rollover status.',
+        'type'        => 'read'
+    )
 );
