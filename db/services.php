@@ -25,7 +25,8 @@
 $services = array(
     'Rollover service' => array(
         'functions' => array (
-            'get_rollover_status'
+            'get_rollover_status',
+            'schedule_rollover'
         ),
         'requiredcapability' => '',
         'restrictedusers' => 0,
@@ -39,5 +40,12 @@ $functions = array(
         'methodname'  => 'get_status',
         'description' => 'Get rollover status.',
         'type'        => 'read'
+    ),
+    'schedule_rollover' => array(
+        'classname'    => 'local_rollover\api',
+        'methodname'   => 'schedule',
+        'description'  => 'Schedule a rollover.',
+        'type'         => 'write',
+        'capabilities' => 'moodle/course:update'
     )
 );

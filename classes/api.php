@@ -137,4 +137,77 @@ class api extends external_api
             new external_value(PARAM_TEXT, 'The status code or string.')
         ));
     }
+
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function schedule_parameters() {
+        return new external_function_parameters(array(
+            'target' => new external_value(
+                PARAM_INT,
+                'The local course ID',
+                VALUE_REQUIRED
+            ),
+            'source' => new external_value(
+                PARAM_INT,
+                'The remote shared_course ID',
+                VALUE_REQUIRED
+            )
+        ));
+    }
+
+    /**
+     * Expose to AJAX
+     * @return boolean
+     */
+    public static function schedule_is_allowed_from_ajax() {
+        return true;
+    }
+
+    /**
+     * Search a list of modules.
+     *
+     * @param $modulecode
+     * @return array [string]
+     * @throws \invalid_parameter_exception
+     */
+    public static function schedule($target, $source) {
+        global $DB;
+
+        $params = self::validate_parameters(self::schedule_parameters(), array(
+            'target' => $target,
+            'source' => $source
+        ));
+        $target = $params['target'];
+        $source = $params['source'];
+
+        require_capability('moodle/course:update', \context_course::instance($target));
+
+        $source = $SHAREDB->get_record('shared_courses', array(
+            'id' => $source
+        ), '*', MUST_EXIST);
+
+        // Undo any existing, completed rollover.
+        $course = new \local_rollover\Course($target);
+        $course->undo_rollovers();
+
+        $id = \local_rollover\Rollover::schedule($source->moodle_dist, $source->moodle_id, $target);
+        if (!$id) {
+            throw new \moodle_exception("Error creating rollover entry (unknown error).");
+        }
+
+        return $id;
+    }
+
+    /**
+     * Returns description of schedule() result value.
+     *
+     * @return external_description
+     */
+    public static function schedule_returns() {
+        return new external_single_structure(array(
+            new external_value(PARAM_INT, 'The rollover ID.')
+        ));
+    }
 }
