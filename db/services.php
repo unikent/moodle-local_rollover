@@ -26,7 +26,8 @@ $services = array(
     'Rollover service' => array(
         'functions' => array (
             'get_rollover_status',
-            'schedule_rollover'
+            'schedule_rollover',
+            'search_rollover_source_list'
         ),
         'requiredcapability' => '',
         'restrictedusers' => 0,
@@ -47,5 +48,11 @@ $functions = array(
         'description'  => 'Schedule a rollover.',
         'type'         => 'write',
         'capabilities' => 'moodle/course:update'
+    ),
+    'search_rollover_source_list' => array(
+        'classname'    => 'local_rollover\api',
+        'methodname'   => 'search_sources',
+        'description'  => 'Search a list of rollover sources.',
+        'type'         => 'read'
     )
 );

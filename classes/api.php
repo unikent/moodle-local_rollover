@@ -210,4 +210,93 @@ class api extends external_api
             new external_value(PARAM_INT, 'The rollover ID.')
         ));
     }
+
+    /**
+     * Returns description of method parameters
+     * @return external_function_parameters
+     */
+    public static function search_sources_parameters() {
+        return new external_function_parameters(array(
+            'search' => new external_value(
+                PARAM_TEXT,
+                'The search string',
+                VALUE_REQUIRED
+            ),
+            'target' => new external_value(
+                PARAM_INT,
+                'The local course ID',
+                VALUE_DEFAULT, 0
+            ),
+            'dist' => new external_value(
+                PARAM_TEXT,
+                'The search string',
+                VALUE_DEFAULT, ''
+            )
+        ));
+    }
+
+    /**
+     * Expose to AJAX
+     * @return boolean
+     */
+    public static function search_sources_is_allowed_from_ajax() {
+        return true;
+    }
+
+    /**
+     * Search a list of modules.
+     *
+     * @return array [string]
+     * @throws \invalid_parameter_exception
+     */
+    public static function search_sources($target, $source) {
+        global $CFG, $DB;
+
+        $params = self::validate_parameters(self::search_parameters(), array(
+            'search' => $search,
+            'target' => $target,
+            'dist' => $dist
+        ));
+        $search = $params['search'];
+        $target = $params['target'];
+        $dist = $params['dist'];
+
+        // Grab source list.
+        $sources = \local_rollover\Sources::get_course_list($dist, "%{$search}%");
+        if (empty($sources)) {
+            return array();
+        }
+
+        // Build result.
+        $data = array();
+        foreach ($sources as $course) {
+            // We can't rollover into self!
+            if ($course->moodle_dist == $CFG->kent->distribution && $course->moodle_id == $target) {
+                continue;
+            }
+
+            $data[] = array(
+                'id' => $course->id,
+                'moodle_dist' => $course->moodle_dist,
+                'shortname' => $course->shortname,
+                'fullname' => $course->fullname
+            );
+        }
+
+        return $data;
+    }
+
+    /**
+     * Returns description of search_sources() result value.
+     *
+     * @return external_description
+     */
+    public static function search_sources_returns() {
+        return new external_multiple_structure(new external_single_structure(array(
+            'id' => new external_value(PARAM_INT, 'The shared course ID.'),
+            'moodle_dist' => new external_value(PARAM_TEXT, 'The shared course dist.'),
+            'shortname' => new external_value(PARAM_TEXT, 'The shared course shortname.'),
+            'fullname' => new external_value(PARAM_TEXT, 'The shared course fullname.'),
+        )));
+    }
 }
