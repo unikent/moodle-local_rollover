@@ -29,7 +29,7 @@ class User
     public static function get_target_list() {
         global $CFG, $DB, $USER;
 
-        $category = \local_catman\core::get_category();
+        $category = \tool_cat\recyclebin::get_category();
         $sharedb = $CFG->kent->sharedb['name'];
 
         $params = array(
