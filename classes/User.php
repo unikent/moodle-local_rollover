@@ -29,13 +29,11 @@ class User
     public static function get_target_list() {
         global $CFG, $DB, $USER;
 
-        $category = \tool_cat\recyclebin::get_category();
         $sharedb = $CFG->kent->sharedb['name'];
 
         $params = array(
             'env' => $CFG->kent->environment,
             'dist' => $CFG->kent->distribution,
-            'rmcatid' => $category->id,
             'ctxlevel' => CONTEXT_COURSE
         );
 
@@ -86,7 +84,7 @@ SQL;
                 GROUP BY ic.id
             ) cms
                 ON cms.id = c.id
-            WHERE c.id > 1 AND c.category <> :rmcatid AND cms.module_count <=2 AND (r.status IS NULL OR r.status <> 2)
+            WHERE c.id > 1 AND cms.module_count <=2 AND (r.status IS NULL OR r.status <> 2)
             GROUP BY c.id
 SQL;
 
