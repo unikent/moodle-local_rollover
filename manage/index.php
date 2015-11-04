@@ -42,13 +42,12 @@ $PAGE->set_title("Rollover Management");
 $PAGE->navbar->add('Rollover Administration');
 
 // Optional vars.
+$q = optional_param('q', null, PARAM_TEXT);
 $id = optional_param('id', null, PARAM_INT);
 $action = optional_param('action', null, PARAM_ALPHA);
 
 // Perform the actions here, notify later.
-
 $notification = '';
-
 if (!empty($id)) {
     $rollover = $SHAREDB->get_record('shared_rollovers', array(
         'id' => $id
@@ -80,7 +79,6 @@ if (!empty($id)) {
 }
 
 // Output.
-
 echo $OUTPUT->header();
 echo $OUTPUT->heading('Rollover Administration');
 
@@ -88,6 +86,9 @@ if (!empty($notification)) {
     echo $OUTPUT->notification($notification, 'notifysuccess');
     echo \html_writer::empty_tag('br');
 }
+
+$form = new \local_rollover\form\search();
+$form->display();
 
 // Build a table.
 $table = new html_table();
@@ -120,10 +121,23 @@ $sql = <<<SQL
     WHERE sr.to_env = :env AND sr.to_dist = :dist
 SQL;
 
-$rollovers = $SHAREDB->get_recordset_sql($sql, array(
+$params = array(
     'env' => $CFG->kent->environment,
     'dist' => $CFG->kent->distribution
-), $currentpage * $perpage, $perpage);
+);
+
+// Are we searching?
+if (!empty($q)) {
+    $sql .= <<<SQL
+    AND (sr.id = :q OR sc.shortname LIKE :q2 OR sc2.shortname LIKE :q3)
+SQL;
+
+    $params['q'] = $q;
+    $params['q2'] = "%{$q}%";
+    $params['q3'] = "%{$q}%";
+}
+
+$rollovers = $SHAREDB->get_recordset_sql($sql, $params, $currentpage * $perpage, $perpage);
 
 foreach ($rollovers as $rollover) {
     $action = new html_table_cell('-');
@@ -205,10 +219,7 @@ $rollovers->close();
 
 echo html_writer::table($table);
 
-$total = $SHAREDB->count_records('shared_rollovers', array(
-    'to_env' => $CFG->kent->environment,
-    'to_dist' => $CFG->kent->distribution
-));
+$total = $SHAREDB->count_records_sql("SELECT COUNT(*) FROM ({$sql}) tmp", $params);
 
 echo $OUTPUT->paging_bar($total, $currentpage, $perpage, $PAGE->url);
 
