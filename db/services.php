@@ -40,19 +40,22 @@ $functions = array(
         'classname'   => 'local_rollover\api',
         'methodname'  => 'get_status',
         'description' => 'Get rollover status.',
-        'type'        => 'read'
+        'type'        => 'read',
+        'ajax'        => true
     ),
     'schedule_rollover' => array(
         'classname'    => 'local_rollover\api',
         'methodname'   => 'schedule',
         'description'  => 'Schedule a rollover.',
         'type'         => 'write',
-        'capabilities' => 'moodle/course:update'
+        'capabilities' => 'moodle/course:update',
+        'ajax'         => true
     ),
     'search_rollover_source_list' => array(
         'classname'    => 'local_rollover\api',
         'methodname'   => 'search_sources',
         'description'  => 'Search a list of rollover sources.',
-        'type'         => 'read'
+        'type'         => 'read',
+        'ajax'         => true
     )
 );
