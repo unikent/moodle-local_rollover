@@ -54,14 +54,6 @@ class api extends external_api
     }
 
     /**
-     * Expose to AJAX
-     * @return boolean
-     */
-    public static function get_status_is_allowed_from_ajax() {
-        return true;
-    }
-
-    /**
      * Search a list of modules.
      *
      * @param $modulecode
@@ -162,14 +154,6 @@ class api extends external_api
     }
 
     /**
-     * Expose to AJAX
-     * @return boolean
-     */
-    public static function schedule_is_allowed_from_ajax() {
-        return true;
-    }
-
-    /**
      * Search a list of modules.
      *
      * @param $modulecode
@@ -237,14 +221,6 @@ class api extends external_api
                 VALUE_DEFAULT, '*'
             )
         ));
-    }
-
-    /**
-     * Expose to AJAX
-     * @return boolean
-     */
-    public static function search_sources_is_allowed_from_ajax() {
-        return true;
     }
 
     /**
