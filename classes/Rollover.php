@@ -65,6 +65,9 @@ class Rollover
         // Force this.
         $options->turnitintool = false;
         $options->turnitintooltwo = false;
+        $options->videofile = false;
+        $options->hotpot = false;
+        $options->streamingvideo = false;
 
         $context = \context_course::instance($toid);
         if (!has_capability('moodle/course:update', $context)) {
