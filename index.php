@@ -61,7 +61,7 @@ $PAGE->requires->jquery_plugin('blockui', 'theme_kent');
 
 $PAGE->requires->strings_for_js(array('requestedmessage', 'errormessage'), 'local_rollover');
 
-$PAGE->requires->js("/local/rollover/scripts/underscore-min.js");
+$PAGE->requires->js(new \moodle_url("https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"));
 $PAGE->requires->js("/local/rollover/scripts/hideshow.js");
 $PAGE->requires->js("/local/rollover/scripts/submit.js");
 $PAGE->requires->js("/local/rollover/scripts/autoComplete.js");
