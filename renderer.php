@@ -41,7 +41,7 @@ class local_rollover_renderer extends plugin_renderer_base
 
 	    return <<<HTML5
 	    	<li class="rollover_option_item">
-	    		<input class='rollover_checkbox' name='backup_{$shortname}' type='checkbox' checked />{$longname}
+	    		<input name='backup_{$shortname}' type='checkbox' checked /> {$longname}
 	    	</li>
 HTML5;
 	}
@@ -181,16 +181,14 @@ HTML5;
 			    <div class='arrow'></div>
 			    <div class='from_form'>
 			        <input type='text' class='rollover_crs_input' placeholder='{$shortname}' />
-			        <ul class='rollover_advanced_options'>
-			            {$moduleoptions}
-			        </ul>
 			        <div class='more_advanced_wrap'>
 			            <div class='more_advanced'>
-			                <div class='text'>Show advanced options</div>
-			                {$shortname}{$help}
-			                <div class="clearfix"></div>
-			                <div class='arrow_border'></div>
-			                <div class='arrow_light'></div>
+			                <a href="#modoptions_$id" class='text' data-toggle="collapse">Show advanced options {$shortname}{$help}</a>
+			                <div id="modoptions_$id" class="collapse">
+						        <ul class='rollover_advanced_options'>
+						            {$moduleoptions}
+						        </ul>
+					        </div>
 			            </div>
 			        </div>
 			        <input type="hidden" name="id_from" class="id_from" value=""/>
