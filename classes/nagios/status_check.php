@@ -66,8 +66,5 @@ SQL;
         if ($inprogress > $CFG->kent->rollover_ratelimit) {
             $this->warning($inprogress . ' in progress rollovers');
         }
-
-        $this->set_perf_var('rollovers_queued', $queued);
-        $this->set_perf_var('rollovers_inprogress', $inprogress);
     }
 }
