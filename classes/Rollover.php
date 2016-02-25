@@ -294,6 +294,13 @@ class Rollover
         // Rename news forum.
         $this->manipulate_fields($xpath, 'forum', 'name', 'Announcements', 'News forum');
 
+        // Don't show dates for old files.
+        $this->manipulate_fields($xpath, 'resource', 'displayoptions', function($val) {
+            $arr = unserialize($val);
+            $arr['showdate'] = 0;
+            return serialize($arr);
+        });
+
         if ($doc->save($xml) === false) {
             throw new \moodle_exception('Could not overwrite backup file <' . $xml . '>');
         }
@@ -338,7 +345,11 @@ class Rollover
             $nodes = $mxpath->query($query);
             foreach ($nodes as $node) {
                 if (!$where || $node->nodeValue == $where) {
-                    $node->nodeValue = $value;
+                    if (is_callable($value)) {
+                        $node->nodeValue = $value($node->nodeValue);
+                    } else {
+                        $node->nodeValue = $value;
+                    }
                 }
             }
         });
