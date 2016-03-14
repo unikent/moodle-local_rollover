@@ -100,6 +100,7 @@ class Rollover
         $obj->updated = date('Y-m-d H:i:s');
         $obj->status = self::STATUS_WAITING_SCHEDULE;
         $obj->options = json_encode($options);
+        $obj->data = json_encode(array());
         $obj->requester = $USER->username;
 
         $obj->id = $SHAREDB->insert_record('shared_rollovers', $obj);
@@ -222,7 +223,6 @@ class Rollover
 
     /**
      * Do the rollover.
-     * This should only EVER be called from the import task.
      */
     public function go() {
         global $SHAREDB;
@@ -250,6 +250,9 @@ class Rollover
         \local_kent\util\sharedb::dispose();
         $SHAREDB = new \local_kent\util\sharedb();
 
+        // Process data.
+        $this->process_data();
+
         // Fire event.
         $event = \local_rollover\event\rollover_finished::create(array(
             'objectid' => $this->record->id,
@@ -258,6 +261,76 @@ class Rollover
         ));
         $event->add_shared_record_snapshot('shared_rollovers', $this->record);
         $event->trigger();
+    }
+
+    /**
+     * Process custom data.
+     */
+    private function process_data() {
+        global $DB, $SHAREDB;
+
+        $data = $this->record->data;
+        if (empty($data)) {
+            return;
+        }
+
+        // Decode.
+        $data = (array)json_decode($data);
+
+        // Build a mapping table.
+        $maptable = array();
+        if ($this->record->from_dist == $this->record->to_dist && $this->record->from_env == $this->record->to_env) {
+            $maptable = $DB->get_records_sql('SELECT id, id as from_course, id as to_course FROM {course}');
+        } else {
+            $maptable = $SHAREDB->get_records('shared_rollovers', array(
+                'from_env' => $this->record->from_env,
+                'from_dist' => $this->record->from_dist,
+                'to_env' => $this->record->to_env,
+                'to_dist' => $this->record->to_dist,
+                'status' => self::STATUS_COMPLETE
+            ), '', 'id, from_course, to_course');
+        }
+
+        // Meta enrolments?
+        if (!empty($data['enrol_metaplus_links'])) {
+            // Extract IDs.
+            $ids = array_keys((array)$data['enrol_metaplus_links']);
+
+            // Map to courses.
+            $newids = array();
+            foreach ($maptable as $potential) {
+                if (in_array($potential->from_course, $ids)) {
+                    $newids[$potential->from_course] = $potential->to_course;
+                }
+            }
+
+            // Build metaplus lists.
+            $course = $DB->get_record('course', array('id' => $this->record->to_course));
+            foreach ($newids as $from => $to) {
+                $roleexclusions = $ids[$from];
+                $instance = \enrol_metaplus\core::map_instance($course->id, $roleexclusions);
+                \enrol_metaplus\core::create_or_update($course, array($to), $roleexclusions, false, $instance);
+            }
+        }
+
+        // More meta enrolments?
+        if (!empty($data['enrol_metaplus_linked'])) {
+            // We have a list of courses that used to link to us, let's see which have already
+            // rolled over and re-link ourselves to them.
+            foreach ((array)$data['enrol_metaplus_linked'] as $courseid => $roleexclusions) {
+                foreach ($maptable as $potential) {
+                    if ($potential->from_course == $courseid) {
+                        $course = $DB->get_record('course', array('id' => $potential->to_course));
+
+                        // Grab current instances.
+                        $instance = \enrol_metaplus\core::map_instance($course->id, $roleexclusions);
+
+                        // This course used to be linked to us! Do it again.
+                        \enrol_metaplus\core::create_or_update($course, array($to), $roleexclusions, false, $instance);
+                    }
+                }
+            }
+        }
     }
 
     /**

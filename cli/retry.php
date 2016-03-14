@@ -28,6 +28,7 @@ list($options, $unrecognized) = cli_get_params(
     array(
         // The ID of the rollover to retry.
         'id' => false,
+        'force' => false,
     )
 );
 
@@ -44,13 +45,17 @@ if ($user) {
 raise_memory_limit(MEMORY_UNLIMITED);
 
 // Is this a backup?
-
-$event = $SHAREDB->get_record('shared_rollovers', array(
+$params = array(
     'id' => $options['id'],
     'from_env' => $CFG->kent->environment,
-    'from_dist' => $CFG->kent->distribution,
-    'status' => \local_rollover\Rollover::STATUS_WAITING_SCHEDULE
-));
+    'from_dist' => $CFG->kent->distribution
+);
+
+if (!$options['force']) {
+    $params['status'] = \local_rollover\Rollover::STATUS_WAITING_SCHEDULE;
+}
+
+$event = $SHAREDB->get_record('shared_rollovers', $params);
 
 if ($event) {
     $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
