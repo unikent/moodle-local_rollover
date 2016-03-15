@@ -275,7 +275,7 @@ class Rollover
         }
 
         // Decode.
-        $data = (array)json_decode($data);
+        $data = json_decode($data, true);
 
         // Build a mapping table.
         $maptable = array();
@@ -293,13 +293,12 @@ class Rollover
 
         // Meta enrolments?
         if (!empty($data['enrol_metaplus_links'])) {
-            // Extract IDs.
-            $ids = array_keys((array)$data['enrol_metaplus_links']);
+            $links = $data['enrol_metaplus_links'];
 
             // Map to courses.
             $newids = array();
             foreach ($maptable as $potential) {
-                if (in_array($potential->from_course, $ids)) {
+                if (isset($links[$potential->from_course])) {
                     $newids[$potential->from_course] = $potential->to_course;
                 }
             }
@@ -307,7 +306,7 @@ class Rollover
             // Build metaplus lists.
             $course = $DB->get_record('course', array('id' => $this->record->to_course));
             foreach ($newids as $from => $to) {
-                $roleexclusions = $ids[$from];
+                $roleexclusions = $links[$from];
                 $instance = \enrol_metaplus\core::map_instance($course->id, $roleexclusions);
                 \enrol_metaplus\core::create_or_update($course, array($to), $roleexclusions, false, $instance);
             }
@@ -317,7 +316,7 @@ class Rollover
         if (!empty($data['enrol_metaplus_linked'])) {
             // We have a list of courses that used to link to us, let's see which have already
             // rolled over and re-link ourselves to them.
-            foreach ((array)$data['enrol_metaplus_linked'] as $courseid => $roleexclusions) {
+            foreach ($data['enrol_metaplus_linked'] as $courseid => $roleexclusions) {
                 foreach ($maptable as $potential) {
                     if ($potential->from_course == $courseid) {
                         $course = $DB->get_record('course', array('id' => $potential->to_course));

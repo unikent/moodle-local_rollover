@@ -581,6 +581,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
 
         // Rollover 1 -> 3.
         \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
+        $this->rollover(1);
 
         // Check 3 has meta enrolments.
         $this->assertEquals(2, $DB->count_records('enrol', array('enrol' => 'metaplus')));

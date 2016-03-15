@@ -119,7 +119,7 @@ class backup extends \core\task\adhoc_task
         foreach ($metas as $meta) {
             $enrol = $DB->get_record('enrol', array('id' => $meta->enrolid));
             if ($enrol) {
-                $metalinks[$enrol->courseid] = $enrol->customtext1;
+                $metalinked[$enrol->courseid] = $enrol->customtext1;
             }
         }
 
