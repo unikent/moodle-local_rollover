@@ -586,4 +586,54 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Check 3 has meta enrolments.
         $this->assertEquals(2, $DB->count_records('enrol', array('enrol' => 'metaplus')));
     }
+
+    /**
+     * Test meta enrolment rollover.
+     */
+    public function test_meta_reverse_rollover() {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        // Create a course.
+        $course1 = \local_connect\course::get($this->generate_course());
+        $course1->create_in_moodle();
+        $course1 = $DB->get_record('course', array('id' => $course1->mid));
+
+        // Create another course.
+        $course2 = \local_connect\course::get($this->generate_course());
+        $course2->create_in_moodle();
+        $course2 = $DB->get_record('course', array('id' => $course2->mid));
+
+        // Create a skeleton.
+        $course3 = \local_connect\course::get($this->generate_course());
+        $course3->create_in_moodle();
+        $course3 = $DB->get_record('course', array('id' => $course3->mid));
+
+        // Create a skeleton.
+        $course4 = \local_connect\course::get($this->generate_course());
+        $course4->create_in_moodle();
+        $course4 = $DB->get_record('course', array('id' => $course4->mid));
+
+        // So we have a course and another course.
+        // Link 2 to 1.
+        $this->assertEquals(0, $DB->count_records('enrol', array('enrol' => 'metaplus')));
+        \enrol_metaplus\core::create_or_update($course1, array($course2->id), array(3, 5));
+        $this->assertEquals(1, $DB->count_records('enrol', array('enrol' => 'metaplus')));
+
+        // Rollover 2 -> 3.
+        \local_rollover\Rollover::schedule("testing", $course2->id, $course3->id);
+        $this->rollover(1);
+
+        // Check 3 has no meta enrolments.
+        $this->assertEquals(1, $DB->count_records('enrol', array('enrol' => 'metaplus')));
+
+        // Rollover 1 -> 4.
+        \local_rollover\Rollover::schedule("testing", $course1->id, $course4->id);
+        $this->rollover(1);
+
+        // Check 4 has meta enrolments.
+        $this->assertEquals(2, $DB->count_records('enrol', array('enrol' => 'metaplus')));
+    }
 }
