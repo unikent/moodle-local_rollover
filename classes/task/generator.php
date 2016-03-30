@@ -34,22 +34,12 @@ class generator extends \core\task\scheduled_task
     }
 
     public function execute() {
-        global $CFG, $DB;
-
         if (!\local_kent\util\sharedb::available()) {
             return;
         }
 
-        // If we already have more than <x> pending adhoc tasks, don't schedule any more.
-        $count = $DB->count_records('task_adhoc', array(
-            'component' => 'local_rollover',
-            'faildelay' => 0
-        ));
-
-        if ($count < $CFG->kent->rollover_ratelimit) {
-            $this->schedule_backups();
-            $this->schedule_restores();
-        }
+        $this->schedule_backups();
+        $this->schedule_restores();
     }
 
     /**
