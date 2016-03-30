@@ -84,6 +84,16 @@ class backup extends \core\task\adhoc_task
         }
 
         $SHAREDB->update_record('shared_rollovers', $event);
+
+        if ($event->status == \local_rollover\Rollover::STATUS_BACKED_UP) {
+            try {
+                \local_kent\helpers::execute_script_on($event->to_dist, '/admin/tool/task/cli/schedule_task.php', array(
+                    '--execute=\\local_rollover\\task\\generator'
+                ));
+            } catch (\moodle_exception $e) {
+                debugging($e->getMessage());
+            }
+        }
     }
 
     /**

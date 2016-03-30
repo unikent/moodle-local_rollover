@@ -126,6 +126,15 @@ class Rollover
         $event->add_shared_record_snapshot('shared_rollovers', $obj);
         $event->trigger();
 
+        // Try to generate the task now.
+        try {
+            \local_kent\helpers::execute_script_on($obj->to_dist, '/admin/tool/task/cli/schedule_task.php', array(
+                '--execute=\\local_rollover\\task\\generator'
+            ));
+        } catch (\moodle_exception $e) {
+            debugging($e->getMessage());
+        }
+
         return $obj->id;
     }
 
