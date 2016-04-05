@@ -98,8 +98,16 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     /**
      * Test we can schedule a rollover.
      */
+    public function test_reset() {
+        $this->resetAfterTest();
+        $this->assertEquals(1, 1);
+    }
+
+    /**
+     * Test we can schedule a rollover.
+     */
     public function test_schedule() {
-        global $SHAREDB;
+        global $CFG, $SHAREDB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -108,7 +116,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $course1 = $this->getDataGenerator()->create_course();
 
         $this->assertEquals(0, $SHAREDB->count_records('shared_rollovers'));
-        $result = \local_rollover\Rollover::schedule("testing", 1, $course1->id);
+        $result = \local_rollover\Rollover::schedule($CFG->kent->distribution, 1, $course1->id);
         $this->assertEquals(1, $SHAREDB->count_records('shared_rollovers'));
     }
 
@@ -116,12 +124,14 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test we can generate a list of tasks.
      */
     public function test_generator() {
+        global $CFG, $DB;
+
         $this->resetAfterTest();
         $this->setAdminUser();
 
         $course1 = $this->getDataGenerator()->create_course();
         $course2 = $this->getDataGenerator()->create_course();
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
 
         $this->run_all_tasks(0);
 
@@ -147,7 +157,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover process.
      */
     public function test_rollover_statuses() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -159,7 +169,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Get the rollover object.
         $rollover = new \local_rollover\Course($course2->id);
 
-        $result = \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        $result = \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
 
         $this->assertEquals(\local_rollover\Rollover::STATUS_WAITING_SCHEDULE, $rollover->get_status());
 
@@ -174,7 +184,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover process.
      */
     public function test_rollover() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -199,7 +209,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
             'course' => $course2->id
         )));
 
-        $result = \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        $result = \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
 
         $rollover = new \local_rollover\Course($course2->id);
         $this->assertEquals(\local_rollover\Rollover::STATUS_WAITING_SCHEDULE, $rollover->get_status());
@@ -230,7 +240,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover re-processes CLA.
      */
     public function test_cla_rollover() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -264,8 +274,8 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $course4 = $DB->get_record('course', array('id' => $course4->mid));
 
         // Do the rollover.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
-        \local_rollover\Rollover::schedule("testing", $course2->id, $course4->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course3->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course2->id, $course4->id);
         $this->rollover(2);
 
         // The test!
@@ -290,7 +300,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover re-processes CLA.
      */
     public function test_cla_rollover_pre_process() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -321,7 +331,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         )));
 
         // Do the rollover.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
         $this->rollover(1);
 
         // The test!
@@ -369,7 +379,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $course2 = $DB->get_record('course', array('id' => $course2->mid));
 
         // Do the rollover.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
 
         $this->run_backups(1);
 
@@ -423,7 +433,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $course2 = $DB->get_record('course', array('id' => $course2->mid));
 
         // Do the rollover.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
 
         $this->run_backups(1);
         unlink($dir . $filename);
@@ -446,7 +456,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test the rollover processes removes existing modules.
      */
     public function test_skeleton_rollover() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -472,7 +482,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         )));
 
         // Do the rollover.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
         $this->rollover(1);
 
         // The tests.
@@ -513,7 +523,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test rollover output is empty
      */
     public function test_output_is_empty() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -533,7 +543,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $module3 = $this->getDataGenerator()->create_module('cla', array('course' => $course1));
 
         // Do the rollover.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course2->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course2->id);
 
         $backup = $this->run_backups(1);
         $this->assertEquals('', $backup);
@@ -553,7 +563,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test meta enrolment rollover.
      */
     public function test_meta_rollover() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -580,7 +590,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(1, $DB->count_records('enrol', array('enrol' => 'metaplus')));
 
         // Rollover 1 -> 3.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course3->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course3->id);
         $this->rollover(1);
 
         // Check 3 has meta enrolments.
@@ -591,7 +601,7 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
      * Test meta enrolment rollover.
      */
     public function test_meta_reverse_rollover() {
-        global $DB;
+        global $CFG, $DB;
 
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -623,14 +633,14 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         $this->assertEquals(1, $DB->count_records('enrol', array('enrol' => 'metaplus')));
 
         // Rollover 2 -> 3.
-        \local_rollover\Rollover::schedule("testing", $course2->id, $course3->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course2->id, $course3->id);
         $this->rollover(1);
 
         // Check 3 has no meta enrolments.
         $this->assertEquals(1, $DB->count_records('enrol', array('enrol' => 'metaplus')));
 
         // Rollover 1 -> 4.
-        \local_rollover\Rollover::schedule("testing", $course1->id, $course4->id);
+        \local_rollover\Rollover::schedule($CFG->kent->distribution, $course1->id, $course4->id);
         $this->rollover(1);
 
         // Check 4 has meta enrolments.
