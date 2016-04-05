@@ -69,6 +69,9 @@ class backup extends \core\task\adhoc_task
         $event->path = \local_rollover\Rollover::backup($event->from_course, $settings);
         if ($event->path) {
             $event->status = \local_rollover\Rollover::STATUS_BACKED_UP;
+
+            // Build a data array now.
+            $event->data = json_encode($this->build_data($event->from_course));
         } else {
             $error = \local_rollover\event\rollover_error::create(array(
                 'objectid' => $event->id,
@@ -94,6 +97,45 @@ class backup extends \core\task\adhoc_task
                 debugging($e->getMessage());
             }
         }
+    }
+
+    /**
+     * Build a data array for a given course.
+     */
+    private function build_data($courseid) {
+        global $DB;
+
+        $data = array();
+
+        // Build a list of courses this course was linked to.
+        $enrols = $DB->get_records('enrol', array(
+            'enrol' => 'metaplus',
+            'courseid' => $courseid
+        ));
+
+        $metalinks = array();
+        foreach ($enrols as $enrol) {
+            $metas = $DB->get_records('enrol_metaplus', array('enrolid' => $enrol->id));
+            foreach ($metas as $meta) {
+                $metalinks[$meta->courseid] = $enrol->customtext1;
+            }
+        }
+
+        $data['enrol_metaplus_links'] = $metalinks;
+
+        // Build a list of courses this course was linked by.
+        $metalinked = array();
+        $metas = $DB->get_records('enrol_metaplus', array('courseid' => $courseid));
+        foreach ($metas as $meta) {
+            $enrol = $DB->get_record('enrol', array('id' => $meta->enrolid));
+            if ($enrol) {
+                $metalinked[$enrol->courseid] = $enrol->customtext1;
+            }
+        }
+
+        $data['enrol_metaplus_linked'] = $metalinked;
+
+        return $data;
     }
 
     /**
