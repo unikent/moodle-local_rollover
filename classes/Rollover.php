@@ -334,7 +334,7 @@ class Rollover
                         $instance = \enrol_metaplus\core::map_instance($course->id, $roleexclusions);
 
                         // This course used to be linked to us! Do it again.
-                        \enrol_metaplus\core::create_or_update($course, array($to), $roleexclusions, false, $instance);
+                        \enrol_metaplus\core::create_or_update($course, array($potential->from_course), $roleexclusions, false, $instance);
                     }
                 }
             }

@@ -98,14 +98,6 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
     /**
      * Test we can schedule a rollover.
      */
-    public function test_reset() {
-        $this->resetAfterTest();
-        $this->assertEquals(1, 1);
-    }
-
-    /**
-     * Test we can schedule a rollover.
-     */
     public function test_schedule() {
         global $CFG, $SHAREDB;
 
