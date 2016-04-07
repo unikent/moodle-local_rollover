@@ -33,7 +33,7 @@ class Sources {
 
     /**
      * Returns a list of sources for rollover
-     * 
+     *
      * @return array
      */
     public static function get_course_list($dist = '', $search = '') {
@@ -64,8 +64,9 @@ class Sources {
         }
 
         if (!empty($search)) {
-            $sql .= ' AND sc.shortname LIKE :shortname';
+            $sql .= ' AND (sc.shortname LIKE :shortname OR sc.fullname LIKE :fullname)';
             $params['shortname'] = $search;
+            $params['fullname'] = $search;
         }
 
         return $SHAREDB->get_records_sql($sql, $params);
@@ -73,7 +74,7 @@ class Sources {
 
     /**
      * Returns a list of sources for rollover
-     * 
+     *
      * @return array
      */
     public static function get_source_list($target) {
@@ -82,7 +83,7 @@ class Sources {
 
     /**
      * Returns a list of targets for rollover
-     * 
+     *
      * @return array
      */
     public static function get_target_list() {

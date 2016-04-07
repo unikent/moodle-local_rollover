@@ -180,12 +180,15 @@ class api extends external_api
         $course = new \local_rollover\Course($target);
         $course->undo_rollovers();
 
+        ob_start();
         $id = \local_rollover\Rollover::schedule($source->moodle_dist, $source->moodle_id, $target);
+        ob_end_clean();
+
         if (!$id) {
             throw new \moodle_exception("Error creating rollover entry (unknown error).");
         }
 
-        return $id;
+        return array('id' => $id);
     }
 
     /**
@@ -195,7 +198,7 @@ class api extends external_api
      */
     public static function schedule_returns() {
         return new external_single_structure(array(
-            new external_value(PARAM_INT, 'The rollover ID.')
+            'id' => new external_value(PARAM_INT, 'The rollover ID.')
         ));
     }
 
