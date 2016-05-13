@@ -94,7 +94,7 @@ foreach ($courses as $course) {
     }
 
     if (!$match && $options['mode'] == 'sds') {
-        $match = $rc->sds_match('moodle_' . $options['from']);
+        $match = $rc->sds_match($options['from'], 'moodle_' . $options['from']);
         $matchtype = 'SDS';
     }
 
