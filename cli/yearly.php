@@ -25,10 +25,11 @@ require_once($CFG->libdir . '/clilib.php');
 
 list($options, $unrecognized) = cli_get_params(
     array(
-        'from' => PREVIOUS_MOODLE,
+        'from' => LIVE_MOODLE,
         'dry' => false,
         'mode' => 'exact',
-        'weeks' => '*' // If set, restrict to SDS modules beginning in weeks "x-y"
+        'weeks' => '*',
+        'manual' => false // Just manual rollovers?
     )
 );
 
@@ -39,21 +40,28 @@ $user = $DB->get_record('user', array(
 
 if ($user) {
     \core\session\manager::set_user($user);
-    echo "Hello {$user->firstname}.\n";
+    cli_writeln("Hello {$user->firstname}.");
 }
 
 raise_memory_limit(MEMORY_UNLIMITED);
 
 // Grab a list of courses in this Moodle.
-$courses = $DB->get_recordset('course');
+$courses = array();
+if ($options['manual']) {
+    $courses = $DB->get_recordset_sql('SELECT * FROM {course} WHERE shortname LIKE :shortname', array('shortname' => 'DP%'));
+} else {
+    $courses = $DB->get_recordset('course');
+}
+
+// Rollover.
 foreach ($courses as $course) {
     $rc = new \local_rollover\Course($course);
     if (!$rc->can_rollover()) {
         continue;
     }
 
-    // Restrict to SDS modules beginning in weeks "x-y"
-    if ($options['weeks'] != '*') {
+    // Restrict to SDS modules beginning in weeks "x-y".
+    if (!$options['manual'] && $options['weeks'] != '*') {
         $weeks = explode('-', $options['weeks']);
         $connect = \local_connect\course::get_by('mid', $course->id);
 
@@ -91,11 +99,11 @@ foreach ($courses as $course) {
     }
 
     if (!$match) {
-        echo "No match for {$course->shortname}.\n";
+        cli_writeln("No match for {$course->shortname}.");
         continue;
     }
 
-    echo "$matchtype match for {$course->shortname}: {$match->shortname}.\n";
+    cli_writeln("{$matchtype} match for {$course->shortname}: {$match->shortname}.");
 
     if (isset($options['dry']) && $options['dry']) {
         continue;
@@ -103,4 +111,5 @@ foreach ($courses as $course) {
 
     $rc->rollover($options['from'], $match->moodle_id);
 }
+
 $courses->close();
