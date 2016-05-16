@@ -27,9 +27,9 @@ class User
      * Returns all courses we can rollover into.
      */
     public static function get_target_list() {
-        global $CFG, $DB, $USER;
+        global $CFG, $DB, $SHAREDB, $USER;
 
-        $sharedb = $CFG->kent->sharedb['name'];
+        $sharedb = $SHAREDB->get_name();
 
         $params = array(
             'env' => $CFG->kent->environment,
