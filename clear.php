@@ -36,14 +36,14 @@ if ($confirmed) {
 	\local_rollover\Rollover::remove_course_contents($id);
 
 	// Reset any rollovers.
-    $objs = $SHAREDB->get_records('shared_rollovers', array(
+    $objs = $SHAREDB->get_records('rollovers', array(
     	'to_course' => $id,
 		'to_env' => $CFG->kent->environment,
 		'to_dist' => $CFG->kent->distribution
     ));
     foreach ($objs as $obj) {
 	    $obj->status = self::STATUS_DELETED;
-	    $SHAREDB->update_record('shared_rollovers', $obj);
+	    $SHAREDB->update_record('rollovers', $obj);
 	}
 
 	redirect(new \moodle_url('/my/'));

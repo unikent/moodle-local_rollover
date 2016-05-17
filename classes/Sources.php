@@ -46,10 +46,10 @@ class Sources {
 
         $admin = has_capability('moodle/site:config', \context_system::instance());
 
-        $sql = 'SELECT sc.* FROM {shared_courses} sc';
+        $sql = 'SELECT sc.* FROM {courses} sc';
 
         if (!$admin) {
-            $sql .= ' INNER JOIN {shared_course_admins} sca
+            $sql .= ' INNER JOIN {course_admins} sca
                         ON sca.moodle_env=sc.moodle_env
                         AND sca.moodle_dist=sc.moodle_dist
                         AND sca.courseid=sc.moodle_id

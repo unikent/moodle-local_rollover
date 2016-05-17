@@ -31,7 +31,7 @@ class status_check extends \local_nagios\base_check
 
         $sql = <<<SQL
         SELECT status, COUNT(*) cnt
-        FROM {shared_rollovers}
+        FROM {rollovers}
         WHERE to_dist=:to_dist AND to_env=:to_env
         GROUP BY status
 SQL;

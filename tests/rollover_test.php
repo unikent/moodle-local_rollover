@@ -107,9 +107,9 @@ class local_rollover_tests extends \local_connect\tests\connect_testcase
         // Create a course.
         $course1 = $this->getDataGenerator()->create_course();
 
-        $this->assertEquals(0, $SHAREDB->count_records('shared_rollovers'));
+        $this->assertEquals(0, $SHAREDB->count_records('rollovers'));
         $result = \local_rollover\Rollover::schedule($CFG->kent->distribution, 1, $course1->id);
-        $this->assertEquals(1, $SHAREDB->count_records('shared_rollovers'));
+        $this->assertEquals(1, $SHAREDB->count_records('rollovers'));
     }
 
     /**

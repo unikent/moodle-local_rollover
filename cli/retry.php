@@ -55,11 +55,11 @@ if (!$options['force']) {
     $params['status'] = \local_rollover\Rollover::STATUS_WAITING_SCHEDULE;
 }
 
-$event = $SHAREDB->get_record('shared_rollovers', $params);
+$event = $SHAREDB->get_record('rollovers', $params);
 
 if ($event) {
     $event->status = \local_rollover\Rollover::STATUS_SCHEDULED;
-    $SHAREDB->update_record('shared_rollovers', $event);
+    $SHAREDB->update_record('rollovers', $event);
 
     $task = new \local_rollover\task\backup();
     $task->set_custom_data(array(
@@ -72,7 +72,7 @@ if ($event) {
 
 // Is this an import?
 
-$importevent = $SHAREDB->get_record('shared_rollovers', array(
+$importevent = $SHAREDB->get_record('rollovers', array(
     'id' => $options['id'],
     'to_env' => $CFG->kent->environment,
     'to_dist' => $CFG->kent->distribution,
@@ -88,7 +88,7 @@ if (!$importevent) {
 }
 
 $importevent->status = \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED;
-$SHAREDB->update_record('shared_rollovers', $importevent);
+$SHAREDB->update_record('rollovers', $importevent);
 
 // Import.
 $task = new \local_rollover\task\import();

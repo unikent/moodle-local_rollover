@@ -49,7 +49,7 @@ $action = optional_param('action', null, PARAM_ALPHA);
 // Perform the actions here, notify later.
 $notification = '';
 if (!empty($id)) {
-    $rollover = $SHAREDB->get_record('shared_rollovers', array(
+    $rollover = $SHAREDB->get_record('rollovers', array(
         'id' => $id
     ));
 
@@ -74,7 +74,7 @@ if (!empty($id)) {
             $notification = 'Forced failure of ' . $rollover->id;
         }
 
-        $SHAREDB->update_record('shared_rollovers', $rollover);
+        $SHAREDB->update_record('rollovers', $rollover);
     }
 }
 
@@ -109,12 +109,12 @@ $sql = <<<SQL
         sr.id, sr.status, sr.from_dist, sr.from_course, sr.to_dist, sr.to_course, sr.created, sr.updated,
         sc.shortname as from_shortname, sc2.shortname as to_shortname,
         sc.fullname as from_fullname, sc2.fullname as to_fullname
-    FROM {shared_rollovers} sr
-    LEFT OUTER JOIN {shared_courses} sc
+    FROM {rollovers} sr
+    LEFT OUTER JOIN {courses} sc
         ON sc.moodle_id=sr.from_course
         AND sc.moodle_env=sr.from_env
         AND sc.moodle_dist=sr.from_dist
-    LEFT OUTER JOIN {shared_courses} sc2
+    LEFT OUTER JOIN {courses} sc2
         ON sc2.moodle_id=sr.to_course
         AND sc2.moodle_env=sr.to_env
         AND sc2.moodle_dist=sr.to_dist

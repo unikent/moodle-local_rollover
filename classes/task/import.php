@@ -37,7 +37,7 @@ class import extends \core\task\adhoc_task
         global $SHAREDB;
 
         $params = $this->get_custom_data();
-        $event = $SHAREDB->get_record('shared_rollovers', (array)$params, '*', MUST_EXIST);
+        $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
 
         if ((int)$event->status != \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED) {
             echo "Warning! Event not in scheduled state for restore: {$event->status}.\n";
@@ -46,7 +46,7 @@ class import extends \core\task\adhoc_task
 
         $event->updated = date('Y-m-d H:i:s');
         $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-        $SHAREDB->update_record('shared_rollovers', $event);
+        $SHAREDB->update_record('rollovers', $event);
 
         try {
             $controller = new \local_rollover\Rollover($event);
@@ -54,11 +54,11 @@ class import extends \core\task\adhoc_task
 
             // Update status.
             $event->status = \local_rollover\Rollover::STATUS_COMPLETE;
-            $SHAREDB->update_record('shared_rollovers', $event);
+            $SHAREDB->update_record('rollovers', $event);
         } catch (\moodle_exception $e) {
             // Update status.
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('shared_rollovers', $event);
+            $SHAREDB->update_record('rollovers', $event);
 
             // Also, wipe the course.
             remove_course_contents($event->to_course, false, array(
@@ -77,7 +77,7 @@ class import extends \core\task\adhoc_task
                     'message' => $e->getMessage()
                 )
             ));
-            $error->add_shared_record_snapshot('shared_rollovers', $event);
+            $error->add_shared_record_snapshot('rollovers', $event);
             $error->trigger();
 
             throw $e;

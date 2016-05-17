@@ -74,7 +74,7 @@ class Course
         }
 
         $like = $SHAREDB->sql_like('shortname', ':shortname', false, false);
-        $matches = $SHAREDB->get_records_select('shared_courses', 'moodle_dist=:moodle_dist AND ' . $like, array(
+        $matches = $SHAREDB->get_records_select('courses', 'moodle_dist=:moodle_dist AND ' . $like, array(
             'moodle_dist' => $extdist,
             'shortname' => "%{$shortname}%"
         ));
@@ -108,7 +108,7 @@ class Course
     public function exact_match($extdist) {
         global $SHAREDB;
 
-        return $SHAREDB->get_record('shared_courses', array(
+        return $SHAREDB->get_record('courses', array(
             'moodle_dist' => $extdist,
             'shortname' => $this->course->shortname
         ));
@@ -159,7 +159,7 @@ SQL;
 
         if (!isset($this->_rollovers)) {
             $this->_rollovers = array();
-            $this->_rollovers = $SHAREDB->get_records('shared_rollovers', array(
+            $this->_rollovers = $SHAREDB->get_records('rollovers', array(
                 'to_env' => $CFG->kent->environment,
                 'to_dist' => $CFG->kent->distribution,
                 'to_course' => $this->courseid
@@ -260,7 +260,7 @@ SQL;
         global $CFG, $SHAREDB;
 
         $select = 'to_course = :course AND to_dist = :dist AND (status = :complete OR status = :error)';
-        $rollovers = $SHAREDB->get_records_select('shared_rollovers', $select, array(
+        $rollovers = $SHAREDB->get_records_select('rollovers', $select, array(
             'dist' => $CFG->kent->distribution,
             'course' => $this->courseid,
             'complete' => \local_rollover\Rollover::STATUS_COMPLETE,

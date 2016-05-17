@@ -71,7 +71,7 @@ SQL;
             FROM {course} c
             INNER JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = :ctxlevel
             $join
-            LEFT OUTER JOIN `$sharedb`.`shared_rollovers` r
+            LEFT OUTER JOIN `$sharedb`.`rollovers` r
                 ON r.to_env = :env
                 AND r.to_dist = :dist
                 AND r.to_course = c.id

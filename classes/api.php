@@ -172,7 +172,7 @@ class api extends external_api
 
         require_capability('moodle/course:update', \context_course::instance($target));
 
-        $source = $SHAREDB->get_record('shared_courses', array(
+        $source = $SHAREDB->get_record('courses', array(
             'id' => $source
         ), '*', MUST_EXIST);
 

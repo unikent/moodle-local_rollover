@@ -37,7 +37,7 @@ class backup extends \core\task\adhoc_task
         global $DB, $SHAREDB;
 
         $params = $this->get_custom_data();
-        $event = $SHAREDB->get_record('shared_rollovers', (array)$params, '*', MUST_EXIST);
+        $event = $SHAREDB->get_record('rollovers', (array)$params, '*', MUST_EXIST);
 
         if ((int)$event->status != \local_rollover\Rollover::STATUS_SCHEDULED) {
             echo "Warning! Event not in scheduled state for backup:  {$event->status}\n";
@@ -58,13 +58,13 @@ class backup extends \core\task\adhoc_task
         // Did this user have access to this course?
         if (!$user || !has_capability('moodle/course:update', $context, $user)) {
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
-            $SHAREDB->update_record('shared_rollovers', $event);
+            $SHAREDB->update_record('rollovers', $event);
 
             throw new \moodle_exception("User does not have access to backup that course!");
         }
 
         $event->status = \local_rollover\Rollover::STATUS_IN_PROGRESS;
-        $SHAREDB->update_record('shared_rollovers', $event);
+        $SHAREDB->update_record('rollovers', $event);
 
         $event->path = \local_rollover\Rollover::backup($event->from_course, $settings);
         if ($event->path) {
@@ -86,7 +86,7 @@ class backup extends \core\task\adhoc_task
             $event->status = \local_rollover\Rollover::STATUS_ERROR;
         }
 
-        $SHAREDB->update_record('shared_rollovers', $event);
+        $SHAREDB->update_record('rollovers', $event);
 
         if ($event->status == \local_rollover\Rollover::STATUS_BACKED_UP) {
             try {

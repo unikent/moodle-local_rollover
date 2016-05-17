@@ -83,7 +83,7 @@ class Rollover
         $obj->to_course = $toid;
 
         // Check if the to_course exists in here already.
-        $prod = $SHAREDB->get_record('shared_rollovers', (array)$obj);
+        $prod = $SHAREDB->get_record('rollovers', (array)$obj);
         if ($prod && $prod->status != self::STATUS_DELETED) {
             throw new \moodle_exception('A rollover is already scheduled for that course.');
         }
@@ -103,7 +103,7 @@ class Rollover
         $obj->data = json_encode(array());
         $obj->requester = $USER->username;
 
-        $obj->id = $SHAREDB->insert_record('shared_rollovers', $obj);
+        $obj->id = $SHAREDB->insert_record('rollovers', $obj);
 
         if (!$obj->id) {
             return false;
@@ -124,7 +124,7 @@ class Rollover
             'courseid' => $toid,
             'context' => $context
         ));
-        $event->add_shared_record_snapshot('shared_rollovers', $obj);
+        $event->add_shared_record_snapshot('rollovers', $obj);
         $event->trigger();
 
         // Try to generate the task now.
@@ -150,7 +150,7 @@ class Rollover
         $obj->to_env = $CFG->kent->environment;
         $obj->to_dist = $CFG->kent->distribution;
 
-        $obj = $SHAREDB->get_record('shared_rollovers', (array)$obj);
+        $obj = $SHAREDB->get_record('rollovers', (array)$obj);
 
         if (!$obj) {
             throw new \moodle_exception('Rollover not found.');
@@ -162,7 +162,7 @@ class Rollover
         }
 
         $obj->status = self::STATUS_DELETED;
-        $SHAREDB->update_record('shared_rollovers', $obj);
+        $SHAREDB->update_record('rollovers', $obj);
 
         // Delete any notifications.
         $notification = \local_rollover\notification\status::get($event->courseid, $event->context);
@@ -246,7 +246,7 @@ class Rollover
             'courseid' => $this->record->to_course,
             'context' => $context
         ));
-        $event->add_shared_record_snapshot('shared_rollovers', $this->record);
+        $event->add_shared_record_snapshot('rollovers', $this->record);
         $event->trigger();
 
         $this->migrate_data();
@@ -268,7 +268,7 @@ class Rollover
             'courseid' => $this->record->to_course,
             'context' => $context
         ));
-        $event->add_shared_record_snapshot('shared_rollovers', $this->record);
+        $event->add_shared_record_snapshot('rollovers', $this->record);
         $event->trigger();
     }
 
@@ -291,7 +291,7 @@ class Rollover
         if ($this->record->from_dist == $this->record->to_dist && $this->record->from_env == $this->record->to_env) {
             $maptable = $DB->get_records_sql('SELECT id, id as from_course, id as to_course FROM {course}');
         } else {
-            $maptable = $SHAREDB->get_records('shared_rollovers', array(
+            $maptable = $SHAREDB->get_records('rollovers', array(
                 'from_env' => $this->record->from_env,
                 'from_dist' => $this->record->from_dist,
                 'to_env' => $this->record->to_env,
