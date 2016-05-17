@@ -29,7 +29,7 @@ class User
     public static function get_target_list() {
         global $CFG, $DB, $SHAREDB, $USER;
 
-        $sharedb = $SHAREDB->get_name();
+        $sharedbcfg = $SHAREDB->export_dbconfig();
 
         $params = array(
             'env' => $CFG->kent->environment,
@@ -71,7 +71,7 @@ SQL;
             FROM {course} c
             INNER JOIN {context} ctx ON ctx.instanceid = c.id AND ctx.contextlevel = :ctxlevel
             $join
-            LEFT OUTER JOIN `$sharedb`.`rollovers` r
+            LEFT OUTER JOIN `{$sharedbcfg->dbname}`.`{$sharedbcfg->prefix}rollovers` r
                 ON r.to_env = :env
                 AND r.to_dist = :dist
                 AND r.to_course = c.id
