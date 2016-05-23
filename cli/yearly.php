@@ -54,6 +54,8 @@ if ($options['manual']) {
 }
 
 // Rollover.
+$countmatch = 0;
+$countnomatch = 0;
 foreach ($courses as $course) {
     $rc = new \local_rollover\Course($course);
     if (!$rc->can_rollover()) {
@@ -94,16 +96,18 @@ foreach ($courses as $course) {
     }
 
     if (!$match && $options['mode'] == 'sds') {
-        $match = $rc->sds_match($options['from'], 'moodle_' . $options['from']);
+        $match = $rc->sds_match($options['from']);
         $matchtype = 'SDS';
     }
 
     if (!$match) {
         cli_writeln("No match for {$course->shortname}.");
+        $countnomatch++;
         continue;
     }
 
     cli_writeln("{$matchtype} match for {$course->shortname}: {$match->shortname}.");
+    $countmatch++;
 
     if (isset($options['dry']) && $options['dry']) {
         continue;
@@ -113,3 +117,9 @@ foreach ($courses as $course) {
 }
 
 $courses->close();
+
+if (isset($options['dry']) && $options['dry']) {
+    $total = $countmatch + $countnomatch;
+    $perc = round(((float)$countmatch / (float)$total) * 100.0, 2);
+    cli_writeln("Total: {$total}, matched: {$countmatch} ({$perc}%)");
+}

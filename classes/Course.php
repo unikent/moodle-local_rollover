@@ -117,26 +117,23 @@ class Course
     /**
      * Get an SDS match for a course.
      */
-    public function sds_match($extdist, $extdb) {
-        global $DB;
+    public function sds_match($extdist) {
+        global $CFG;
 
         $connect = \local_connect\course::get_by('mid', $this->course->id);
         if (!$connect || is_array($connect)) {
             return null;
         }
 
-        if (preg_match('/moodle_[a-z0-9]+/', $extdb) !== 1) {
-            debugging("Invalid DB name.");
+        $mim = \local_kent\helpers::get_db($CFG->kent->environment, $extdist);
+        if (!$mim) {
+            debugging("{$extdist} is not MIM compatible.");
             return null;
         }
 
-        $sql = <<<SQL
-        SELECT cc.mid as moodle_id, cc.module_delivery_key as shortname
-        FROM $extdb.mdl_connect_course cc
-        WHERE cc.module_delivery_key=:mdk
-SQL;
-
-        $ret = $DB->get_record_sql($sql, array('mdk' => $connect->module_delivery_key));
+        $ret = $mim->get_record($sql, array(
+            'mdk' => $connect->module_delivery_key
+        ), 'cc.mid AS moodle_id, cc.module_delivery_key AS shortname');
         if (!empty($ret->moodle_id)) {
             return $ret;
         }
