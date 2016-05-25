@@ -190,10 +190,14 @@ class Rollover
 
             $destination = $CFG->dataroot . '/rollover/' . $file->get_contenthash();
 
-            $file->extract_to_pathname($packer, $destination);
+            $extracted = $file->extract_to_pathname($packer, $destination);
             $file->delete();
 
-            return $destination;
+            if ($extracted) {
+                return $destination;
+            }
+
+            return null;
         }
 
         return null;
@@ -350,10 +354,10 @@ class Rollover
         $to = escapeshellcmd($CFG->tempdir . '/backup/' . $this->uuid);
         $from = escapeshellcmd($this->record->path);
 
-        exec("mv $from $to", $out, $return);
+        exec("mv {$from} {$to}", $out, $return);
 
-        if ($return != 0) {
-            throw new \moodle_exception('Could not move backup folder!');
+        if ($return != 0 || !file_exists($to . '/moodle_backup.xml')) {
+            throw new \moodle_exception("Could not copy backup folder: {$out}!");
         }
     }
 
