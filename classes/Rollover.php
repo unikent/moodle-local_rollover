@@ -180,7 +180,7 @@ class Rollover
         static::setup_folder();
 
         $controller = new backup\controllers\rollover($id, $settings);
-        $controller->get_plan()->get_setting('filename')->set_value($this->uuid . '.mbz');
+        $controller->get_plan()->get_setting('filename')->set_value("rollover-{$id}.mbz");
         $controller->execute_plan();
 
         $result = $controller->get_results();
