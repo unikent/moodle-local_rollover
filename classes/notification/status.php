@@ -85,8 +85,8 @@ class status extends \local_notifications\notification\base {
         $message = "This {$moduletext} has been rolled over from a previous year.";
 
         // Get the rollover.
-        if ($rollover && isset($CFG->kent->paths[$rollover->from_dist])) {
-            $url = $CFG->kent->paths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
+        if ($rollover && isset($CFG->kent->httppaths[$rollover->from_dist])) {
+            $url = $CFG->kent->httppaths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
 
             $message = "This {$moduletext} has been rolled over from ";
             $message .= "<a href=\"{$url}\" class=\"alert-link\" target=\"_blank\">Moodle {$rollover->from_dist}</a>.";

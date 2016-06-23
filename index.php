@@ -173,7 +173,7 @@ if ($totalcourses > $perpage) {
     echo $OUTPUT->paging_bar($totalcourses, $currentpage, $perpage, $PAGE->url);
 }
 
-$urls = $CFG->kent->paths;
+$urls = $CFG->kent->httppaths;
 unset($urls['connect']);
 $urls = array_keys($urls);
 $urls = array_reverse($urls);
