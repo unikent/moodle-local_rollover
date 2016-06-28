@@ -43,25 +43,51 @@ SQL;
             return;
         }
 
-        $complete = $counts[\local_rollover\Rollover::STATUS_COMPLETE]->cnt;
-        $errored = $counts[\local_rollover\Rollover::STATUS_ERROR]->cnt;
+        $complete = 0;
+        $errored = 0;
+        $queued = 0;
+        $inprogress = 0;
+        foreach ($counts as $record) {
+            switch ($record->status) {
+                case \local_rollover\Rollover::STATUS_COMPLETE:
+                    $complete += $record->cnt;
+                break;
 
-        $queued = $counts[\local_rollover\Rollover::STATUS_WAITING_SCHEDULE]->cnt;
-        $queued += $counts[\local_rollover\Rollover::STATUS_SCHEDULED]->cnt;
+                case \local_rollover\Rollover::STATUS_ERROR:
+                    $errored += $record->cnt;
+                break;
 
-        $inprogress = $counts[\local_rollover\Rollover::STATUS_IN_PROGRESS]->cnt;
-        $inprogress += $counts[\local_rollover\Rollover::STATUS_RESTORE_SCHEDULED]->cnt;
-        $inprogress += $counts[\local_rollover\Rollover::STATUS_BACKED_UP]->cnt;
+                case \local_rollover\Rollover::STATUS_WAITING_SCHEDULE:
+                    $queued += $record->cnt;
+                break;
+
+                case \local_rollover\Rollover::STATUS_SCHEDULED:
+                    $queued += $record->cnt;
+                break;
+
+                case \local_rollover\Rollover::STATUS_IN_PROGRESS:
+                    $inprogress += $record->cnt;
+                break;
+
+                case \local_rollover\Rollover::STATUS_RESTORE_SCHEDULED:
+                    $inprogress += $record->cnt;
+                break;
+
+                case \local_rollover\Rollover::STATUS_BACKED_UP:
+                    $inprogress += $record->cnt;
+                break;
+            }
+        }
 
         if ($errored > 0) {
             $this->error($errored . ' failed rollovers');
         }
 
-        if ($queued > $CFG->kent->rollover_ratelimit) {
+        if ($queued > 2) {
             $this->warning($queued . ' queued rollovers');
         }
 
-        if ($inprogress > $CFG->kent->rollover_ratelimit) {
+        if ($inprogress > 5) {
             $this->warning($inprogress . ' in progress rollovers');
         }
     }
