@@ -39,10 +39,8 @@ SQL;
             'to_env' => $CFG->kent->environment,
             'to_dist' => $CFG->kent->distribution
         ));
-
-        $total = 0;
-        foreach ($counts as $k => $v) {
-            $total += $v;
+        if (!$counts) {
+            return;
         }
 
         $complete = $counts[\local_rollover\Rollover::STATUS_COMPLETE]->cnt;
