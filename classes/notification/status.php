@@ -56,8 +56,7 @@ class status extends \local_notifications\notification\simplelist {
             return $items;
         }
 
-        $items[] = 'Check everything has rolled over properly.';
-        $items[] = 'Check links to external resources - they may not exist anymore!';
+        $items[] = 'Check links to external resources - they may not exist any more!';
 
         // Is this a manual course?
         if ($this->other['manual']) {
@@ -99,7 +98,7 @@ class status extends \local_notifications\notification\simplelist {
             $items[] = "Consider creating a {$readinglistlink} for your module.";
         }
 
-        $items[] = 'Dismiss this notification by clicking on the cross to the right.';
+        $items[] = 'Once done, dismiss this notification by clicking on the cross to the right.';
 
         return $items;
     }
