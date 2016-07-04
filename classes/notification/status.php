@@ -91,8 +91,10 @@ class status extends \local_notifications\notification\simplelist {
             'target' => '_blank'
         ));
         $readinglists = new \mod_aspirelists\course($this->objectid);
-        if (!$readinglists->is_published()) {
-            $items[] = "Publish this year's {$readinglistlink}.";
+        if ($readinglists->has_list()) {
+            if (!$readinglists->is_published()) {
+                $items[] = "Publish this year's {$readinglistlink}.";
+            }
         } else {
             $items[] = "Consider creating a {$readinglistlink} for your module.";
         }
