@@ -18,7 +18,7 @@ namespace local_rollover\notification;
 
 defined('MOODLE_INTERNAL') || die();
 
-class status extends \local_notifications\notification\base {
+class status extends \local_notifications\notification\simplelist {
     /**
      * Returns the component of the notification.
      */
@@ -34,6 +34,75 @@ class status extends \local_notifications\notification\base {
     }
 
     /**
+     * Default to false for lists.
+     */
+    public function is_dismissble() {
+        return true;
+    }
+
+    /**
+     * Default to false for lists.
+     */
+    public function is_expanded() {
+        return true;
+    }
+
+    /**
+     * Retrieve all items from the list.
+     */
+    public function get_items() {
+        $items = array();
+        if (!isset($this->other['complete'])) {
+            return $items;
+        }
+
+        $items[] = 'Check everything has rolled over properly.';
+        $items[] = 'Check links to external resources - they may not exist anymore!';
+
+        // Is this a manual course?
+        if ($this->other['manual']) {
+            $metalink = 'http://www.kent.ac.uk/elearning/files/moodle/moodle-meta-enrolment.pdf';
+            $metalink = \html_writer::link($metalink, 'meta-enrolments', array(
+                'class' => 'alert-link',
+                'target' => '_blank'
+            ));
+            $message = "Re-link any previous {$metalink}.";
+
+            $items[] = $message;
+        }
+
+        $modinfo = get_fast_modinfo($this->objectid);
+        $modules = $modinfo->get_used_module_names();
+
+        // CLA notifications.
+        $clalink = \html_writer::link('https://www.kent.ac.uk/library/staff/cla.html', 'CLA requests', array(
+            'class' => 'alert-link',
+            'target' => '_blank'
+        ));
+        if (isset($modules['cla'])) {
+            $items[] = "Check CLA activities and ensure any new {$clalink} are created 6 weeks before they will be needed.";
+        } else {
+            $items[] = "Ensure any new {$clalink} are created 6 weeks before they will be needed.";
+        }
+
+        // Reading lists.
+        $readinglistlink = \html_writer::link('https://www.kent.ac.uk/library/staff/readinglists.html', 'reading list', array(
+            'class' => 'alert-link',
+            'target' => '_blank'
+        ));
+        $readinglists = new \mod_aspirelists\course($this->objectid);
+        if (!$readinglists->is_published()) {
+            $items[] = "Publish this year's {$readinglistlink}.";
+        } else {
+            $items[] = "Consider creating a {$readinglistlink} for your module.";
+        }
+
+        $items[] = 'Dismiss this notification by clicking on the cross to the right.';
+
+        return $items;
+    }
+
+    /**
      * Returns the level of the notification.
      */
     public function get_level() {
@@ -45,16 +114,9 @@ class status extends \local_notifications\notification\base {
     }
 
     /**
-     * Is the action dismissable?
+     * Returns some text (before the items).
      */
-    public function is_dismissble() {
-        return true;
-    }
-
-    /**
-     * Returns the notification.
-     */
-    protected function get_contents() {
+    protected function render_text() {
         global $SHAREDB;
 
         if (isset($this->other['complete'])) {
@@ -73,32 +135,37 @@ class status extends \local_notifications\notification\base {
     }
 
     /**
+     * Returns a rendered item.
+     * @param $item
+     * @return
+     */
+    protected function render_item($item) {
+        return $item;
+    }
+
+    /**
      * Render a rollover complete message.
      */
     private function render_complete() {
         global $CFG;
 
         $rollover = $this->other['record'];
-        $manual = $this->other['manual'];
 
-        $moduletext = ($manual ? 'manually-created ' : '') . 'module';
-        $message = "This {$moduletext} has been rolled over from a previous year.";
+        $moduletext = ($this->other['manual'] ? 'manually-created ' : '') . 'module';
+        $message = "This {$moduletext} has been rolled over from a previous year";
 
         // Get the rollover.
         if ($rollover && isset($CFG->kent->httppaths[$rollover->from_dist])) {
             $url = $CFG->kent->httppaths[$rollover->from_dist] . "course/view.php?id=" . $rollover->from_course;
 
             $message = "This {$moduletext} has been rolled over from ";
-            $message .= "<a href=\"{$url}\" class=\"alert-link\" target=\"_blank\">Moodle {$rollover->from_dist}</a>.";
+            $message .= \html_writer::link($url, "Moodle {$rollover->from_dist}", array(
+                'class' => 'alert-link',
+                'target' => '_blank'
+            ));
         }
 
-        // Is this a manual course?
-        if ($manual) {
-            $message .= ' An administrator must re-link any previous meta-enrolments.';
-            $message .= 'Information on how to do this can be found on the ';
-            $message .= '<a href="http://www.kent.ac.uk/elearning/files/moodle/moodle-meta-enrolment.pdf" class="alert-link" target="_blank">';
-            $message .= 'E-Learning website</a>.';
-        }
+        $message .= ', you should now:';
 
         return $message;
     }
