@@ -92,10 +92,10 @@ class status extends \local_notifications\notification\simplelist {
         $readinglists = new \mod_aspirelists\course($this->objectid);
         if ($readinglists->has_list()) {
             if (!$readinglists->is_published()) {
-                $items[] = "Publish this year's {$readinglistlink}.";
+                $items[] = "Check and publish this year's {$readinglistlink}.";
             }
         } else {
-            $items[] = "Consider creating a {$readinglistlink} for your module.";
+            $items[] = "Create a {$readinglistlink} for your module if required.";
         }
 
         $items[] = 'Once done, dismiss this notification by clicking on the cross to the right.';
