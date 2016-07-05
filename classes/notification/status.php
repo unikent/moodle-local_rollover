@@ -85,7 +85,7 @@ class status extends \local_notifications\notification\simplelist {
         }
 
         // Reading lists.
-        $readinglistlink = \html_writer::link('https://www.kent.ac.uk/library/staff/readinglists.html', 'reading list', array(
+        $readinglistlink = \html_writer::link('http://resourcelists.kent.ac.uk/mylists', 'reading list', array(
             'class' => 'alert-link',
             'target' => '_blank'
         ));
