@@ -43,7 +43,7 @@ class status extends \local_notifications\notification\simplelist {
     /**
      * Default to false for lists.
      */
-    public function is_expanded() {
+    public function is_expanded_default() {
         return true;
     }
 
