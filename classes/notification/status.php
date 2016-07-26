@@ -79,10 +79,9 @@ class status extends \local_notifications\notification\simplelist {
             'target' => '_blank'
         ));
         if (isset($modules['cla'])) {
-            $items[] = "Check CLA activities and ensure any new {$clalink} are created 6 weeks before they will be needed.";
-        } else {
-            $items[] = "Ensure any new {$clalink} are created 6 weeks before they will be needed.";
+            $items[] = "Check and update existing CLA activities.";
         }
+        $items[] = "Ensure any new {$clalink} are created 6 weeks before they will be needed.";
 
         // Reading lists.
         $readinglistlink = \html_writer::link('http://resourcelists.kent.ac.uk/mylists', 'reading list', array(
@@ -92,7 +91,7 @@ class status extends \local_notifications\notification\simplelist {
         $readinglists = new \mod_aspirelists\course($this->objectid);
         if ($readinglists->has_list()) {
             if (!$readinglists->is_published()) {
-                $items[] = "Check and publish this year's {$readinglistlink}.";
+                $items[] = "Check, update and publish this year's {$readinglistlink}.";
             }
         } else {
             $items[] = "Create a {$readinglistlink} for your module if required.";
